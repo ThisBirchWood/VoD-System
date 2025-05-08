@@ -31,6 +31,7 @@ public class FfmpegService {
     private Float fileSize;
 
     private static final float AUDIO_RATIO = 0.15f;
+    private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
 
     private Pattern timePattern = Pattern.compile("time=([\\d:.]+)");
@@ -77,8 +78,15 @@ public class FfmpegService {
         float length = endPoint - startPoint;
         float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
 
-        float video_bitrate = bitrate * (1 - AUDIO_RATIO);
         float audio_bitrate = bitrate * AUDIO_RATIO;
+        float video_bitrate;
+
+        if (audio_bitrate > MAX_AUDIO_BITRATE) {
+            audio_bitrate = MAX_AUDIO_BITRATE;
+            video_bitrate = bitrate - MAX_AUDIO_BITRATE;
+        } else {
+            video_bitrate = bitrate * (1 - AUDIO_RATIO);
+        }
 
         command.add("-b:v");
         command.add(video_bitrate + "k");

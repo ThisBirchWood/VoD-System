@@ -55,6 +55,5 @@ public class Job implements Runnable {
         this.status = JobStatus.FINISHED;
         file.delete();
         logger.info("Job {} finished", uuid);
-
     }
 }
