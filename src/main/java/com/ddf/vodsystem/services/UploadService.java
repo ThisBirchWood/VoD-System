@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Job;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,11 +15,16 @@ import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class UploadService {
+    private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
     private static final String UPLOAD_DIR = "videos/";
     private final JobService jobService;
 
+    @Autowired
     public UploadService(JobService jobService) {
         this.jobService = jobService;
     }
@@ -41,7 +47,7 @@ public class UploadService {
             Path filePath = Paths.get(outputFile.getAbsolutePath());
             Files.copy(inputFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 

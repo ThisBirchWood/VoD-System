@@ -43,7 +43,9 @@ public class JobService {
         Thread thread = new Thread(() -> {
             while (true) {
                 if (!jobQueue.isEmpty()) {
-                    Runnable task = jobQueue.poll();
+                    Job task = jobQueue.poll();
+
+                    logger.info("Starting job {}", task.getUuid());
                     task.run(); // Execute the task
                 }
 
