@@ -30,7 +30,7 @@ public class FfmpegService {
     private Float fps;
     private Float fileSize;
 
-    private static final float AUDIO_RATIO = 0.2f;
+    private static final float AUDIO_RATIO = 0.15f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
 
     private Pattern timePattern = Pattern.compile("time=([\\d:.]+)");
@@ -56,7 +56,7 @@ public class FfmpegService {
 
     private void buildFilters() {
         List<String> filters = new ArrayList<>();
-        System.out.println(fps);
+
         if (fps != null) {
             filters.add("fps=" + fps);
         }
@@ -75,7 +75,7 @@ public class FfmpegService {
 
     private void buildBitrate() {
         float length = endPoint - startPoint;
-        float bitrate = (fileSize / length) * BITRATE_MULTIPLIER;
+        float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
 
         float video_bitrate = bitrate * (1 - AUDIO_RATIO);
         float audio_bitrate = bitrate * AUDIO_RATIO;
@@ -128,10 +128,10 @@ public class FfmpegService {
 
         String line;
         while ((line = reader.readLine()) != null) {
-
-            if (line.startsWith("out_time_ms=")) {
-                out_time_ms = parseLong(line.substring("out_time_ms=".length()));
-            }
+            logger.debug(line);
+//            if (line.startsWith("out_time_ms=")) {
+//                out_time_ms = parseLong(line.substring("out_time_ms=".length()));
+//            }
         }
 
         logger.info("FFMPEG finished");

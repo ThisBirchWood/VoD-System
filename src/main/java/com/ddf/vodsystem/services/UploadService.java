@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Job;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,7 +22,9 @@ import org.slf4j.LoggerFactory;
 @Service
 public class UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
-    private static final String UPLOAD_DIR = "videos/";
+
+    @Value("${temp.vod.storage}")
+    private String UPLOAD_DIR;
     private final JobService jobService;
 
     @Autowired
