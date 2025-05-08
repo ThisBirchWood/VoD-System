@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.entities;
 
-import com.ddf.vodsystem.services.FfmpegService;
+import com.ddf.vodsystem.services.CompressionService;
 import lombok.Data;
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class Job implements Runnable {
         logger.info("Job {} started", uuid);
         this.status = JobStatus.RUNNING;
 
-        FfmpegService f = new FfmpegService(file, new File("output.mp4"));
+        CompressionService f = new CompressionService(file, new File("output.mp4"));
         f.setStartPoint(startPoint);
         f.setEndPoint(endPoint);
         f.setFps(fps);

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 @Service
-public class JobService {
+class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final HashMap<String, Job> jobs = new HashMap<>();
     private final LinkedList<Job> jobQueue = new LinkedList<>();

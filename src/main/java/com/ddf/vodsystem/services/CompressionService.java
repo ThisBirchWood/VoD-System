@@ -10,24 +10,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.lang.Long.parseLong;
 
-@Data
-public class FfmpegService {
-    private static final Logger logger = LoggerFactory.getLogger(FfmpegService.class);
+public class CompressionService {
+    private static final Logger logger = LoggerFactory.getLogger(CompressionService.class);
 
     private List<String> command;
 
+    @Getter @Setter
     private File inputFile;
+    @Getter @Setter
     private File outputFile;
+    @Getter @Setter
     private Float startPoint;
+    @Getter @Setter
     private Float endPoint;
+    @Getter @Setter
     private Integer width;
+    @Getter @Setter
     private Integer height;
+    @Getter @Setter
     private Float fps;
+    @Getter @Setter
     private Float fileSize;
 
     private static final float AUDIO_RATIO = 0.15f;
@@ -37,7 +46,7 @@ public class FfmpegService {
     private Pattern timePattern = Pattern.compile("time=([\\d:.]+)");
     private long out_time_ms;
 
-    public FfmpegService(File file, File output) {
+    public CompressionService(File file, File output) {
         command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");
