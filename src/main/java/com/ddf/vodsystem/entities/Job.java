@@ -3,12 +3,15 @@ package com.ddf.vodsystem.entities;
 import lombok.Data;
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Data
 public class Job implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(Job.class);
+
     private String uuid;
     private File file;
-    private boolean started;
-    private float progress;
 
     // configs
     private float startPoint;
@@ -16,18 +19,22 @@ public class Job implements Runnable {
     private float fps;
     private int width;
     private int height;
+    private float fileSize;
+
+    // job status
+    private JobStatus status = JobStatus.PENDING;
 
     public Job(String uuid, File file) {
         this.uuid = uuid;
         this.file = file;
-        this.started = false;
     }
 
     @Override
     public void run() {
-        this.started = true;
-        this.progress = 0;
+        logger.info("Job started");
+        this.status = JobStatus.RUNNING;
 
-        System.out.println("<UNK>");
+        this.status = JobStatus.FINISHED;
+
     }
 }

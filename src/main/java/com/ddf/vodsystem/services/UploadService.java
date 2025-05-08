@@ -17,8 +17,7 @@ import java.util.UUID;
 @Service
 public class UploadService {
     private static final String UPLOAD_DIR = "videos/";
-
-    private JobService jobService;
+    private final JobService jobService;
 
     public UploadService(JobService jobService) {
         this.jobService = jobService;
@@ -32,7 +31,7 @@ public class UploadService {
 
         // add job
         Job job = new Job(uuid, uploadDir);
-        jobService.addJob(job);
+        jobService.add(job);
 
         return uuid;
     }
