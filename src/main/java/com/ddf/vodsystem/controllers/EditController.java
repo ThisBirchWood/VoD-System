@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.entities.EditDTO;
+import com.ddf.vodsystem.entities.ClipConfig;
 import com.ddf.vodsystem.services.EditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +17,8 @@ public class EditController {
     }
 
     @PostMapping("edit/{uuid}")
-    public ResponseEntity<String> edit(@PathVariable("uuid") String uuid, @ModelAttribute EditDTO editDTO) {
-        editService.edit(uuid, editDTO);
+    public ResponseEntity<String> edit(@PathVariable("uuid") String uuid, @ModelAttribute ClipConfig clipConfig) {
+        editService.edit(uuid, clipConfig);
         return new ResponseEntity<>(uuid, HttpStatus.OK);
     }
 

@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services;
 
+import com.ddf.vodsystem.entities.ClipConfig;
 import lombok.Data;
 
 import java.io.BufferedReader;
@@ -27,17 +28,14 @@ public class CompressionService {
     @Getter @Setter
     private File outputFile;
     @Getter @Setter
-    private Float startPoint;
-    @Getter @Setter
-    private Float endPoint;
-    @Getter @Setter
-    private Integer width;
-    @Getter @Setter
-    private Integer height;
-    @Getter @Setter
-    private Float fps;
-    @Getter @Setter
-    private Float fileSize;
+    private ClipConfig clipConfig;
+
+    private final Float startPoint;
+    private final Float endPoint;
+    private final Integer width;
+    private final Integer height;
+    private final Float fps;
+    private final Float fileSize;
 
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
@@ -46,7 +44,7 @@ public class CompressionService {
     private Pattern timePattern = Pattern.compile("time=([\\d:.]+)");
     private long out_time_ms;
 
-    public CompressionService(File file, File output) {
+    public CompressionService(File file, File output, ClipConfig clipConfig) {
         command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");
@@ -55,14 +53,15 @@ public class CompressionService {
 
         this.inputFile = file;
         this.outputFile = output;
+        this.clipConfig = clipConfig;
+        this.startPoint = clipConfig.getStartPoint();
+        this.endPoint = clipConfig.getEndPoint();
+        this.fps = clipConfig.getFps();
+        this.fileSize = clipConfig.getFileSize();
+        this.width = clipConfig.getWidth();
+        this.height = clipConfig.getHeight();
 
     }
-
-    public void setResolution(Integer width, Integer height) {
-        this.width = width;
-        this.height = height;
-    }
-
 
     private void buildFilters() {
         List<String> filters = new ArrayList<>();

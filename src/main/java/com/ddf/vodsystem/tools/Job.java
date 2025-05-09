@@ -1,5 +1,7 @@
-package com.ddf.vodsystem.entities;
+package com.ddf.vodsystem.tools;
 
+import com.ddf.vodsystem.entities.ClipConfig;
+import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.services.CompressionService;
 import lombok.Data;
 import java.io.File;
@@ -16,12 +18,7 @@ public class Job implements Runnable {
     private File file;
 
     // configs
-    private Float startPoint;
-    private Float endPoint;
-    private Float fps;
-    private Integer width;
-    private Integer height;
-    private Float fileSize;
+    private ClipConfig clipConfig;
 
     // job status
     private JobStatus status = JobStatus.PENDING;
@@ -37,13 +34,7 @@ public class Job implements Runnable {
         logger.info("Job {} started", uuid);
         this.status = JobStatus.RUNNING;
 
-        CompressionService f = new CompressionService(file, new File("output.mp4"));
-        f.setStartPoint(startPoint);
-        f.setEndPoint(endPoint);
-        f.setFps(fps);
-        f.setWidth(width);
-        f.setHeight(height);
-        f.setFileSize(fileSize);
+        CompressionService f = new CompressionService(file, new File("output.mp4"), clipConfig);
 
         try {
             f.run();

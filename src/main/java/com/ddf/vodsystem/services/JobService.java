@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.Job;
+import com.ddf.vodsystem.tools.Job;
 import com.ddf.vodsystem.entities.JobStatus;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 @Service
-class JobService {
+public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final HashMap<String, Job> jobs = new HashMap<>();
     private final LinkedList<Job> jobQueue = new LinkedList<>();
@@ -39,7 +39,7 @@ class JobService {
     }
 
     @PostConstruct
-    public void startProcessingLoop() {
+    private void startProcessingLoop() {
         Thread thread = new Thread(() -> {
             while (true) {
                 if (!jobQueue.isEmpty()) {
