@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.ClipConfig;
-import com.ddf.vodsystem.tools.Job;
+import com.ddf.vodsystem.entities.Job;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,8 +22,6 @@ public class EditService {
         }
 
         job.setClipConfig(clipConfig);
-
-
     }
 
     public void jobReady(String uuid) {

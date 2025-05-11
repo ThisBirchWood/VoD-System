@@ -1,7 +1,8 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.ClipConfig;
-import lombok.Data;
+import com.ddf.vodsystem.entities.JobStatus;
+import com.ddf.vodsystem.entities.Job;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,31 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import static java.lang.Long.parseLong;
-
+@Service
 public class CompressionService {
     private static final Logger logger = LoggerFactory.getLogger(CompressionService.class);
-
-    private List<String> command;
-
-    @Getter @Setter
-    private File inputFile;
-    @Getter @Setter
-    private File outputFile;
-    @Getter @Setter
-    private ClipConfig clipConfig;
-
-    private final Float startPoint;
-    private final Float endPoint;
-    private final Integer width;
-    private final Integer height;
-    private final Float fps;
-    private final Float fileSize;
 
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
@@ -44,26 +27,7 @@ public class CompressionService {
     private Pattern timePattern = Pattern.compile("time=([\\d:.]+)");
     private long out_time_ms;
 
-    public CompressionService(File file, File output, ClipConfig clipConfig) {
-        command = new ArrayList<>();
-        command.add("ffmpeg");
-        command.add("-progress");
-        command.add("pipe:1");
-        command.add("-y");
-
-        this.inputFile = file;
-        this.outputFile = output;
-        this.clipConfig = clipConfig;
-        this.startPoint = clipConfig.getStartPoint();
-        this.endPoint = clipConfig.getEndPoint();
-        this.fps = clipConfig.getFps();
-        this.fileSize = clipConfig.getFileSize();
-        this.width = clipConfig.getWidth();
-        this.height = clipConfig.getHeight();
-
-    }
-
-    private void buildFilters() {
+    private void buildFilters(ArrayList<String> command, Float fps, Integer width, Integer height) {
         List<String> filters = new ArrayList<>();
 
         if (fps != null) {
@@ -82,8 +46,7 @@ public class CompressionService {
         }
     }
 
-    private void buildBitrate() {
-        float length = endPoint - startPoint;
+    private void buildBitrate(ArrayList<String> command, Float length, Float fileSize) {
         float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
 
         float audio_bitrate = bitrate * AUDIO_RATIO;
@@ -102,29 +65,37 @@ public class CompressionService {
         command.add(audio_bitrate + "k");
     }
 
-    private void buildInputs(){
-        if (startPoint != null) {
-            command.add("-ss");
-            command.add(startPoint.toString());
+    private void buildInputs(ArrayList<String> command, File inputFile, Float startPoint, Float endPoint) {
+        if (startPoint == null) {
+            startPoint = 0f;
         }
+
+        command.add("-ss");
+        command.add(startPoint.toString());
 
         command.add("-i");
         command.add(inputFile.getAbsolutePath());
 
         if (endPoint != null) {
+            Float length = endPoint - startPoint;
             command.add("-t");
-
-            Float duration = endPoint - startPoint;
-            command.add(duration.toString());
+            command.add(length.toString());
         }
     }
 
-    private ProcessBuilder buildCommand() {
-        buildInputs();
-        buildFilters();
+    private ProcessBuilder buildCommand(File inputFile, File outputFile, ClipConfig clipConfig) {
+        ArrayList<String> command = new ArrayList<>();
+        command.add("ffmpeg");
+        command.add("-progress");
+        command.add("pipe:1");
+        command.add("-y");
 
-        if (fileSize != null) {
-            buildBitrate();
+        Float length = clipConfig.getEndPoint() - clipConfig.getStartPoint();
+        buildInputs(command, inputFile, clipConfig.getStartPoint(), clipConfig.getEndPoint());
+        buildFilters(command, clipConfig.getFps(), clipConfig.getWidth(), clipConfig.getHeight());
+
+        if (clipConfig.getFileSize() != null) {
+            buildBitrate(command, length, clipConfig.getFileSize());
         }
 
         // Output file
@@ -134,22 +105,22 @@ public class CompressionService {
         return new ProcessBuilder(command);
     }
 
-    public void run() throws IOException, InterruptedException {
+    public void run(Job job) throws IOException, InterruptedException {
         logger.info("FFMPEG starting...");
-        ProcessBuilder pb = buildCommand();
+
+        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getClipConfig());
         pb.redirectErrorStream(true);
         Process process = pb.start();
+        job.setStatus(JobStatus.RUNNING);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
         String line;
         while ((line = reader.readLine()) != null) {
             logger.debug(line);
-//            if (line.startsWith("out_time_ms=")) {
-//                out_time_ms = parseLong(line.substring("out_time_ms=".length()));
-//            }
         }
 
+        job.setStatus(JobStatus.FINISHED);
         logger.info("FFMPEG finished");
     }
 

@@ -3,7 +3,7 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
-import com.ddf.vodsystem.tools.Job;
+import com.ddf.vodsystem.entities.Job;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;

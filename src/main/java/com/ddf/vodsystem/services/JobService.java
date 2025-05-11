@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.tools.Job;
+import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.entities.JobStatus;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -16,6 +17,11 @@ public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final HashMap<String, Job> jobs = new HashMap<>();
     private final LinkedList<Job> jobQueue = new LinkedList<>();
+    private final CompressionService compressionService;
+
+    public JobService(CompressionService compressionService) {
+        this.compressionService = compressionService;
+    }
 
     public void add(Job job) {
         logger.info("Added job: {}", job.getUuid());
@@ -43,10 +49,15 @@ public class JobService {
         Thread thread = new Thread(() -> {
             while (true) {
                 if (!jobQueue.isEmpty()) {
-                    Job task = jobQueue.poll();
+                    Job job = jobQueue.poll();
 
-                    logger.info("Starting job {}", task.getUuid());
-                    task.run(); // Execute the task
+                    logger.info("Starting job {}", job.getUuid());
+
+                    try {
+                        compressionService.run(job);// Execute the task
+                    } catch (IOException | InterruptedException e) {
+                        logger.error("Error while running job {}", job.getUuid(), e);
+                    }
                 }
 
             }

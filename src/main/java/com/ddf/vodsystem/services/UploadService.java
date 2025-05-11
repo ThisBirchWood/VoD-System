@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.tools.Job;
+import com.ddf.vodsystem.entities.Job;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
