@@ -34,7 +34,7 @@ public class CompressionService {
             filters.add("fps=" + fps);
         }
 
-        if ((width != null && height == null) || (height != null && width == null)) {
+        if (!(width == null && height == null)) {
             String w = (width != null) ? width.toString() : "-1";
             String h = (height != null) ? height.toString() : "-1";
             filters.add("scale=" + w + ":" + h);
