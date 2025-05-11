@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.ClipConfig;
 import com.ddf.vodsystem.entities.Job;
+import com.ddf.vodsystem.exceptions.JobNotFound;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,5 +27,15 @@ public class EditService {
 
     public void jobReady(String uuid) {
         jobService.jobReady(uuid);
+    }
+
+    public float getProgress(String uuid) {
+        Job job = jobService.get(uuid);
+
+        if (job == null) {
+            throw new JobNotFound(uuid);
+        }
+
+        return job.getProgress();
     }
 }

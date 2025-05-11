@@ -2,6 +2,7 @@ package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.entities.ClipConfig;
 import com.ddf.vodsystem.services.EditService;
+import org.atmosphere.config.service.Get;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,11 @@ public class EditController {
     public ResponseEntity<String> convert(@PathVariable("uuid") String uuid) {
         editService.jobReady(uuid);
         return new ResponseEntity<>(uuid, HttpStatus.OK);
+    }
+
+    @GetMapping("/progress/{uuid}")
+    public ResponseEntity<Float> getProgress(@PathVariable("uuid") String uuid) {
+        return new ResponseEntity<>(editService.getProgress(uuid), HttpStatus.OK);
     }
 
 }
