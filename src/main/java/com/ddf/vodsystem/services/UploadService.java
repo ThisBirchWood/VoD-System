@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.tools.Job;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,10 @@ public class UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
 
     @Value("${temp.vod.storage}")
-    private String UPLOAD_DIR;
+    private String INPUT_DIR;
+    @Value("${temp.vod.output}")
+    private String OUTPUT_DIR;
+
     private final JobService jobService;
 
     @Autowired
@@ -33,13 +37,21 @@ public class UploadService {
     }
 
     public String upload(MultipartFile file) {
-        // generate uuid, file
+        // generate uuid, filename
         String uuid = generateShortUUID();
-        File uploadDir = new File(UPLOAD_DIR + uuid + ".mp4");
-        moveToFile(file, uploadDir);
+        String extension = getFileExtension(file.getOriginalFilename());
+        String filename = uuid + (extension.isEmpty() ? "" : "." + extension);
+
+        Path inputPath = Paths.get(INPUT_DIR, filename);
+        File inputFile = inputPath.toFile();
+
+        Path outputPath = Paths.get(OUTPUT_DIR, filename);
+        File outputFile = outputPath.toFile();
+
+        moveToFile(file, inputFile);
 
         // add job
-        Job job = new Job(uuid, uploadDir);
+        Job job = new Job(uuid, inputFile, outputFile);
         jobService.add(job);
 
         return uuid;
@@ -60,5 +72,41 @@ public class UploadService {
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bb.array());
+    }
+
+    private static String getFileExtension(String filePath) {
+        Path path = Paths.get(filePath);
+        String fileName = path.getFileName().toString();
+
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex == -1) {
+            return ""; // No extension
+        }
+        return fileName.substring(dotIndex + 1);
+    }
+
+    private void createDirectories() throws IOException {
+        // Create INPUT_DIR if it doesn't exist
+        Path inputDirPath = Paths.get(INPUT_DIR);
+        if (Files.notExists(inputDirPath)) {
+            Files.createDirectories(inputDirPath);
+            System.out.println("Created directory: " + INPUT_DIR);
+        }
+
+        // Create OUTPUT_DIR if it doesn't exist
+        Path outputDirPath = Paths.get(OUTPUT_DIR);
+        if (Files.notExists(outputDirPath)) {
+            Files.createDirectories(outputDirPath);
+            System.out.println("Created directory: " + OUTPUT_DIR);
+        }
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            createDirectories();
+        } catch (IOException e) {
+            logger.error("Failed to create directories: " + e.getMessage(), e);
+        }
     }
 }

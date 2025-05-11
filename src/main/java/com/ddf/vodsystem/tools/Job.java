@@ -15,7 +15,8 @@ public class Job implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Job.class);
 
     private String uuid;
-    private File file;
+    private File inputFile;
+    private File outputFile;
 
     // configs
     private ClipConfig clipConfig;
@@ -24,9 +25,10 @@ public class Job implements Runnable {
     private JobStatus status = JobStatus.PENDING;
     private Float progress = 0.0f;
 
-    public Job(String uuid, File file) {
+    public Job(String uuid, File inputFile, File outputFile) {
         this.uuid = uuid;
-        this.file = file;
+        this.inputFile = inputFile;
+        this.outputFile = outputFile;
     }
 
     @Override
@@ -34,7 +36,7 @@ public class Job implements Runnable {
         logger.info("Job {} started", uuid);
         this.status = JobStatus.RUNNING;
 
-        CompressionService f = new CompressionService(file, new File("output.mp4"), clipConfig);
+        CompressionService f = new CompressionService(inputFile, outputFile, clipConfig);
 
         try {
             f.run();
@@ -44,7 +46,7 @@ public class Job implements Runnable {
 
 
         this.status = JobStatus.FINISHED;
-        file.delete();
+        inputFile.delete();
         logger.info("Job {} finished", uuid);
     }
 }
