@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.ClipConfig;
 import com.ddf.vodsystem.entities.Job;
+import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.exceptions.JobNotFound;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,10 @@ public class EditService {
 
         if (job == null) {
             throw new JobNotFound(uuid);
+        }
+
+        if (job.getStatus() == JobStatus.FINISHED) {
+            return 1f;
         }
 
         return job.getProgress();

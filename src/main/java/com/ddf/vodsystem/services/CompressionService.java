@@ -25,8 +25,7 @@ public class CompressionService {
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
 
-    private Pattern timePattern = Pattern.compile("out_time_ms=([\\d:.]+)");
-    private long out_time_ms;
+    private final Pattern timePattern = Pattern.compile("out_time_ms=([\\d:.]+)");
 
     private void buildFilters(ArrayList<String> command, Float fps, Integer width, Integer height) {
         List<String> filters = new ArrayList<>();
@@ -110,17 +109,18 @@ public class CompressionService {
         logger.info("FFMPEG starting...");
 
         ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getClipConfig());
-        pb.redirectErrorStream(true);
+        //pb.redirectErrorStream(true);
         Process process = pb.start();
         job.setStatus(JobStatus.RUNNING);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        Float length = job.getClipConfig().getEndPoint() - job.getClipConfig().getStartPoint();
+        float length = job.getClipConfig().getEndPoint() - job.getClipConfig().getStartPoint();
 
         String line;
         while ((line = reader.readLine()) != null) {
             logger.debug(line);
             Matcher matcher = timePattern.matcher(line);
+
             if (matcher.find()) {
                 Float progress = Float.parseFloat(matcher.group(1))/(length*1000000);
                 job.setProgress(progress);
