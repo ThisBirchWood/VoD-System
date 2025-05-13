@@ -4,5 +4,6 @@ public enum JobStatus {
     NOT_READY,
     PENDING,
     RUNNING,
-    FINISHED
+    FINISHED,
+    FAILED
 }

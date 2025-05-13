@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.ddf.vodsystem.exceptions.FFMPEGException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -109,7 +110,6 @@ public class CompressionService {
         logger.info("FFMPEG starting...");
 
         ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getClipConfig());
-        //pb.redirectErrorStream(true);
         Process process = pb.start();
         job.setStatus(JobStatus.RUNNING);
 
@@ -125,6 +125,11 @@ public class CompressionService {
                 Float progress = Float.parseFloat(matcher.group(1))/(length*1000000);
                 job.setProgress(progress);
             }
+        }
+
+        if (process.waitFor() != 0) {
+            job.setStatus(JobStatus.FAILED);
+            throw new FFMPEGException("FFMPEG process failed");
         }
 
         job.setStatus(JobStatus.FINISHED);

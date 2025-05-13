@@ -23,6 +23,12 @@ public class EditService {
             }
         }
 
+        if (clipConfig.getFileSize() != null) {
+            if (clipConfig.getFileSize() < 100) {
+                throw new IllegalArgumentException("File size cannot be less than 100kb");
+            }
+        }
+
         job.setClipConfig(clipConfig);
     }
 

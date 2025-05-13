@@ -33,9 +33,4 @@ public class EditController {
         return new ResponseEntity<>(editService.getProgress(uuid), HttpStatus.OK);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
-        return ResponseEntity.status(404).body(ex.getMessage());
-    }
-
 }

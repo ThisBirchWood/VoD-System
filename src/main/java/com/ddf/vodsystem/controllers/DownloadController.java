@@ -35,14 +35,4 @@ public class DownloadController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
-
-    @ExceptionHandler(JobNotFound.class)
-    public ResponseEntity<String> handleFileNotFound(JobNotFound ex) {
-        return ResponseEntity.status(404).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(JobNotFinished.class)
-    public ResponseEntity<String> handleJobNotFinished(JobNotFinished ex) {
-        return ResponseEntity.status(404).body(ex.getMessage());
-    }
 }
