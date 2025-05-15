@@ -21,7 +21,18 @@ public class DownloadService {
         this.jobService = jobService;
     }
 
-    public Resource download(String uuid) {
+    public Resource downloadInput(String uuid) {
+        Job job = jobService.get(uuid);
+
+        if (job == null) {
+            throw new JobNotFound("Job doesn't exist");
+        }
+
+        File file = job.getInputFile();
+        return new FileSystemResource(file);
+    }
+
+    public Resource downloadOutput(String uuid) {
         Job job = jobService.get(uuid);
 
         if (job == null) {

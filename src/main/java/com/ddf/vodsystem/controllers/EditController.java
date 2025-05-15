@@ -24,7 +24,7 @@ public class EditController {
 
     @GetMapping("/process/{uuid}")
     public ResponseEntity<String> convert(@PathVariable("uuid") String uuid) {
-        editService.jobReady(uuid);
+        editService.process(uuid);
         return new ResponseEntity<>(uuid, HttpStatus.OK);
     }
 

@@ -1,14 +1,11 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.exceptions.JobNotFinished;
-import com.ddf.vodsystem.exceptions.JobNotFound;
 import com.ddf.vodsystem.services.DownloadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +21,7 @@ public class DownloadController {
 
     @GetMapping("/download/{filename}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
-        Resource resource = downloadService.download(filename);
+        Resource resource = downloadService.downloadOutput(filename);
 
         if (resource == null || !resource.exists()) {
             return ResponseEntity.notFound().build();

@@ -56,6 +56,7 @@ public class JobService {
                     try {
                         compressionService.run(job);// Execute the task
                     } catch (IOException | InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         logger.error("Error while running job {}", job.getUuid(), e);
                     }
                 }
