@@ -1,0 +1,11 @@
+meta {
+  name: Progress
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/progress/{{video_uuid}}
+  body: none
+  auth: inherit
+}

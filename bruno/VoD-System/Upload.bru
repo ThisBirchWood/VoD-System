@@ -1,0 +1,19 @@
+meta {
+  name: Upload
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/upload
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/Users/faoite/Downloads/Why Australia's Economy is Stalling.mp4)
+}
+
+script:post-response {
+  bru.setEnvVar("video_uuid",res.getBody());
+}
