@@ -50,20 +50,20 @@ public class CompressionService {
     private void buildBitrate(ArrayList<String> command, Float length, Float fileSize) {
         float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
 
-        float audio_bitrate = bitrate * AUDIO_RATIO;
-        float video_bitrate;
+        float audioBitrate = bitrate * AUDIO_RATIO;
+        float videoBitrate;
 
-        if (audio_bitrate > MAX_AUDIO_BITRATE) {
-            audio_bitrate = MAX_AUDIO_BITRATE;
-            video_bitrate = bitrate - MAX_AUDIO_BITRATE;
+        if (audioBitrate > MAX_AUDIO_BITRATE) {
+            audioBitrate = MAX_AUDIO_BITRATE;
+            videoBitrate = bitrate - MAX_AUDIO_BITRATE;
         } else {
-            video_bitrate = bitrate * (1 - AUDIO_RATIO);
+            videoBitrate = bitrate * (1 - AUDIO_RATIO);
         }
 
         command.add("-b:v");
-        command.add(video_bitrate + "k");
+        command.add(videoBitrate + "k");
         command.add("-b:a");
-        command.add(audio_bitrate + "k");
+        command.add(audioBitrate + "k");
     }
 
     private void buildInputs(ArrayList<String> command, File inputFile, Float startPoint, Float endPoint) {
@@ -78,9 +78,9 @@ public class CompressionService {
         command.add(inputFile.getAbsolutePath());
 
         if (endPoint != null) {
-            Float length = endPoint - startPoint;
+            float length = endPoint - startPoint;
             command.add("-t");
-            command.add(length.toString());
+            command.add(Float.toString(length));
         }
     }
 
@@ -102,7 +102,7 @@ public class CompressionService {
         // Output file
         command.add(outputFile.getAbsolutePath());
 
-        logger.info("Running command: {}", String.join(" ", command));
+        logger.info("Running command: {}", command);
         return new ProcessBuilder(command);
     }
 

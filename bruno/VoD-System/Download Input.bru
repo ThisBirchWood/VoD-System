@@ -1,0 +1,11 @@
+meta {
+  name: Download Input
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url}}/download/input/{{video_uuid}}
+  body: none
+  auth: inherit
+}
