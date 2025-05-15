@@ -18,7 +18,7 @@ public class Job {
     private ClipConfig clipConfig;
 
     // job status
-    private JobStatus status = JobStatus.PENDING;
+    private JobStatus status = JobStatus.NOT_READY;
     private Float progress = 0.0f;
 
     public Job(String uuid, File inputFile, File outputFile) {

@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.entities.JobStatus;
+import com.ddf.vodsystem.exceptions.JobNotFound;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
@@ -28,16 +29,18 @@ public class JobService {
         jobs.put(job.getUuid(), job);
     }
 
-    public Job get(String uuid) {
-        return jobs.get(uuid);
-    }
-
-    public void jobReady(String uuid) {
+    public Job getJob(String uuid) {
         Job job = jobs.get(uuid);
 
         if (job == null) {
-            throw new RuntimeException("Job not found");
+            throw new JobNotFound("Job not found");
         }
+
+        return job;
+    }
+
+    public void jobReady(String uuid) {
+        Job job = getJob(uuid);
 
         logger.info("Job ready: {}", job.getUuid());
         job.setStatus(JobStatus.PENDING);

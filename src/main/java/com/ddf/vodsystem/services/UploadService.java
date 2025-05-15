@@ -25,9 +25,9 @@ public class UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
 
     @Value("${temp.vod.storage}")
-    private String INPUT_DIR;
+    private String inputDir;
     @Value("${temp.vod.output}")
-    private String OUTPUT_DIR;
+    private String outputDir;
 
     private final JobService jobService;
 
@@ -42,10 +42,10 @@ public class UploadService {
         String extension = getFileExtension(file.getOriginalFilename());
         String filename = uuid + (extension.isEmpty() ? "" : "." + extension);
 
-        Path inputPath = Paths.get(INPUT_DIR, filename);
+        Path inputPath = Paths.get(inputDir, filename);
         File inputFile = inputPath.toFile();
 
-        Path outputPath = Paths.get(OUTPUT_DIR, filename);
+        Path outputPath = Paths.get(outputDir, filename);
         File outputFile = outputPath.toFile();
 
         moveToFile(file, inputFile);
@@ -87,17 +87,17 @@ public class UploadService {
 
     private void createDirectories() throws IOException {
         // Create INPUT_DIR if it doesn't exist
-        Path inputDirPath = Paths.get(INPUT_DIR);
+        Path inputDirPath = Paths.get(inputDir);
         if (Files.notExists(inputDirPath)) {
             Files.createDirectories(inputDirPath);
-            System.out.println("Created directory: " + INPUT_DIR);
+            logger.info("Created directory: {}", inputDir);
         }
 
         // Create OUTPUT_DIR if it doesn't exist
-        Path outputDirPath = Paths.get(OUTPUT_DIR);
+        Path outputDirPath = Paths.get(outputDir);
         if (Files.notExists(outputDirPath)) {
             Files.createDirectories(outputDirPath);
-            System.out.println("Created directory: " + OUTPUT_DIR);
+            logger.info("Created directory: {}", outputDir);
         }
     }
 
