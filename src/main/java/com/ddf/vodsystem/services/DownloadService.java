@@ -4,6 +4,8 @@ import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
 import com.ddf.vodsystem.entities.Job;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.hilla.Endpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 
 @Service
+@Endpoint
+@AnonymousAllowed
 public class DownloadService {
 
     private final JobService jobService;
