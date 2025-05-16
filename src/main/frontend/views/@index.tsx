@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {UploadService} from "Frontend/generated/endpoints";
+import "./../index.css";
 
 export default function main() {
     const [uuid, setUuid] = useState<String | undefined> (undefined);
