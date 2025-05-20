@@ -18,7 +18,7 @@ public class UploadController {
         this.uploadService = uploadService;
     }
 
-    @PostMapping("/")
+    @PostMapping()
     public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
         String uuid = uploadService.upload(file);
 

@@ -28,6 +28,12 @@ public class CompressionService {
 
     private final Pattern timePattern = Pattern.compile("out_time_ms=([\\d:.]+)");
 
+    private final MetadataService metadataService;
+
+    public CompressionService(MetadataService metadataService) {
+        this.metadataService = metadataService;
+    }
+
     private void buildFilters(ArrayList<String> command, Float fps, Integer width, Integer height) {
         List<String> filters = new ArrayList<>();
 
@@ -131,6 +137,10 @@ public class CompressionService {
             job.setStatus(JobStatus.FAILED);
             throw new FFMPEGException("FFMPEG process failed");
         }
+
+        // set new metadata
+        VideoMetadata newMetadata = metadataService.getVideoMetadata(job.getOutputFile());
+        job.setOutputVideoMetadata(newMetadata);
 
         job.setStatus(JobStatus.FINISHED);
         logger.info("FFMPEG finished");
