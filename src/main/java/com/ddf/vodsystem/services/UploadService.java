@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Job;
+import com.ddf.vodsystem.entities.VideoMetadata;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.hilla.Endpoint;
 import jakarta.annotation.PostConstruct;
@@ -34,10 +35,12 @@ public class UploadService {
     private String outputDir;
 
     private final JobService jobService;
+    private final MetadataService metadataService;
 
     @Autowired
-    public UploadService(JobService jobService) {
+    public UploadService(JobService jobService, MetadataService metadataService) {
         this.jobService = jobService;
+        this.metadataService = metadataService;
     }
 
     public String upload(MultipartFile file) {
@@ -55,7 +58,8 @@ public class UploadService {
         moveToFile(file, inputFile);
 
         // add job
-        Job job = new Job(uuid, inputFile, outputFile);
+        VideoMetadata videoMetadata = metadataService.getVideoMetadata(inputFile);
+        Job job = new Job(uuid, inputFile, outputFile, videoMetadata);
         jobService.add(job);
 
         return uuid;

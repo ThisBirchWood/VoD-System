@@ -109,12 +109,12 @@ public class CompressionService {
     public void run(Job job) throws IOException, InterruptedException {
         logger.info("FFMPEG starting...");
 
-        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getVideoMetadata());
+        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata());
         Process process = pb.start();
         job.setStatus(JobStatus.RUNNING);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        float length = job.getVideoMetadata().getEndPoint() - job.getVideoMetadata().getStartPoint();
+        float length = job.getOutputVideoMetadata().getEndPoint() - job.getOutputVideoMetadata().getStartPoint();
 
         String line;
         while ((line = reader.readLine()) != null) {

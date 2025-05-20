@@ -15,15 +15,17 @@ public class Job {
     private File outputFile;
 
     // configs
-    private VideoMetadata videoMetadata;
+    private VideoMetadata inputVideoMetadata;
+    private VideoMetadata outputVideoMetadata;
 
     // job status
     private JobStatus status = JobStatus.NOT_READY;
     private Float progress = 0.0f;
 
-    public Job(String uuid, File inputFile, File outputFile) {
+    public Job(String uuid, File inputFile, File outputFile, VideoMetadata inputVideoMetadata) {
         this.uuid = uuid;
         this.inputFile = inputFile;
         this.outputFile = outputFile;
+        this.inputVideoMetadata = inputVideoMetadata;
     }
 }

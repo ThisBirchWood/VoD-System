@@ -16,7 +16,7 @@ public class EditService {
     public void edit(String uuid, VideoMetadata videoMetadata) {
         Job job = jobService.getJob(uuid);
         validateClipConfig(videoMetadata);
-        job.setVideoMetadata(videoMetadata);
+        job.setOutputVideoMetadata(videoMetadata);
     }
 
     public void process(String uuid) {
