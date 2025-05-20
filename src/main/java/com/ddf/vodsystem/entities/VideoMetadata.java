@@ -3,7 +3,7 @@ package com.ddf.vodsystem.entities;
 import lombok.Data;
 
 @Data
-public class ClipConfig {
+public class VideoMetadata {
     private Float startPoint;
     private Float endPoint;
     private Float fps;

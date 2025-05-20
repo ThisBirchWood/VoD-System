@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.ClipConfig;
+import com.ddf.vodsystem.entities.VideoMetadata;
 import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.entities.JobStatus;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,10 @@ public class EditService {
         this.jobService = jobService;
     }
 
-    public void edit(String uuid, ClipConfig clipConfig) {
+    public void edit(String uuid, VideoMetadata videoMetadata) {
         Job job = jobService.getJob(uuid);
-        validateClipConfig(clipConfig);
-        job.setClipConfig(clipConfig);
+        validateClipConfig(videoMetadata);
+        job.setVideoMetadata(videoMetadata);
     }
 
     public void process(String uuid) {
@@ -33,10 +33,10 @@ public class EditService {
         return job.getProgress();
     }
 
-    private void validateClipConfig(ClipConfig clipConfig) {
-        Float start = clipConfig.getStartPoint();
-        Float end = clipConfig.getEndPoint();
-        Float fileSize = clipConfig.getFileSize();
+    private void validateClipConfig(VideoMetadata videoMetadata) {
+        Float start = videoMetadata.getStartPoint();
+        Float end = videoMetadata.getEndPoint();
+        Float fileSize = videoMetadata.getFileSize();
 
         if (start != null && start < 0) {
             throw new IllegalArgumentException("Start point cannot be negative");

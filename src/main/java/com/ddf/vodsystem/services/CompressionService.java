@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.ClipConfig;
+import com.ddf.vodsystem.entities.VideoMetadata;
 import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.entities.Job;
 
@@ -84,19 +84,19 @@ public class CompressionService {
         }
     }
 
-    private ProcessBuilder buildCommand(File inputFile, File outputFile, ClipConfig clipConfig) {
+    private ProcessBuilder buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
         ArrayList<String> command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");
         command.add("pipe:1");
         command.add("-y");
 
-        Float length = clipConfig.getEndPoint() - clipConfig.getStartPoint();
-        buildInputs(command, inputFile, clipConfig.getStartPoint(), clipConfig.getEndPoint());
-        buildFilters(command, clipConfig.getFps(), clipConfig.getWidth(), clipConfig.getHeight());
+        Float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
+        buildInputs(command, inputFile, videoMetadata.getStartPoint(), videoMetadata.getEndPoint());
+        buildFilters(command, videoMetadata.getFps(), videoMetadata.getWidth(), videoMetadata.getHeight());
 
-        if (clipConfig.getFileSize() != null) {
-            buildBitrate(command, length, clipConfig.getFileSize());
+        if (videoMetadata.getFileSize() != null) {
+            buildBitrate(command, length, videoMetadata.getFileSize());
         }
 
         // Output file
@@ -109,12 +109,12 @@ public class CompressionService {
     public void run(Job job) throws IOException, InterruptedException {
         logger.info("FFMPEG starting...");
 
-        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getClipConfig());
+        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getVideoMetadata());
         Process process = pb.start();
         job.setStatus(JobStatus.RUNNING);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        float length = job.getClipConfig().getEndPoint() - job.getClipConfig().getStartPoint();
+        float length = job.getVideoMetadata().getEndPoint() - job.getVideoMetadata().getStartPoint();
 
         String line;
         while ((line = reader.readLine()) != null) {

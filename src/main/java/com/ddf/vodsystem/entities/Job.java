@@ -15,7 +15,7 @@ public class Job {
     private File outputFile;
 
     // configs
-    private ClipConfig clipConfig;
+    private VideoMetadata videoMetadata;
 
     // job status
     private JobStatus status = JobStatus.NOT_READY;
