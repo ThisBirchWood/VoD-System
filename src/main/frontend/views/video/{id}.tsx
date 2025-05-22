@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
 
+
 export type VideoMetadata = {
     startPoint: number,
     endPoint: number,
@@ -24,20 +25,32 @@ export default function video() {
     const videoUrl = "api/v1/download/input/" + id;
 
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
+    const [sliderValue, setSliderValue] = useState(0);
 
-    let previousInput = [0, 0];
-    const handleInput = (val: [number, number]) => {
+    let previousRangeSliderInput = [0, 0];
+    const handleRangeSliderInput = (val: [number, number]) => {
         if (!videoRef.current) {
             return;
         }
 
-        if (previousInput[0] != val[0]) {
+        if (previousRangeSliderInput[0] != val[0]) {
             videoRef.current.currentTime = val[0];
-        } else if (previousInput[1] != val[1]) {
+            setSliderValue(val[0]);
+        } else if (previousRangeSliderInput[1] != val[1]) {
             videoRef.current.currentTime = val[1];
+            setSliderValue(val[1]);
         }
 
-        previousInput = val;
+        previousRangeSliderInput = val;
+    };
+
+    const updateVideoTag = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!videoRef.current) {
+            return;
+        }
+
+        setSliderValue(parseFloat(e.target.value));
+        //videoRef.current.currentTime = parseFloat(e.target.value);
     };
 
     useEffect(() => {
@@ -60,16 +73,28 @@ export default function video() {
                 <source src={videoUrl} type="video/mp4" />
                 <source src={videoUrl} type="video/webm" />
                 <source src={videoUrl} type="video/ogg" />
-                Your browser does not support the video tag.
+                Your browser does not support the video tag. Bzzzz.
             </video>
 
 
             {metadata &&
-                <RangeSlider className={"w-600px"}
-                             min={0}
-                             max={metadata.endPoint}
-                             step={0.1}
-                             onInput={handleInput}/>
+                <div>
+                    <input
+                        className={"w-full"}
+                        type="range"
+                        min={0}
+                        max={metadata.endPoint}
+                        value={sliderValue}
+                        onChange={updateVideoTag}
+                        step={0.1}
+                    />
+
+                    <RangeSlider
+                                 min={0}
+                                 max={metadata.endPoint}
+                                 step={0.1}
+                                 onInput={handleRangeSliderInput}/>
+                </div>
             }
         </div>
     );
