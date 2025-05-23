@@ -11,7 +11,8 @@ export default function VideoId() {
     const videoUrl = `api/v1/download/input/${id}`
 
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
-    const [sliderValue, setSliderValue] = useState(0);
+    const [playbackValue, setPlaybackValue] = useState(0);
+    const [clipRangeValue, setClipRangeValue] = useState([0, 1]);
 
     useEffect(() => {
         fetch(`api/v1/metadata/original/${id}`)
@@ -24,7 +25,7 @@ export default function VideoId() {
     }, [id]);
 
     return (
-        <div className={"flex flex-col gap-2 max-w-3xl m-auto align-middle"}>
+        <div className={"flex flex-col max-w-3xl m-auto align-middle"}>
             <video
                    ref={videoRef}
                    width={"600"}
@@ -38,21 +39,30 @@ export default function VideoId() {
 
             {metadata &&
                 <div>
-                    <Playbar video={videoRef.current} videoMetadata={metadata}/>
+                    <Playbar
+                        video={videoRef.current}
+                        videoMetadata={metadata}
+                    />
+
                     <PlaybackSlider
                         videoRef={videoRef.current}
                         videoMetadata={metadata}
-                        sliderValue={sliderValue}
-                        setSliderValue={setSliderValue}
+                        sliderValue={playbackValue}
+                        setSliderValue={setPlaybackValue}
                         className={"w-full"}
                     />
 
                     <ClipRangeSlider
                         videoRef={videoRef.current}
                         videoMetadata={metadata}
-                        setSliderValue={setSliderValue}
+                        setSliderValue={setPlaybackValue}
+                        setClipRangeValue={setClipRangeValue}
                         className={"w-full"}
                     />
+
+                    <label>
+                        Clip Length: {Math.round(clipRangeValue[1] - clipRangeValue[0])}
+                    </label>
                 </div>
             }
         </div>

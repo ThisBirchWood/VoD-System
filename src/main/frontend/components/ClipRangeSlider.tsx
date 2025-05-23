@@ -8,10 +8,15 @@ type Props = {
     videoRef: HTMLVideoElement | null;
     videoMetadata: VideoMetadata;
     setSliderValue: Function;
+    setClipRangeValue: Function;
     className?: string;
 };
 
-export default function ClipRangeSlider({videoRef, videoMetadata, setSliderValue, className}: Props) {
+export default function ClipRangeSlider({videoRef,
+                                            videoMetadata,
+                                            setSliderValue,
+                                            setClipRangeValue,
+                                            className}: Props) {
     const previousRangeSliderInput = useRef<[number, number]>([0, 0]);
 
     const handleRangeSliderInput = (val: [number, number]) => {
@@ -25,6 +30,7 @@ export default function ClipRangeSlider({videoRef, videoMetadata, setSliderValue
             setSliderValue(val[1]);
         }
 
+        setClipRangeValue(val);
         previousRangeSliderInput.current = val;
     };
 
