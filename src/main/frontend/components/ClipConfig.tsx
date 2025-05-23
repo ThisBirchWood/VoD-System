@@ -1,14 +1,15 @@
 export default function ClipConfig() {
     return (
-        <div className={"flex flex-col gap-2"}>
+        <div className={"flex flex-col gap-2 p-10 rounded-md"}>
+            <h2 className={"text-3xl font-bold text-gray-800 mb-4 underline"}>Clip Export Settings</h2>
             <div className="flex items-center gap-2">
                 <label htmlFor="resolution"
-                       className={"w-24"}
+                       className={"w-full"}
                 >Resolution: </label>
                 <select id="resolution"
                         name="resolution"
                         defaultValue="1280,720"
-                        className={"border-black bg-gray-200 p-1 rounded-md"}>
+                        className={"border-black bg-gray-200 p-2 rounded-md w-full"}>
                     <option value="3840,2160">2160p (4K)</option>
                     <option value="2560,1440">1440p (QHD)</option>
                     <option value="1920,1080">1080p (Full HD)</option>
@@ -20,12 +21,12 @@ export default function ClipConfig() {
 
             <div className="flex items-center gap-2">
                 <label htmlFor="fps"
-                       className={"w-24"}
+                       className={"w-full"}
                 >FPS: </label>
                 <select id="fps"
                         name="fps"
                         defaultValue="30"
-                        className={"border-black bg-gray-200 p-1 rounded-md"}>
+                        className={"border-black bg-gray-200 p-2 rounded-md w-full"}>
                     <option value="60">60</option>
                     <option value="30">30</option>
                     <option value="15">15</option>
@@ -33,13 +34,13 @@ export default function ClipConfig() {
             </div>
 
             <div className="flex items-center gap-2">
-                <label className={"w-24"}>
+                <label className={"w-full"}>
                     File Size (mb):
                 </label>
                 <input type="number"
                        min="1"
                        defaultValue="10"
-                       className={"border-black bg-gray-200 p-1 rounded-md"}
+                       className={"border-black bg-gray-200 p-2 rounded-md w-full"}
                 />
             </div>
         </div>

@@ -26,17 +26,18 @@ export default function VideoId() {
     }, [id]);
 
     return (
-        <div className={"flex flex-col max-w-3xl m-auto align-middle"}>
+        <div className={"grid grid-cols-[70%_30%]"}>
             <video
                    ref={videoRef}
-                   width={"600"}
-                   className={"w-full max-w-3xl rounded-lg shadow-lg border border-gray-300 bg-black m-auto"}>
+                   className={"w-full rounded-lg shadow-lg border border-gray-300 bg-black m-auto"}>
                 <source src={videoUrl} type="video/mp4" />
                 <source src={videoUrl} type="video/webm" />
                 <source src={videoUrl} type="video/ogg" />
                 Your browser does not support the video tag. Bzzzz.
             </video>
 
+
+            <ClipConfig />
 
             {metadata &&
                 <div>
@@ -61,10 +62,12 @@ export default function VideoId() {
                         setClipRangeValue={setClipRangeValue}
                         className={"w-full mb-10 bg-primary"}
                     />
+                </div>}
 
-                    <ClipConfig />
-                </div>
-            }
+            <button
+                className={"bg-primary text-text p-2 rounded-lg hover:bg-primary-pressed h-10 w-3/4 m-auto"}
+            >Export</button>
+
         </div>
     );
 }
