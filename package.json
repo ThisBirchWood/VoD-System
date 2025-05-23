@@ -57,6 +57,7 @@
     "construct-style-sheets-polyfill": "3.1.0",
     "date-fns": "2.29.3",
     "lit": "3.3.0",
+    "lucide-react": "^0.511.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-player": "^2.16.0",
@@ -124,7 +125,7 @@
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0"
     },
-    "hash": "6691688a44297a5558ef37db2e66ab96a2b26de25ce9dd16419318e19f092916"
+    "hash": "1d057234cd785dc523e68f6ac1cfce6362e77ff83cc8e5f2a36003d75fe127ea"
   },
   "type": "module",
   "overrides": {
@@ -156,6 +157,7 @@
     "react-router-dom": "$react-router-dom",
     "react-player": "$react-player",
     "react-range-slider-input": "$react-range-slider-input",
-    "react-slider": "$react-slider"
+    "react-slider": "$react-slider",
+    "lucide-react": "$lucide-react"
   }
 }

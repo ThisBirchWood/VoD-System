@@ -90,6 +90,7 @@ export default function VideoId() {
 
             {metadata &&
                 <div>
+                    <Playbar video={videoRef.current}/>
                     <input
                         className={"w-full"}
                         type="range"
