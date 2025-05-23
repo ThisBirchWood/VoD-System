@@ -1,5 +1,6 @@
-import {ChangeEventHandler, useEffect, useState} from "react";
+import { useEffect, useState} from "react";
 import { Volume, Play, Pause } from 'lucide-react';
+import clsx from 'clsx';
 
 
 export type VideoMetadata = {
@@ -14,6 +15,7 @@ export type VideoMetadata = {
 type Props = {
     video: HTMLVideoElement | null;
     videoMetadata: VideoMetadata;
+    className?: string;
 };
 
 function formatTime(seconds: number): string {
@@ -30,7 +32,7 @@ function formatTime(seconds: number): string {
     }
 }
 
-export default function Playbar({ video, videoMetadata }: Props) {
+export default function Playbar({ video, videoMetadata, className }: Props) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(100);
 
@@ -70,7 +72,7 @@ export default function Playbar({ video, videoMetadata }: Props) {
     }, [video]);
 
     return (
-        <div className={"flex justify-between items-center bg-gray-300 p-2 rounded-lg"}>
+        <div className={clsx("flex justify-between items-center p-2 rounded-lg", className)}>
             <div className={"flex"}>
                 <Volume size={24} />
                 <input

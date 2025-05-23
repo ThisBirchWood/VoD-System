@@ -41,6 +41,7 @@ export default function ClipRangeSlider({videoRef,
             step={0.1}
             onInput={handleRangeSliderInput}
             className={clsx(className)}
+            id={"range-slider"}
         />
     )
 }

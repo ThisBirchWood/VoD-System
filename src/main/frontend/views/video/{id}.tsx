@@ -1,9 +1,10 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
 import { VideoMetadata } from "Frontend/components/Playbar";
-import Playbar from "./../../components/Playbar"
-import PlaybackSlider from "./../../components/PlaybackSlider"
-import ClipRangeSlider from "./../../components/ClipRangeSlider"
+import Playbar from "./../../components/Playbar";
+import PlaybackSlider from "./../../components/PlaybackSlider";
+import ClipRangeSlider from "./../../components/ClipRangeSlider";
+import ClipConfig from "./../../components/ClipConfig";
 
 export default function VideoId() {
     const { id } = useParams();
@@ -42,6 +43,7 @@ export default function VideoId() {
                     <Playbar
                         video={videoRef.current}
                         videoMetadata={metadata}
+                        className={"w-full accent-primary text-text"}
                     />
 
                     <PlaybackSlider
@@ -49,7 +51,7 @@ export default function VideoId() {
                         videoMetadata={metadata}
                         sliderValue={playbackValue}
                         setSliderValue={setPlaybackValue}
-                        className={"w-full"}
+                        className={"w-full accent-primary"}
                     />
 
                     <ClipRangeSlider
@@ -57,12 +59,10 @@ export default function VideoId() {
                         videoMetadata={metadata}
                         setSliderValue={setPlaybackValue}
                         setClipRangeValue={setClipRangeValue}
-                        className={"w-full"}
+                        className={"w-full mb-10 bg-primary"}
                     />
 
-                    <label>
-                        Clip Length: {Math.round(clipRangeValue[1] - clipRangeValue[0])}
-                    </label>
+                    <ClipConfig />
                 </div>
             }
         </div>

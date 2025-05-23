@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@theme {
+    --font-display: "Satoshi", "sans-serif";
+
+    /* Breakpoints */
+    --breakpoint-3xl: 1920px;
+
+    --color-primary: oklch(0.55 0.21 254);    /* Modern Blue (#2563EB) */
+    --color-secondary: oklch(0.94 0.01 250);  /* Light Gray (#E5E7EB) */
+    --color-accent: oklch(0.68 0.20 288);     /* Indigo Accent (#6366F1) */
+    --color-text: oklch(0.17 0.01 270);       /* Dark Slate (#111827) */
+    --color-background: oklch(0.98 0.005 250);/* Soft off-white (#F9FAFB) */
+
+    /* Easing */
+    --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+    --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+}
+
+#range-slider .range-slider__range{
+    background: var(--color-primary);
+}
+
+#range-slider .range-slider__thumb{
+    background: var(--color-primary);
+}

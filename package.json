@@ -126,7 +126,7 @@
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0"
     },
-    "hash": "1d057234cd785dc523e68f6ac1cfce6362e77ff83cc8e5f2a36003d75fe127ea"
+    "hash": "f57acdd04d2a8045dcc51c396a21bfc734165779c3088119b68a4f96387a4200"
   },
   "type": "module",
   "overrides": {
@@ -159,6 +159,7 @@
     "react-player": "$react-player",
     "react-range-slider-input": "$react-range-slider-input",
     "react-slider": "$react-slider",
-    "lucide-react": "$lucide-react"
+    "lucide-react": "$lucide-react",
+    "clsx": "$clsx"
   }
 }
