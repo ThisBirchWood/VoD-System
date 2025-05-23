@@ -1,4 +1,25 @@
-export default function ClipConfig() {
+type prop = {
+    setWidth: Function;
+    setHeight: Function;
+    setFps: Function;
+    setFileSize: Function;
+}
+
+export default function ClipConfig({setWidth, setHeight, setFps, setFileSize}: prop) {
+    const updateRes = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        var vals = e.target.value.split(",");
+        setWidth(parseInt(vals[0]))
+        setHeight(parseInt(vals[1]))
+    }
+
+    const updateFps = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFps(parseInt(e.target.value))
+    }
+
+    const updateFileSize = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFileSize(parseInt(e.target.value))
+    }
+
     return (
         <div className={"flex flex-col gap-2 p-10 rounded-md"}>
             <h2 className={"text-3xl font-bold text-gray-800 mb-4 underline"}>Clip Export Settings</h2>
@@ -9,6 +30,7 @@ export default function ClipConfig() {
                 <select id="resolution"
                         name="resolution"
                         defaultValue="1280,720"
+                        onChange={updateRes}
                         className={"border-black bg-gray-200 p-2 rounded-md w-full"}>
                     <option value="3840,2160">2160p (4K)</option>
                     <option value="2560,1440">1440p (QHD)</option>
@@ -26,6 +48,7 @@ export default function ClipConfig() {
                 <select id="fps"
                         name="fps"
                         defaultValue="30"
+                        onChange={updateFps}
                         className={"border-black bg-gray-200 p-2 rounded-md w-full"}>
                     <option value="60">60</option>
                     <option value="30">30</option>
@@ -40,6 +63,7 @@ export default function ClipConfig() {
                 <input type="number"
                        min="1"
                        defaultValue="10"
+                       onChange={updateFileSize}
                        className={"border-black bg-gray-200 p-2 rounded-md w-full"}
                 />
             </div>

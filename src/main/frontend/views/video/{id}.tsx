@@ -6,6 +6,32 @@ import PlaybackSlider from "./../../components/PlaybackSlider";
 import ClipRangeSlider from "./../../components/ClipRangeSlider";
 import ClipConfig from "./../../components/ClipConfig";
 
+function exportFile(uuid: string,
+                    startPoint: number,
+                    endPoint: number,
+                    width: number,
+                    height: number,
+                    fps: number,
+                    fileSize: number) {
+    var body: string = `startPoint=${startPoint}&endPoint=${endPoint}&width=${width}&height=${height}&fps=${fps}&fileSize=${fileSize*1000}`;
+
+    fetch(`api/v1/edit/${uuid}`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: body,
+    })
+        .then(res => {
+            console.log("RESPONSE: " + res);
+            return res
+        })
+        .then(data => console.log('Response:', data))
+        .catch(err => console.error('Error:', err));
+
+    return null;
+}
+
 export default function VideoId() {
     const { id } = useParams();
     const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -14,6 +40,10 @@ export default function VideoId() {
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
     const [clipRangeValue, setClipRangeValue] = useState([0, 1]);
+    const [width, setWidth] = useState(1280);
+    const [height, setHeight] = useState(720);
+    const [fps, setFps] = useState(30);
+    const [fileSize, setFileSize] = useState(10);
 
     useEffect(() => {
         fetch(`api/v1/metadata/original/${id}`)
@@ -24,6 +54,11 @@ export default function VideoId() {
             .then(setMetadata)
             .catch((err) => console.log(err.message));
     }, [id]);
+
+    const sendData = () => {
+        if (!id) return
+        exportFile(id,clipRangeValue[0], clipRangeValue[1], width, height, fps, fileSize);
+    }
 
     return (
         <div className={"grid grid-cols-[70%_30%]"}>
@@ -37,7 +72,12 @@ export default function VideoId() {
             </video>
 
 
-            <ClipConfig />
+            <ClipConfig
+                setWidth={setWidth}
+                setHeight={setHeight}
+                setFileSize={setFileSize}
+                setFps={setFps}
+            />
 
             {metadata &&
                 <div>
@@ -66,6 +106,7 @@ export default function VideoId() {
 
             <button
                 className={"bg-primary text-text p-2 rounded-lg hover:bg-primary-pressed h-10 w-3/4 m-auto"}
+                onClick={sendData}
             >Export</button>
 
         </div>
