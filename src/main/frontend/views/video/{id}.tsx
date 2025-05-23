@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
+import Playbar from "./../../components/Playbar"
 
 
 export type VideoMetadata = {
@@ -13,21 +14,15 @@ export type VideoMetadata = {
     fileSize: number
 }
 
-const fetchMetadata = async (id: string): Promise<VideoMetadata> => {
-    const res = await fetch(`/api/v1/metadata/original/${id}`);
-    if (!res.ok) throw new Error("Failed to fetch");
-    return res.json();
-};
-
-export default function video() {
+export default function VideoId() {
     const { id } = useParams();
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const videoUrl = "api/v1/download/input/" + id;
 
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [sliderValue, setSliderValue] = useState(0);
+    const previousRangeSliderInput = useRef<[number, number]>([0, 0]);
 
-    let previousRangeSliderInput = useRef<[number, number]>([0, 0]);
     const handleRangeSliderInput = (val: [number, number]) => {
         if (!videoRef.current) {
             return;
@@ -62,6 +57,22 @@ export default function video() {
             .then(setMetadata)
             .catch((err) => console.log(err.message));
     }, []);
+
+    // update slider
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const updateSlider = () => {
+            setSliderValue(video.currentTime);
+        };
+
+        video.addEventListener("timeupdate", updateSlider);
+
+        return () => {
+            video.removeEventListener("timeupdate", updateSlider);
+        };
+    }, [videoRef]);
 
     return (
         <div className={"flex flex-col gap-2 max-w-3xl m-auto"}>
