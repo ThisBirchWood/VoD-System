@@ -1,8 +1,19 @@
 import {ChangeEventHandler, useEffect, useState} from "react";
 import { Volume, Play, Pause } from 'lucide-react';
 
+
+export type VideoMetadata = {
+    startPoint: number,
+    endPoint: number,
+    fps: number,
+    width: number,
+    height: number,
+    fileSize: number
+}
+
 type Props = {
     video: HTMLVideoElement | null;
+    videoMetadata: VideoMetadata;
 };
 
 function formatTime(seconds: number): string {
@@ -19,7 +30,7 @@ function formatTime(seconds: number): string {
     }
 }
 
-export default function Playbar({ video }: Props) {
+export default function Playbar({ video, videoMetadata }: Props) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(100);
 
@@ -75,7 +86,7 @@ export default function Playbar({ video }: Props) {
                 {isPlaying ? <Pause size={24} /> : <Play size={24} />}
             </button>
             <label>
-                {formatTime(video?.currentTime ?? 0)} / {formatTime(video?.duration ?? 0)}
+                {formatTime(video?.currentTime ?? 0)} / {formatTime(videoMetadata.endPoint)}
             </label>
         </div>
     );

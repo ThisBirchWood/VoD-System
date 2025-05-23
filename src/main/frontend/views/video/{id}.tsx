@@ -2,17 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
-import Playbar from "./../../components/Playbar"
-
-
-export type VideoMetadata = {
-    startPoint: number,
-    endPoint: number,
-    fps: number,
-    width: number,
-    height: number,
-    fileSize: number
-}
+import Playbar, {VideoMetadata } from "./../../components/Playbar"
 
 export default function VideoId() {
     const { id } = useParams();
@@ -75,7 +65,7 @@ export default function VideoId() {
     }, [videoRef]);
 
     return (
-        <div className={"flex flex-col gap-2 max-w-3xl m-auto"}>
+        <div className={"flex flex-col gap-2 max-w-3xl m-auto align-middle  "}>
             <video
                    ref={videoRef}
                    preload="metadata"
@@ -90,7 +80,7 @@ export default function VideoId() {
 
             {metadata &&
                 <div>
-                    <Playbar video={videoRef.current}/>
+                    <Playbar video={videoRef.current} videoMetadata={metadata}/>
                     <input
                         className={"w-full"}
                         type="range"
