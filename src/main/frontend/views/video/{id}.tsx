@@ -27,21 +27,21 @@ export default function video() {
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [sliderValue, setSliderValue] = useState(0);
 
-    let previousRangeSliderInput = [0, 0];
+    let previousRangeSliderInput = useRef<[number, number]>([0, 0]);
     const handleRangeSliderInput = (val: [number, number]) => {
         if (!videoRef.current) {
             return;
         }
 
-        if (previousRangeSliderInput[0] != val[0]) {
+        if (previousRangeSliderInput.current[0] != val[0]) {
             videoRef.current.currentTime = val[0];
             setSliderValue(val[0]);
-        } else if (previousRangeSliderInput[1] != val[1]) {
+        } else if (previousRangeSliderInput.current[1] != val[1]) {
             videoRef.current.currentTime = val[1];
             setSliderValue(val[1]);
         }
 
-        previousRangeSliderInput = val;
+        previousRangeSliderInput.current = val;
     };
 
     const updateVideoTag = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,7 +50,7 @@ export default function video() {
         }
 
         setSliderValue(parseFloat(e.target.value));
-        //videoRef.current.currentTime = parseFloat(e.target.value);
+        videoRef.current.currentTime = parseFloat(e.target.value);
     };
 
     useEffect(() => {

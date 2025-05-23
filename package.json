@@ -124,7 +124,7 @@
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0"
     },
-    "hash": "c9aa2dc3684f659cdacbd7235263e79680332a1d6598b09ea248bfa5d0d96fa9"
+    "hash": "6691688a44297a5558ef37db2e66ab96a2b26de25ce9dd16419318e19f092916"
   },
   "type": "module",
   "overrides": {
@@ -155,6 +155,7 @@
     "@tailwindcss/vite": "$@tailwindcss/vite",
     "react-router-dom": "$react-router-dom",
     "react-player": "$react-player",
-    "react-range-slider-input": "$react-range-slider-input"
+    "react-range-slider-input": "$react-range-slider-input",
+    "react-slider": "$react-slider"
   }
 }
