@@ -4,6 +4,8 @@ import com.ddf.vodsystem.entities.VideoMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.hilla.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,10 +16,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 @Service
+@Endpoint
+@AnonymousAllowed
 public class MetadataService {
     private static Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
     public VideoMetadata getVideoMetadata(File file) {
+        logger.info("Getting metadata for file {}", file.getAbsolutePath());
+
         ProcessBuilder pb = new ProcessBuilder("ffprobe",
                 "-v", "quiet",
                 "-print_format", "json",
@@ -30,6 +36,7 @@ public class MetadataService {
         try {
            process = pb.start();
            handleFfprobeError(process);
+           logger.info("Metadata for file {} finished with exit code {}", file.getAbsolutePath(), process.exitValue());
            return parseVideoMetadata(readStandardOutput(process));
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
