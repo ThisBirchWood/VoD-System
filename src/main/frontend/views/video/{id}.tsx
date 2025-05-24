@@ -1,11 +1,11 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
-import { VideoMetadataFrontend } from "Frontend/components/Playbar";
 import Playbar from "./../../components/Playbar";
 import PlaybackSlider from "./../../components/PlaybackSlider";
 import ClipRangeSlider from "./../../components/ClipRangeSlider";
 import ClipConfig from "./../../components/ClipConfig";
 import * as editService from "../../generated/EditService";
+import * as metadataService from "../../generated/MetadataService"
 import VideoMetadata from "Frontend/generated/com/ddf/vodsystem/entities/VideoMetadata";
 
 function exportFile(uuid: string,
@@ -36,7 +36,7 @@ export default function VideoId() {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const videoUrl = `api/v1/download/input/${id}`
 
-    const [metadata, setMetadata] = useState<VideoMetadataFrontend | null>(null);
+    const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
     const [clipRangeValue, setClipRangeValue] = useState([0, 1]);
     const [width, setWidth] = useState(1280);
@@ -45,13 +45,11 @@ export default function VideoId() {
     const [fileSize, setFileSize] = useState(10);
 
     useEffect(() => {
-        fetch(`api/v1/metadata/original/${id}`)
-            .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch metadata");
-                return res.json();
-            })
-            .then(setMetadata)
-            .catch((err) => console.log(err.message));
+        if (!id) return;
+
+        metadataService.getInputFileMetadata(id)
+            .then((data) => setMetadata(data ?? null)) // 👈 Normalize undefined to null
+            .catch((err) => console.error("Metadata fetch failed:", err));
     }, [id]);
 
     const sendData = () => {

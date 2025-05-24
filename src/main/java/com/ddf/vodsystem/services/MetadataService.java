@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services;
 
+import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.entities.VideoMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +21,12 @@ import java.io.InputStreamReader;
 @AnonymousAllowed
 public class MetadataService {
     private static Logger logger = LoggerFactory.getLogger(MetadataService.class);
+
+    private final JobService jobService;
+
+    public MetadataService(JobService jobService) {
+        this.jobService = jobService;
+    }
 
     public VideoMetadata getVideoMetadata(File file) {
         logger.info("Getting metadata for file {}", file.getAbsolutePath());
@@ -43,6 +50,16 @@ public class MetadataService {
             throw new FFMPEGException(e.getMessage());
         }
 
+    }
+
+    public VideoMetadata getInputFileMetadata(String uuid) {
+        Job job = jobService.getJob(uuid);
+        return getVideoMetadata(job.getInputFile());
+    }
+
+    public VideoMetadata getOutputFileMetadata(String uuid) {
+        Job job = jobService.getJob(uuid);
+        return getVideoMetadata(job.getOutputFile());
     }
 
     private JsonNode readStandardOutput(Process process) throws IOException{

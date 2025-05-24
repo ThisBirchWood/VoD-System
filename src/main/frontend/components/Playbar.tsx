@@ -1,20 +1,12 @@
 import { useEffect, useState} from "react";
 import { Volume, Play, Pause } from 'lucide-react';
 import clsx from 'clsx';
+import VideoMetadata from "Frontend/generated/com/ddf/vodsystem/entities/VideoMetadata";
 
-
-export type VideoMetadataFrontend = {
-    startPoint: number,
-    endPoint: number,
-    fps: number,
-    width: number,
-    height: number,
-    fileSize: number
-}
 
 type Props = {
     video: HTMLVideoElement | null;
-    videoMetadata: VideoMetadataFrontend;
+    videoMetadata: VideoMetadata;
     className?: string;
 };
 
@@ -87,9 +79,11 @@ export default function Playbar({ video, videoMetadata, className }: Props) {
             <button onClick={togglePlay}>
                 {isPlaying ? <Pause size={24} /> : <Play size={24} />}
             </button>
-            <label>
-                {formatTime(video?.currentTime ?? 0)} / {formatTime(videoMetadata.endPoint)}
-            </label>
+            {videoMetadata.endPoint &&
+                <label>
+                    {formatTime(video?.currentTime ?? 0)} / {formatTime(videoMetadata.endPoint)}
+                </label>
+            }
         </div>
     );
 }
