@@ -1,10 +1,10 @@
-import {VideoMetadata} from "Frontend/components/Playbar";
+import {VideoMetadataFrontend} from "Frontend/components/Playbar";
 import {useEffect, useState} from "react";
 import clsx from 'clsx';
 
 type Props = {
     videoRef: HTMLVideoElement | null;
-    videoMetadata: VideoMetadata;
+    videoMetadata: VideoMetadataFrontend;
     sliderValue: number;
     setSliderValue: Function;
     className?: string;

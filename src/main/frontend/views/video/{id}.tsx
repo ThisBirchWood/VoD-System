@@ -1,10 +1,12 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
-import { VideoMetadata } from "Frontend/components/Playbar";
+import { VideoMetadataFrontend } from "Frontend/components/Playbar";
 import Playbar from "./../../components/Playbar";
 import PlaybackSlider from "./../../components/PlaybackSlider";
 import ClipRangeSlider from "./../../components/ClipRangeSlider";
 import ClipConfig from "./../../components/ClipConfig";
+import * as editService from "../../generated/EditService";
+import VideoMetadata from "Frontend/generated/com/ddf/vodsystem/entities/VideoMetadata";
 
 function exportFile(uuid: string,
                     startPoint: number,
@@ -13,23 +15,20 @@ function exportFile(uuid: string,
                     height: number,
                     fps: number,
                     fileSize: number) {
-    var body: string = `startPoint=${startPoint}&endPoint=${endPoint}&width=${width}&height=${height}&fps=${fps}&fileSize=${fileSize*1000}`;
 
-    fetch(`api/v1/edit/${uuid}`, {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
-        body: body,
-    })
-        .then(res => {
-            console.log("RESPONSE: " + res);
-            return res
-        })
-        .then(data => console.log('Response:', data))
-        .catch(err => console.error('Error:', err));
+    const metadata: VideoMetadata = {
+        startPoint: startPoint,
+        endPoint: endPoint,
+        width: width,
+        height: height,
+        fps: fps,
+        fileSize: fileSize*1000
+    }
 
-    return null;
+    editService.edit(uuid, metadata)
+        .then(r => {
+            editService.process(uuid);
+        });
 }
 
 export default function VideoId() {
@@ -37,7 +36,7 @@ export default function VideoId() {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const videoUrl = `api/v1/download/input/${id}`
 
-    const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
+    const [metadata, setMetadata] = useState<VideoMetadataFrontend | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
     const [clipRangeValue, setClipRangeValue] = useState([0, 1]);
     const [width, setWidth] = useState(1280);

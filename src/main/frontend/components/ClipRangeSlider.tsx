@@ -1,4 +1,4 @@
-import {VideoMetadata} from "Frontend/components/Playbar";
+import {VideoMetadataFrontend} from "Frontend/components/Playbar";
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
 import {useRef} from "react";
@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 type Props = {
     videoRef: HTMLVideoElement | null;
-    videoMetadata: VideoMetadata;
+    videoMetadata: VideoMetadataFrontend;
     setSliderValue: Function;
     setClipRangeValue: Function;
     className?: string;

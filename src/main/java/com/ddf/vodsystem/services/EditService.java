@@ -3,9 +3,13 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.entities.VideoMetadata;
 import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.entities.JobStatus;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.hilla.Endpoint;
 import org.springframework.stereotype.Service;
 
 @Service
+@Endpoint
+@AnonymousAllowed
 public class EditService {
     private final JobService jobService;
 

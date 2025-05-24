@@ -3,7 +3,7 @@ import { Volume, Play, Pause } from 'lucide-react';
 import clsx from 'clsx';
 
 
-export type VideoMetadata = {
+export type VideoMetadataFrontend = {
     startPoint: number,
     endPoint: number,
     fps: number,
@@ -14,7 +14,7 @@ export type VideoMetadata = {
 
 type Props = {
     video: HTMLVideoElement | null;
-    videoMetadata: VideoMetadata;
+    videoMetadata: VideoMetadataFrontend;
     className?: string;
 };
 
