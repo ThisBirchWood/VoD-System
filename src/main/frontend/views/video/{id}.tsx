@@ -15,8 +15,10 @@ function exportFile(uuid: string,
                     height: number,
                     fps: number,
                     fileSize: number,
-                    setProgress: Function) {
+                    setProgress: Function,
+                    setDownloadable: Function) {
 
+    setDownloadable(false);
     const metadata: VideoMetadata = {
         startPoint: startPoint,
         endPoint: endPoint,
@@ -39,13 +41,16 @@ function exportFile(uuid: string,
 
             if (result >= 1) {
                 clearInterval(interval);
+                setDownloadable(true);
                 console.log('Progress complete');
+            } else {
+                setDownloadable(false);
             }
         } catch (err) {
             console.error('Failed to fetch progress', err);
             clearInterval(interval);
         }
-    }, 500); // 0.5 seconds
+    }, 200); // 0.5 seconds
 }
 
 export default function VideoId() {
@@ -62,6 +67,7 @@ export default function VideoId() {
     const [fileSize, setFileSize] = useState(10);
 
     const [progress, setProgress] = useState(0);
+    const [downloadable, setDownloadable] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -73,8 +79,28 @@ export default function VideoId() {
 
     const sendData = () => {
         if (!id) return
-        exportFile(id,clipRangeValue[0], clipRangeValue[1], width, height, fps, fileSize, setProgress);
+        exportFile(id,clipRangeValue[0], clipRangeValue[1], width, height, fps, fileSize, setProgress, setDownloadable);
     }
+
+    const handleDownload = async (filename: string | undefined) => {
+        if (!filename) return;
+        const response = await fetch(`/api/v1/download/output/${id}`);
+        if (!response.ok) {
+            console.error('Download failed');
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    };
+
 
     return (
         <div className={"grid grid-cols-[70%_30%]"}>
@@ -127,13 +153,19 @@ export default function VideoId() {
                     Export
                 </button>
 
-                <progress
-                    value={progress}
-                    className={"bg-gray-200 rounded-lg h-1"}>
-                </progress>
+                { downloadable ?
+                    (<button
+                        className={"bg-primary text-text p-2 rounded-lg hover:bg-primary-pressed h-10"}
+                        onClick={() => handleDownload(id)}>
+                        Download
+                    </button>)
+                    :(
+                    <progress
+                        value={progress}
+                        className={"bg-gray-200 rounded-lg h-1"}>
+                    </progress> )
+                }
             </div>
-
-
         </div>
     );
 }
