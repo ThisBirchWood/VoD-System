@@ -14,7 +14,8 @@ function exportFile(uuid: string,
                     width: number,
                     height: number,
                     fps: number,
-                    fileSize: number) {
+                    fileSize: number,
+                    setProgress: Function) {
 
     const metadata: VideoMetadata = {
         startPoint: startPoint,
@@ -29,6 +30,22 @@ function exportFile(uuid: string,
         .then(r => {
             editService.process(uuid);
         });
+
+    // get progress updates
+    const interval = setInterval(async () => {
+        try {
+            const result = await editService.getProgress(uuid);
+            setProgress(result);
+
+            if (result >= 1) {
+                clearInterval(interval);
+                console.log('Progress complete');
+            }
+        } catch (err) {
+            console.error('Failed to fetch progress', err);
+            clearInterval(interval);
+        }
+    }, 500); // 0.5 seconds
 }
 
 export default function VideoId() {
@@ -44,6 +61,8 @@ export default function VideoId() {
     const [fps, setFps] = useState(30);
     const [fileSize, setFileSize] = useState(10);
 
+    const [progress, setProgress] = useState(0);
+
     useEffect(() => {
         if (!id) return;
 
@@ -54,7 +73,7 @@ export default function VideoId() {
 
     const sendData = () => {
         if (!id) return
-        exportFile(id,clipRangeValue[0], clipRangeValue[1], width, height, fps, fileSize);
+        exportFile(id,clipRangeValue[0], clipRangeValue[1], width, height, fps, fileSize, setProgress);
     }
 
     return (
@@ -101,10 +120,19 @@ export default function VideoId() {
                     />
                 </div>}
 
-            <button
-                className={"bg-primary text-text p-2 rounded-lg hover:bg-primary-pressed h-10 w-3/4 m-auto"}
-                onClick={sendData}
-            >Export</button>
+            <div className={"flex flex-col gap-2 w-4/5 m-auto"}>
+                <button
+                    className={"bg-primary text-text p-2 rounded-lg hover:bg-primary-pressed h-10"}
+                    onClick={sendData}>
+                    Export
+                </button>
+
+                <progress
+                    value={progress}
+                    className={"bg-gray-200 rounded-lg h-1"}>
+                </progress>
+            </div>
+
 
         </div>
     );
