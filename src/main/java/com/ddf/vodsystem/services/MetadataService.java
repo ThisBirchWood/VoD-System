@@ -5,8 +5,6 @@ import com.ddf.vodsystem.entities.VideoMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.hilla.Endpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,8 +15,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 @Service
-@Endpoint
-@AnonymousAllowed
 public class MetadataService {
     private static Logger logger = LoggerFactory.getLogger(MetadataService.class);
 

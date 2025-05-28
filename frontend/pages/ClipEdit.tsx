@@ -1,90 +1,42 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
-import Playbar from "./../../components/Playbar";
-import PlaybackSlider from "./../../components/PlaybackSlider";
-import ClipRangeSlider from "./../../components/ClipRangeSlider";
-import ClipConfig from "./../../components/ClipConfig";
-import * as editService from "../../generated/EditService";
-import * as metadataService from "../../generated/MetadataService"
-import VideoMetadata from "Frontend/generated/com/ddf/vodsystem/entities/VideoMetadata";
+import Playbar from "./../components/Playbar";
+import PlaybackSlider from "./../components/PlaybackSlider";
+import ClipRangeSlider from "./../components/ClipRangeSlider";
+import ClipConfig from "./../components/ClipConfig";
+import { VideoMetadata, editFile, getMetadata } from "../utils/Endpoints"
 
-function exportFile(uuid: string,
-                    startPoint: number,
-                    endPoint: number,
-                    width: number,
-                    height: number,
-                    fps: number,
-                    fileSize: number,
-                    setProgress: Function,
-                    setDownloadable: Function) {
-
-    setDownloadable(false);
-    const metadata: VideoMetadata = {
-        startPoint: startPoint,
-        endPoint: endPoint,
-        width: width,
-        height: height,
-        fps: fps,
-        fileSize: fileSize*1000
-    }
-
-    editService.edit(uuid, metadata)
-        .then(r => {
-            editService.process(uuid);
-        });
-
-    // get progress updates
-    const interval = setInterval(async () => {
-        try {
-            const result = await editService.getProgress(uuid);
-            setProgress(result);
-
-            if (result >= 1) {
-                clearInterval(interval);
-                setDownloadable(true);
-                console.log('Progress complete');
-            } else {
-                setDownloadable(false);
-            }
-        } catch (err) {
-            console.error('Failed to fetch progress', err);
-            clearInterval(interval);
-        }
-    }, 200); // 0.5 seconds
-}
-
-export default function VideoId() {
+const ClipEdit = () => {
     const { id } = useParams();
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const videoUrl = `api/v1/download/input/${id}`
 
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
-    const [clipRangeValue, setClipRangeValue] = useState([0, 1]);
-    const [width, setWidth] = useState(1280);
-    const [height, setHeight] = useState(720);
-    const [fps, setFps] = useState(30);
-    const [fileSize, setFileSize] = useState(10);
+
+    const [outputMetadata, setOutputMetadata] = useState<VideoMetadata>({
+        // default values
+        startPoint: 0,
+        endPoint: 5,
+        width: 1280,
+        height: 720,
+        fps: 30,
+        fileSize: 10000
+    });
 
     const [progress, setProgress] = useState(0);
     const [downloadable, setDownloadable] = useState(false);
 
-    useEffect(() => {
-        if (!id) return;
-
-        metadataService.getInputFileMetadata(id)
-            .then((data) => setMetadata(data ?? null)) // 👈 Normalize undefined to null
-            .catch((err) => console.error("Metadata fetch failed:", err));
-    }, [id]);
-
     const sendData = () => {
-        if (!id) return
-        exportFile(id,clipRangeValue[0], clipRangeValue[1], width, height, fps, fileSize, setProgress, setDownloadable);
+        if (!id) return;
+        editFile(id, outputMetadata);
     }
 
     const handleDownload = async (filename: string | undefined) => {
         if (!filename) return;
+
         const response = await fetch(`/api/v1/download/output/${id}`);
+
         if (!response.ok) {
             console.error('Download failed');
             return;
@@ -93,6 +45,7 @@ export default function VideoId() {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
+
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
@@ -101,6 +54,13 @@ export default function VideoId() {
         window.URL.revokeObjectURL(url);
     };
 
+    useEffect(() => {
+        if (!id) return;
+
+        getMetadata(id)
+            .then((data) => setMetadata(data ?? null))
+            .catch((err) => console.error("Metadata fetch failed:", err));
+    }, [id]);
 
     return (
         <div className={"grid grid-cols-[70%_30%]"}>
@@ -115,10 +75,7 @@ export default function VideoId() {
 
 
             <ClipConfig
-                setWidth={setWidth}
-                setHeight={setHeight}
-                setFileSize={setFileSize}
-                setFps={setFps}
+                setMetadata={setOutputMetadata}
             />
 
             {metadata &&
@@ -141,7 +98,7 @@ export default function VideoId() {
                         videoRef={videoRef.current}
                         videoMetadata={metadata}
                         setSliderValue={setPlaybackValue}
-                        setClipRangeValue={setClipRangeValue}
+                        setMetadata={setOutputMetadata}
                         className={"w-full mb-10 bg-primary"}
                     />
                 </div>}
@@ -169,3 +126,5 @@ export default function VideoId() {
         </div>
     );
 }
+
+export default ClipEdit;

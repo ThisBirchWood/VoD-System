@@ -2,20 +2,20 @@ import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
 import {useRef} from "react";
 import clsx from 'clsx';
-import VideoMetadata from "Frontend/generated/com/ddf/vodsystem/entities/VideoMetadata";
+import { VideoMetadata } from "../utils/Endpoints"
 
 type Props = {
     videoRef: HTMLVideoElement | null;
     videoMetadata: VideoMetadata;
     setSliderValue: Function;
-    setClipRangeValue: Function;
+    setMetadata: Function;
     className?: string;
 };
 
 export default function ClipRangeSlider({videoRef,
                                             videoMetadata,
                                             setSliderValue,
-                                            setClipRangeValue,
+                                            setMetadata,
                                             className}: Props) {
     const previousRangeSliderInput = useRef<[number, number]>([0, 0]);
 
@@ -30,7 +30,12 @@ export default function ClipRangeSlider({videoRef,
             setSliderValue(val[1]);
         }
 
-        setClipRangeValue(val);
+        setMetadata((prevState: VideoMetadata) => ({
+            ...prevState,
+            startPoint: val[0],
+            endPoint: val[1]
+        }
+        ))
         previousRangeSliderInput.current = val;
     };
 

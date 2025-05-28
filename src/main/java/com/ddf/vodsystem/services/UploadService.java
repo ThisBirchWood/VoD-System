@@ -2,8 +2,6 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.entities.VideoMetadata;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.hilla.Endpoint;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
-@Endpoint
-@AnonymousAllowed
 public class UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
 

@@ -1,23 +1,31 @@
+import { VideoMetadata } from "Frontend/utils/Endpoints";
+
 type prop = {
-    setWidth: Function;
-    setHeight: Function;
-    setFps: Function;
-    setFileSize: Function;
+    setMetadata: Function;
 }
 
-export default function ClipConfig({setWidth, setHeight, setFps, setFileSize}: prop) {
+export default function ClipConfig({setMetadata}: prop) {
     const updateRes = (e: React.ChangeEvent<HTMLSelectElement>) => {
         var vals = e.target.value.split(",");
-        setWidth(parseInt(vals[0]))
-        setHeight(parseInt(vals[1]))
+        setMetadata((prevState: VideoMetadata) => ({
+            ...prevState,
+            width: parseInt(vals[0]),
+            height: parseInt(vals[1])
+        }))
     }
 
     const updateFps = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFps(parseInt(e.target.value))
+        setMetadata((prevState: VideoMetadata) => ({
+            ...prevState,
+            fps: parseInt(e.target.value)
+        }))
     }
 
     const updateFileSize = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFileSize(parseInt(e.target.value))
+        setMetadata((prevState: VideoMetadata) => ({
+            ...prevState,
+            fileSize: parseInt(e.target.value) * 1000
+        }))
     }
 
     return (
