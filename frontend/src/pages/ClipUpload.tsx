@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import { uploadFile } from "../utils/Endpoints"
+import { uploadFile } from "../utils/endpoints"
 import BlueButton from "../components/buttons/BlueButton.tsx";
 
 const clipUpload = () => {
