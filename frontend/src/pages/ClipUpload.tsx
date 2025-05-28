@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import { uploadFile } from "../utils/Endpoints"
+import BlueButton from "../components/buttons/BlueButton.tsx";
 
 const clipUpload = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -18,19 +19,19 @@ const clipUpload = () => {
     });
 
     return (
-        <div className={"flex flex-col justify-between"}>
+        <div className={"flex flex-col justify-between gap-3"}>
             <input
                 type="file"
                 onChange={(e) => {
                     const selected = e.target.files?.[0] ?? null;
                     setFile(selected);
                 }}
-                className={"block w-full cursor-pointer rounded-lg border border-dashed border-gray-400 bg-white p-4 text-center hover:bg-gray-50 transition"}
+                className={"h-100 cursor-pointer rounded-lg border border-dashed border-gray-400 bg-white p-4 text-center hover:bg-gray-50 transition"}
             />
-            <button
+
+            <BlueButton
                 onClick={press}
-                className={"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"}
-            >Upload</button>
+            >Upload</BlueButton>
 
             {noFileError &&
                 <label className={"text-center text-red-500"}>Please choose a file</label>
