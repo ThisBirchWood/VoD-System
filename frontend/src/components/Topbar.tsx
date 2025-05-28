@@ -1,14 +1,16 @@
 import { Menu, X} from 'lucide-react';
 import MenuButton from "./buttons/MenuButton.tsx";
+import clsx from "clsx";
 
 type props = {
     sidebarToggled: boolean,
     setSidebarToggled: Function
+    className?: string;
 }
 
-const Topbar = ({sidebarToggled, setSidebarToggled}: props) => {
+const Topbar = ({sidebarToggled, setSidebarToggled, className}: props) => {
     return (
-        <div>
+        <div className={clsx(className)}>
             <MenuButton onClick={() => setSidebarToggled(!sidebarToggled)}>
                 {sidebarToggled ? <X size={24}/> : <Menu size={24}/>}
             </MenuButton>
