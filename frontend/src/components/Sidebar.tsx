@@ -9,7 +9,7 @@ type props = {
 
 const Sidebar = ({className}: props) => {
     return (
-        <div className={clsx("w-64 h-screen bg-white shadow-sm border-r px-4 py-6 flex flex-col gap-2", className)}>
+        <div className={clsx("h-screen bg-white shadow-sm border-r flex flex-col gap-2 mr-5", className)}>
             <Link
                 to="/create">
                 <MenuButton className={"flex items-center gap-2"}>

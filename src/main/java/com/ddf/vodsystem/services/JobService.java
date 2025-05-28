@@ -41,6 +41,7 @@ public class JobService {
 
     public void jobReady(String uuid) {
         Job job = getJob(uuid);
+        job.setProgress(0f);
 
         logger.info("Job ready: {}", job.getUuid());
         job.setStatus(JobStatus.PENDING);
