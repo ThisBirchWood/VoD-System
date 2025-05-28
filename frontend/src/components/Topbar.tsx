@@ -12,7 +12,7 @@ const Topbar = ({sidebarToggled, setSidebarToggled, className}: props) => {
     return (
         <div className={clsx(className)}>
             <MenuButton onClick={() => setSidebarToggled(!sidebarToggled)}>
-                {sidebarToggled ? <X size={24}/> : <Menu size={24}/>}
+                {sidebarToggled ? <Menu size={24}/> :  <X size={24}/>}
             </MenuButton>
         </div>
     )

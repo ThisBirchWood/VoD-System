@@ -8,7 +8,7 @@ const MainLayout = () => {
     const [sidebarToggled, setSidebarToggled] = useState(false);
 
     return (
-        <div className={`transition-all duration-300 grid ${sidebarToggled ? "grid-cols-[0px_1fr]" : "grid-cols-[240px_1fr]"} gap-4`}>
+        <div className={`transition-all duration-300 grid ${sidebarToggled ? "grid-cols-[0px_1fr]" : "grid-cols-[240px_1fr]"} grid-rows-[1fr_8fr] gap-4`}>
             <Sidebar
                 className={`row-span-2 transition-all duration-300 ${sidebarToggled ? "-translate-x-full": "translate-x-0"}`}/>
             <Topbar
