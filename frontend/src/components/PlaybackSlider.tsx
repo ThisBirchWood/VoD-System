@@ -1,6 +1,6 @@
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import clsx from 'clsx';
-import VideoMetadata from "Frontend/generated/com/ddf/vodsystem/entities/VideoMetadata";
+import type { VideoMetadata } from "../utils/types.ts";
 
 type Props = {
     videoRef: HTMLVideoElement | null;

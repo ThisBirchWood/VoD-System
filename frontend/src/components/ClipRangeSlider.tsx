@@ -2,7 +2,7 @@ import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
 import {useRef} from "react";
 import clsx from 'clsx';
-import { VideoMetadata } from "../utils/Endpoints"
+import type { VideoMetadata } from "../utils/types.ts";
 
 type Props = {
     videoRef: HTMLVideoElement | null;

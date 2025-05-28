@@ -4,12 +4,13 @@ import Playbar from "./../components/Playbar";
 import PlaybackSlider from "./../components/PlaybackSlider";
 import ClipRangeSlider from "./../components/ClipRangeSlider";
 import ClipConfig from "./../components/ClipConfig";
-import { VideoMetadata, editFile, getMetadata } from "../utils/Endpoints"
+import {editFile, getMetadata, processFile, getProgress} from "../utils/Endpoints"
+import type { VideoMetadata } from "../utils/types.ts";
 
 const ClipEdit = () => {
     const { id } = useParams();
     const videoRef = useRef<HTMLVideoElement | null>(null);
-    const videoUrl = `api/v1/download/input/${id}`
+    const videoUrl = `/api/v1/download/input/${id}`
 
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
@@ -27,9 +28,29 @@ const ClipEdit = () => {
     const [progress, setProgress] = useState(0);
     const [downloadable, setDownloadable] = useState(false);
 
-    const sendData = () => {
+    const sendData = async() => {
         if (!id) return;
-        editFile(id, outputMetadata);
+
+        setDownloadable(false);
+
+        await editFile(id, outputMetadata);
+        const processed = await processFile(id);
+
+        if (!processed) {
+            console.log("Failed to process file");
+            return;
+        }
+
+        const interval = setInterval(async () => {
+           const progress = await getProgress(id);
+           setProgress(progress);
+
+           if (progress >= 1) {
+               clearInterval(interval);
+               setDownloadable(true);
+               console.log("Downloadable");
+           }
+        }, 500);
     }
 
     const handleDownload = async (filename: string | undefined) => {

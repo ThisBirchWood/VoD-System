@@ -10,7 +10,7 @@ const clipUpload = () => {
     const press = (() => {
         if (file) {
             uploadFile(file)
-                .then(uuid => navigate(`video/${uuid}`))
+                .then(uuid => navigate(`/create/${uuid}`))
                 .catch(e => console.error(e));
         } else {
             setNoFileError(true);

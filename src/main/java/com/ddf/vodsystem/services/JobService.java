@@ -50,6 +50,7 @@ public class JobService {
     @PostConstruct
     private void startProcessingLoop() {
         Thread thread = new Thread(() -> {
+            logger.info("Starting processing loop");
             while (true) {
                 if (!jobQueue.isEmpty()) {
                     Job job = jobQueue.poll();

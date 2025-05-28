@@ -1,5 +1,5 @@
 // layout/MainLayout.jsx
-import Sidebar from 'Frontend/components/Sidebar';
+import Sidebar from '../components/Sidebar'
 import { Outlet } from 'react-router-dom';
 
 const MainLayout = () => (

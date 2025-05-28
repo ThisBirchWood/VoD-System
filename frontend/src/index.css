@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+
+@theme {
+    --font-display: "Satoshi", "sans-serif";
+
+    /* Breakpoints */
+    --breakpoint-3xl: 1920px;
+
+    --color-primary: oklch(0.55 0.21 254);    /* Modern Blue (#2563EB) */
+    --color-secondary: oklch(0.94 0.01 250);  /* Light Gray (#E5E7EB) */
+    --color-accent: oklch(0.68 0.20 288);     /* Indigo Accent (#6366F1) */
+    --color-text: oklch(0.17 0.01 270);       /* Dark Slate (#111827) */
+    --color-background: oklch(0.98 0.005 250);/* Soft off-white (#F9FAFB) */
+
+    --color-primary-pressed: oklch(0.55 0.21 254 / 0.5);
+
+    /* Easing */
+    --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+    --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+}
+
+#range-slider .range-slider__range{
+    background: var(--color-primary);
+}
+
+#range-slider .range-slider__thumb{
+    background: var(--color-primary);
+}
+
+/*:root {*/
+/*  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;*/
+/*  line-height: 1.5;*/
+/*  font-weight: 400;*/
+
+/*  color-scheme: light dark;*/
+/*  color: rgba(255, 255, 255, 0.87);*/
+/*  background-color: #242424;*/
+
+/*  font-synthesis: none;*/
+/*  text-rendering: optimizeLegibility;*/
+/*  -webkit-font-smoothing: antialiased;*/
+/*  -moz-osx-font-smoothing: grayscale;*/
+/*}*/
+
+/*a {*/
+/*  font-weight: 500;*/
+/*  color: #646cff;*/
+/*  text-decoration: inherit;*/
+/*}*/
+/*a:hover {*/
+/*  color: #535bf2;*/
+/*}*/
+
+/*body {*/
+/*  margin: 0;*/
+/*  display: flex;*/
+/*  place-items: center;*/
+/*  min-width: 320px;*/
+/*  min-height: 100vh;*/
+/*}*/
+
+/*h1 {*/
+/*  font-size: 3.2em;*/
+/*  line-height: 1.1;*/
+/*}*/
+
+/*button {*/
+/*  border-radius: 8px;*/
+/*  border: 1px solid transparent;*/
+/*  padding: 0.6em 1.2em;*/
+/*  font-size: 1em;*/
+/*  font-weight: 500;*/
+/*  font-family: inherit;*/
+/*  background-color: #1a1a1a;*/
+/*  cursor: pointer;*/
+/*  transition: border-color 0.25s;*/
+/*}*/
+/*button:hover {*/
+/*  border-color: #646cff;*/
+/*}*/
+/*button:focus,*/
+/*button:focus-visible {*/
+/*  outline: 4px auto -webkit-focus-ring-color;*/
+/*}*/
+
+/*@media (prefers-color-scheme: light) {*/
+/*  :root {*/
+/*    color: #213547;*/
+/*    background-color: #ffffff;*/
+/*  }*/
+/*  a:hover {*/
+/*    color: #747bff;*/
+/*  }*/
+/*  button {*/
+/*    background-color: #f9f9f9;*/
+/*  }*/
+/*}*/

@@ -1,4 +1,4 @@
-import { VideoMetadata } from "Frontend/utils/Endpoints";
+import type { VideoMetadata } from "../utils/types.ts";
 
 type prop = {
     setMetadata: Function;
