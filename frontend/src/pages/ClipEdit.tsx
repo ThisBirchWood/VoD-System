@@ -6,15 +6,14 @@ import ClipRangeSlider from "./../components/ClipRangeSlider";
 import ClipConfig from "./../components/ClipConfig";
 import {editFile, getMetadata, processFile, getProgress} from "../utils/Endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
+import BlueButton from "../components/buttons/BlueButton.tsx";
 
 const ClipEdit = () => {
     const { id } = useParams();
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const videoUrl = `/api/v1/download/input/${id}`
-
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
-
     const [outputMetadata, setOutputMetadata] = useState<VideoMetadata>({
         // default values
         startPoint: 0,
@@ -24,7 +23,6 @@ const ClipEdit = () => {
         fps: 30,
         fileSize: 10000
     });
-
     const [progress, setProgress] = useState(0);
     const [downloadable, setDownloadable] = useState(false);
 
@@ -125,18 +123,16 @@ const ClipEdit = () => {
                 </div>}
 
             <div className={"flex flex-col gap-2 w-4/5 m-auto"}>
-                <button
-                    className={"bg-primary text-text p-2 rounded-lg hover:bg-primary-pressed h-10"}
+                <BlueButton
                     onClick={sendData}>
                     Export
-                </button>
+                </BlueButton>
 
                 { downloadable ?
-                    (<button
-                        className={"bg-primary text-text p-2 rounded-lg hover:bg-primary-pressed h-10"}
+                    (<BlueButton
                         onClick={() => handleDownload(id)}>
                         Download
-                    </button>)
+                    </BlueButton>)
                     :(
                     <progress
                         value={progress}

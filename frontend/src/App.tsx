@@ -10,6 +10,7 @@ function App() {
         <Router>
             <Routes>
                 <Route element={<MainLayout />}>
+                    <Route path="/" element={<h1>Main Page</h1>} />
                     <Route path="/create" element={<ClipUpload />} />
                     <Route path="/create/:id" element={<ClipEdit />} />
                 </Route>

@@ -13,7 +13,7 @@
     --color-text: oklch(0.17 0.01 270);       /* Dark Slate (#111827) */
     --color-background: oklch(0.98 0.005 250);/* Soft off-white (#F9FAFB) */
 
-    --color-primary-pressed: oklch(0.55 0.21 254 / 0.5);
+    --color-primary-pressed: oklch(0.45 0.21 254);
 
     /* Easing */
     --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
