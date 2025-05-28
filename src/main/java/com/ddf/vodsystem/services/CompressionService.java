@@ -26,7 +26,7 @@ public class CompressionService {
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
 
-    private final Pattern timePattern = Pattern.compile("out_time_ms=([\\d:.]+)");
+    private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     private void buildFilters(ArrayList<String> command, Float fps, Integer width, Integer height) {
         List<String> filters = new ArrayList<>();
@@ -122,7 +122,7 @@ public class CompressionService {
             Matcher matcher = timePattern.matcher(line);
 
             if (matcher.find()) {
-                Float progress = Float.parseFloat(matcher.group(1))/(length*1000000);
+                Float progress = Long.parseLong(matcher.group(1))/(length*1000000);
                 job.setProgress(progress);
             }
         }
