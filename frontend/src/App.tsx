@@ -3,9 +3,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import ClipUpload from './pages/ClipUpload';
 import ClipEdit from './pages/ClipEdit';
+import {useEffect} from "react";
 
 
 function App() {
+    useEffect(() => {
+        document.title = "VoD System";
+    }, []);
+
     return (
         <Router>
             <Routes>
