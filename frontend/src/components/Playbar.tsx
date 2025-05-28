@@ -1,5 +1,5 @@
 import { useEffect, useState} from "react";
-import { Volume, Play, Pause } from 'lucide-react';
+import { Volume1, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import clsx from 'clsx';
 import type { VideoMetadata } from "../utils/types.ts";
 
@@ -40,11 +40,23 @@ export default function Playbar({ video, videoMetadata, className }: Props) {
         }
     };
 
+    let Icon;
+    // update icon
+    if (volume == 0) {
+        Icon = VolumeX;
+    } else if (volume < 50) {
+        Icon = Volume1;
+    } else {
+        Icon = Volume2;
+    }
+
     const updateVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!video) return;
 
-        video.volume = parseInt(e.target.value) / 100;
-        setVolume(parseInt(e.target.value));
+        let volume = parseInt(e.target.value)
+
+        video.volume = volume / 100;
+        setVolume(volume);
     }
 
     // Sync state with video element changes (e.g., if someone presses spacebar or clicks on the video)
@@ -65,8 +77,8 @@ export default function Playbar({ video, videoMetadata, className }: Props) {
 
     return (
         <div className={clsx("flex justify-between items-center p-2 rounded-lg", className)}>
-            <div className={"flex"}>
-                <Volume size={24} />
+            <div className={"flex gap-1"}>
+                <Icon size={24} />
                 <input
                     type='range'
                     min={0}
