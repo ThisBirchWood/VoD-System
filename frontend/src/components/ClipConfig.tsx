@@ -1,10 +1,12 @@
 import type { VideoMetadata } from "../utils/types.ts";
+import clsx from "clsx";
 
 type prop = {
     setMetadata: Function;
+    className?: string;
 }
 
-export default function ClipConfig({setMetadata}: prop) {
+export default function ClipConfig({setMetadata, className}: prop) {
     const updateRes = (e: React.ChangeEvent<HTMLSelectElement>) => {
         var vals = e.target.value.split(",");
         setMetadata((prevState: VideoMetadata) => ({
@@ -29,7 +31,7 @@ export default function ClipConfig({setMetadata}: prop) {
     }
 
     return (
-        <div className={"flex flex-col gap-2 p-10 rounded-md"}>
+        <div className={clsx("flex flex-col gap-2 p-10 rounded-md", className)}>
             <h2 className={"text-3xl font-bold text-gray-800 mb-4 underline"}>Clip Export Settings</h2>
             <div className="flex items-center gap-2">
                 <label htmlFor="resolution"

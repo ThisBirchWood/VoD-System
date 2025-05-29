@@ -4,7 +4,7 @@ import Playbar from "./../components/Playbar";
 import PlaybackSlider from "./../components/PlaybackSlider";
 import ClipRangeSlider from "./../components/ClipRangeSlider";
 import ClipConfig from "./../components/ClipConfig";
-import {editFile, getMetadata, processFile, getProgress} from "../utils/Endpoints"
+import {editFile, getMetadata, processFile, getProgress} from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
 import BlueButton from "../components/buttons/BlueButton.tsx";
 
