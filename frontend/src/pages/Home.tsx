@@ -8,11 +8,6 @@ const Home = () => {
                 className="h-36 mb-8 object-contain"
             />
 
-            {/* Main Title */}
-            <h1 className="text-5xl font-extrabold mb-6 tracking-tight text-gray-800">
-                The VoD System
-            </h1>
-
             {/* Description Container */}
             <div className="max-w-xl text-center">
                 <h2 className="text-3xl font-semibold mb-6 text-gray-700">
