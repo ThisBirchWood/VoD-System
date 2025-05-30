@@ -2,6 +2,7 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import { uploadFile } from "../utils/endpoints"
 import BlueButton from "../components/buttons/BlueButton.tsx";
+import Box from "../components/Box.tsx";
 
 const clipUpload = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -19,7 +20,7 @@ const clipUpload = () => {
     });
 
     return (
-        <div className={"flex flex-col justify-between gap-3"}>
+        <Box className={"flex flex-col justify-between gap-3 p-5"}>
             <input
                 type="file"
                 onChange={(e) => {
@@ -30,14 +31,14 @@ const clipUpload = () => {
             />
 
             <BlueButton
-                onClick={press}
-            >Upload</BlueButton>
+                onClick={press}>
+                Upload
+            </BlueButton>
 
             {noFileError &&
                 <label className={"text-center text-red-500"}>Please choose a file</label>
             }
-
-        </div>
+        </Box>
     )
 };
 

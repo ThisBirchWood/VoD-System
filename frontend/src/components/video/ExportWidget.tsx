@@ -1,4 +1,5 @@
-import BlueButton from "./buttons/BlueButton.tsx";
+import BlueButton from "../buttons/BlueButton.tsx";
+import React from "react";
 
 type props = {
     dataSend: React.MouseEventHandler<HTMLButtonElement>;

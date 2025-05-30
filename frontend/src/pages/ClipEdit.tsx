@@ -1,13 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
-import Playbar from "./../components/Playbar";
-import PlaybackSlider from "./../components/PlaybackSlider";
-import ClipRangeSlider from "./../components/ClipRangeSlider";
-import ClipConfig from "./../components/ClipConfig";
+import Playbar from "./../components/video/Playbar";
+import PlaybackSlider from "./../components/video/PlaybackSlider";
+import ClipRangeSlider from "./../components/video/ClipRangeSlider";
+import ClipConfig from "./../components/video/ClipConfig";
+import ExportWidget from "../components/video/ExportWidget.tsx";
 import {editFile, getMetadata, processFile, getProgress} from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
-import ExportWidget from "../components/ExportWidget.tsx";
 
 const ClipEdit = () => {
     const { id } = useParams();
@@ -104,7 +104,7 @@ const ClipEdit = () => {
                     <Playbar
                         video={videoRef.current}
                         videoMetadata={metadata}
-                        className={"w-full accent-primary text-text"}
+                        className={"w-full accent-primary"}
                     />
 
                     <PlaybackSlider
@@ -120,7 +120,7 @@ const ClipEdit = () => {
                         videoMetadata={metadata}
                         setSliderValue={setPlaybackValue}
                         setMetadata={setOutputMetadata}
-                        className={"w-full mb-10 bg-primary"}
+                        className={"w-full mt-2 bg-primary"}
                     />
                 </Box>}
 
@@ -129,7 +129,8 @@ const ClipEdit = () => {
                     dataSend={sendData}
                     handleDownload={handleDownload}
                     downloadable={downloadable}
-                    progress={progress} />
+                    progress={progress}
+                />
             </Box>
         </div>
     );

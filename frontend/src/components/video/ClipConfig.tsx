@@ -1,4 +1,5 @@
-import type { VideoMetadata } from "../utils/types.ts";
+import type { VideoMetadata } from "../../utils/types.ts";
+import Selector from "../Selector.tsx";
 import clsx from "clsx";
 
 type prop = {
@@ -33,11 +34,8 @@ export default function ClipConfig({setMetadata, className}: prop) {
     return (
         <div className={clsx("flex flex-col gap-2 p-10 rounded-md", className)}>
             <h2 className={"text-3xl font-bold text-gray-800 mb-4"}>Export Settings</h2>
-            <div className="flex items-center gap-2">
-                <label htmlFor="resolution"
-                       className={"w-full"}
-                >Resolution: </label>
-                <div className="w-px h-6 bg-gray-400 mx-3" />
+
+            <Selector label={"Resolution"}>
                 <select id="resolution"
                         name="resolution"
                         defaultValue="1280,720"
@@ -50,13 +48,9 @@ export default function ClipConfig({setMetadata, className}: prop) {
                     <option value="854,480">480p</option>
                     <option value="640,360">360p</option>
                 </select>
-            </div>
+            </Selector>
 
-            <div className="flex items-center gap-2">
-                <label htmlFor="fps"
-                       className={"w-full"}
-                >FPS: </label>
-                <div className="w-px h-6 bg-gray-400 mx-3" />
+            <Selector label={"FPS"}>
                 <select id="fps"
                         name="fps"
                         defaultValue="30"
@@ -66,20 +60,17 @@ export default function ClipConfig({setMetadata, className}: prop) {
                     <option value="30">30</option>
                     <option value="15">15</option>
                 </select>
-            </div>
+            </Selector>
 
-            <div className="flex items-center gap-2">
-                <label className={"w-full"}>
-                    File Size (mb):
-                </label>
-                <div className="w-px h-6 bg-gray-400 mx-3" />
+            <Selector label={"File Size"}>
                 <input type="number"
                        min="1"
                        defaultValue="10"
                        onChange={updateFileSize}
                        className={"border-black bg-gray-200 p-2 rounded-md w-full"}
                 />
-            </div>
+            </Selector>
+
         </div>
     )
 }

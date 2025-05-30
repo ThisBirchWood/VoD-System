@@ -1,7 +1,7 @@
 import { useEffect, useState} from "react";
 import { Volume1, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import clsx from 'clsx';
-import type { VideoMetadata } from "../utils/types.ts";
+import type { VideoMetadata } from "../../utils/types.ts";
 
 
 type Props = {
