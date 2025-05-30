@@ -76,7 +76,7 @@ export default function Playbar({ video, videoMetadata, className }: Props) {
     }, [video]);
 
     return (
-        <div className={clsx("flex justify-between items-center p-2 rounded-lg", className)}>
+        <div className={clsx("flex justify-between items-center mb-2", className)}>
             <div className={"flex gap-1"}>
                 <Icon size={24} />
                 <input
@@ -88,7 +88,10 @@ export default function Playbar({ video, videoMetadata, className }: Props) {
                     className={"w-20"}
                 />
             </div>
-            <button onClick={togglePlay}>
+            <button
+                onClick={togglePlay}
+                className={"hover:bg-gray-300 rounded-full p-1"}
+            >
                 {isPlaying ? <Pause size={24} /> : <Play size={24} />}
             </button>
             {videoMetadata.endPoint &&

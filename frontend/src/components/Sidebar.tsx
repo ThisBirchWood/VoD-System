@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
 import clsx from "clsx";
-import MenuButton from "./buttons/MenuButton.tsx";
+import SidebarButton from "./buttons/SidebarButton.tsx";
 import { Plus, Film, Home } from 'lucide-react';
 import Box from "./Box.tsx";
 
@@ -10,32 +9,29 @@ type props = {
 
 const Sidebar = ({className}: props) => {
     return (
-        <Box className={clsx("h-screen  flex flex-col gap-2 mr-5", className)}>
+        <Box className={clsx("h-screen flex flex-col mr-5", className)}>
             <img
-                className={"w-45 mx-auto grayscale-100"}
+                className={"w-45 mx-auto"}
                 src={"../../public/logo.png"}
                 alt={"VoD System Logo"}
             />
-            <Link
-                className={"w-full"}
-                to={"/"}
-            >
-                <MenuButton className={"flex items-center gap-2 w-full"}>
-                    <Home size={20}/> Home
-                </MenuButton>
-            </Link>
+            <SidebarButton
+                url={"/"}
+                logo={<Home size={20}/>}
+                label={"Home"}
+            />
 
-            <Link
-                className={"w-full"}
-                to="/create"
-            >
-                <MenuButton className={"flex items-center gap-2 w-full"}>
-                    <Plus size={20}/> Create Clip
-                </MenuButton>
-            </Link>
-            <MenuButton className={"flex items-center gap-2"}>
-                <Film size={20}/> My Clips
-            </MenuButton>
+            <SidebarButton
+                url={"/create"}
+                logo={<Plus size={20}/>}
+                label={"Create Clip"}
+            />
+
+            <SidebarButton
+                url={"/my-clips"}
+                logo={<Film size={20}/>}
+                label={"My Clips"}
+            />
         </Box>
     );
 };
