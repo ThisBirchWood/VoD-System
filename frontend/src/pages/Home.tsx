@@ -5,13 +5,8 @@ const Home = () => {
             <img
                 src="/logo.png"
                 alt="VoD System Logo"
-                className="h-36 mb-8 object-contain"
+                className="h-44 mb-8 object-contain"
             />
-
-            {/* Main Title */}
-            <h1 className="text-5xl font-extrabold mb-6 tracking-tight text-gray-800">
-                The VoD System
-            </h1>
 
             {/* Description Container */}
             <div className="max-w-xl text-center">
