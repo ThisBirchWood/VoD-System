@@ -36,6 +36,12 @@ const Home = () => {
                     making video clip management faster and more enjoyable than ever.
                 </p>
             </div>
+
+            {/* File Support Note */}
+            <div className="bg-gray-100 border border-gray-300 rounded-md p-4 text-sm text-gray-500 max-w-md mx-auto">
+                <strong>Note:</strong> Currently, only <code>.mp4</code> files are supported for upload and processing.
+                Support for additional video formats will be added in future updates.
+            </div>
         </div>
     );
 };
