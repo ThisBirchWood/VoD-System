@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import MenuButton from "./buttons/MenuButton.tsx";
-import { Plus, Film } from 'lucide-react';
+import { Plus, Film, Home } from 'lucide-react';
+import Box from "./Box.tsx";
 
 type props = {
     className?: string
@@ -9,10 +10,25 @@ type props = {
 
 const Sidebar = ({className}: props) => {
     return (
-        <div className={clsx("h-screen bg-white shadow-sm border-r flex flex-col gap-2 mr-5", className)}>
+        <Box className={clsx("h-screen  flex flex-col gap-2 mr-5", className)}>
+            <img
+                className={"w-45 mx-auto grayscale-100"}
+                src={"../../public/logo.png"}
+                alt={"VoD System Logo"}
+            />
             <Link
                 className={"w-full"}
-                to="/create">
+                to={"/"}
+            >
+                <MenuButton className={"flex items-center gap-2 w-full"}>
+                    <Home size={20}/> Home
+                </MenuButton>
+            </Link>
+
+            <Link
+                className={"w-full"}
+                to="/create"
+            >
                 <MenuButton className={"flex items-center gap-2 w-full"}>
                     <Plus size={20}/> Create Clip
                 </MenuButton>
@@ -20,7 +36,7 @@ const Sidebar = ({className}: props) => {
             <MenuButton className={"flex items-center gap-2"}>
                 <Film size={20}/> My Clips
             </MenuButton>
-        </div>
+        </Box>
     );
 };
 

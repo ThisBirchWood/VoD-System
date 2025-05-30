@@ -6,7 +6,8 @@ import ClipRangeSlider from "./../components/ClipRangeSlider";
 import ClipConfig from "./../components/ClipConfig";
 import {editFile, getMetadata, processFile, getProgress} from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
-import BlueButton from "../components/buttons/BlueButton.tsx";
+import Box from "../components/Box.tsx";
+import ExportWidget from "../components/ExportWidget.tsx";
 
 const ClipEdit = () => {
     const { id } = useParams();
@@ -51,9 +52,7 @@ const ClipEdit = () => {
         }, 500);
     }
 
-    const handleDownload = async (filename: string | undefined) => {
-        if (!filename) return;
-
+    const handleDownload = async () => {
         const response = await fetch(`/api/v1/download/output/${id}`);
 
         if (!response.ok) {
@@ -66,7 +65,7 @@ const ClipEdit = () => {
         const a = document.createElement('a');
 
         a.href = url;
-        a.download = filename;
+        a.download = `${id}.mp4`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -82,7 +81,7 @@ const ClipEdit = () => {
     }, [id]);
 
     return (
-        <div className={"grid grid-cols-[70%_30%]"}>
+        <div className={"grid grid-cols-[7fr_3fr]"}>
             <video
                    ref={videoRef}
                    className={"w-full rounded-lg shadow-lg border border-gray-300 bg-black m-auto"}>
@@ -93,12 +92,15 @@ const ClipEdit = () => {
             </video>
 
 
-            <ClipConfig
-                setMetadata={setOutputMetadata}
-            />
+            <Box className={"w-4/5 h-full m-auto"}>
+                <ClipConfig
+                    setMetadata={setOutputMetadata}
+                />
+            </Box>
+
 
             {metadata &&
-                <div>
+                <Box className={"mt-4 p-5"}>
                     <Playbar
                         video={videoRef.current}
                         videoMetadata={metadata}
@@ -120,26 +122,15 @@ const ClipEdit = () => {
                         setMetadata={setOutputMetadata}
                         className={"w-full mb-10 bg-primary"}
                     />
-                </div>}
+                </Box>}
 
-            <div className={"flex flex-col gap-2 w-4/5 m-auto"}>
-                <BlueButton
-                    onClick={sendData}>
-                    Export
-                </BlueButton>
-
-                { downloadable ?
-                    (<BlueButton
-                        onClick={() => handleDownload(id)}>
-                        Download
-                    </BlueButton>)
-                    :(
-                    <progress
-                        value={progress}
-                        className={"bg-gray-200 rounded-lg h-1"}>
-                    </progress> )
-                }
-            </div>
+            <Box className={"flex flex-col gap-2 w-4/5 m-auto mt-4 p-5"}>
+                <ExportWidget
+                    dataSend={sendData}
+                    handleDownload={handleDownload}
+                    downloadable={downloadable}
+                    progress={progress} />
+            </Box>
         </div>
     );
 }
