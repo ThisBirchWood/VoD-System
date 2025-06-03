@@ -39,9 +39,9 @@ public class MetadataService {
         try {
            process = pb.start();
            handleFfprobeError(process);
+           VideoMetadata metadata = parseVideoMetadata(readStandardOutput(process));
            logger.info("Metadata for file {} finished with exit code {}", file.getAbsolutePath(), process.exitValue());
-           process.destroy();
-           return parseVideoMetadata(readStandardOutput(process));
+           return metadata;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new FFMPEGException(e.getMessage());
