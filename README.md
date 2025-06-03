@@ -12,9 +12,24 @@ This VoD system began as a small project back in my 5th year of secondary school
 - Docker & Docker Compose
 - JDK 21+
 - Node.js 16+
+- FFMPEG
 ## Steps
 1. Spin up docker container with `docker compose up`
 2. Run `./mvnw clean package` to build the jar
 3. Run `./mvnw spring-boot:run` to run the backend section
 4. Run `cd frontend && npm install && npm run dev` to build and run the frontend
 5. Endpoints should be available at 8080 (backend) and 5173 (frontend)
+
+# Future Plans
+
+- **User Management**   
+  - Database integration with authentication and login
+  - Clip saving and management for authenticated users
+- **Format Handling**
+  - Backend conversion of non-MP4 files via FFMPEG for broader format support
+- **Input Sources**
+    - Support for local file uploads and YouTube imports
+- **Testing**
+    - Unit tests, including coverage for FFMPEG-related functionality
+- **API Documentation**
+  - Comprehensive and maintainable backend API docs
