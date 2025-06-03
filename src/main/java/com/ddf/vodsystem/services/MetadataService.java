@@ -40,12 +40,14 @@ public class MetadataService {
            process = pb.start();
            handleFfprobeError(process);
            logger.info("Metadata for file {} finished with exit code {}", file.getAbsolutePath(), process.exitValue());
+           process.destroy();
            return parseVideoMetadata(readStandardOutput(process));
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new FFMPEGException(e.getMessage());
+        } catch (IOException e) {
+            throw new FFMPEGException(e.getMessage());
         }
-
     }
 
     public VideoMetadata getInputFileMetadata(String uuid) {
