@@ -28,6 +28,16 @@ public class CompressionService {
 
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
+    private void validateVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
+        if (outputFileMetadata.getStartPoint() == null) {
+            outputFileMetadata.setStartPoint(0f);
+        }
+
+        if (outputFileMetadata.getEndPoint() == null) {
+            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
+        }
+    }
+
     private void buildFilters(ArrayList<String> command, Float fps, Integer width, Integer height) {
         List<String> filters = new ArrayList<>();
 
@@ -66,22 +76,15 @@ public class CompressionService {
         command.add(audioBitrate + "k");
     }
 
-    private void buildInputs(ArrayList<String> command, File inputFile, Float startPoint, Float endPoint) {
-        if (startPoint == null) {
-            startPoint = 0f;
-        }
-
+    private void buildInputs(ArrayList<String> command, File inputFile, Float startPoint, Float length) {
         command.add("-ss");
         command.add(startPoint.toString());
 
         command.add("-i");
         command.add(inputFile.getAbsolutePath());
 
-        if (endPoint != null) {
-            float length = endPoint - startPoint;
-            command.add("-t");
-            command.add(Float.toString(length));
-        }
+        command.add("-t");
+        command.add(Float.toString(length));
     }
 
     private ProcessBuilder buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
@@ -92,7 +95,7 @@ public class CompressionService {
         command.add("-y");
 
         Float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
-        buildInputs(command, inputFile, videoMetadata.getStartPoint(), videoMetadata.getEndPoint());
+        buildInputs(command, inputFile, videoMetadata.getStartPoint(), length);
         buildFilters(command, videoMetadata.getFps(), videoMetadata.getWidth(), videoMetadata.getHeight());
 
         if (videoMetadata.getFileSize() != null) {
@@ -108,6 +111,8 @@ public class CompressionService {
 
     public void run(Job job) throws IOException, InterruptedException {
         logger.info("FFMPEG starting...");
+
+        validateVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
 
         ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata());
         Process process = pb.start();

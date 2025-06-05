@@ -16,7 +16,7 @@ public class Job {
 
     // configs
     private VideoMetadata inputVideoMetadata;
-    private VideoMetadata outputVideoMetadata;
+    private VideoMetadata outputVideoMetadata = new VideoMetadata();
 
     // job status
     private JobStatus status = JobStatus.NOT_READY;
