@@ -1,19 +1,19 @@
 meta {
   name: Upload
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
-  url: {{base_url}}/api/v1/upload
+  url: {{base_url}}/upload
   body: multipartForm
   auth: inherit
 }
 
 body:multipart-form {
-  file: @file(/Users/faoite/Downloads/Why Australia's Economy is Stalling.mp4)
+  file: @file(/home/dylan/Documents/Test Videos/long_normal.mp4)
 }
 
 script:post-response {
-  bru.setEnvVar("video_uuid",res.getBody());
+  bru.setEnvVar("uuid", res.body);
 }

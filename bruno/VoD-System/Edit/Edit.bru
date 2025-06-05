@@ -1,0 +1,16 @@
+meta {
+  name: Edit
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/edit/{{uuid}}
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  startPoint: 30
+  endPoint: 120
+}
