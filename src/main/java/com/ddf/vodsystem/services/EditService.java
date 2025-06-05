@@ -37,6 +37,9 @@ public class EditService {
         Float start = videoMetadata.getStartPoint();
         Float end = videoMetadata.getEndPoint();
         Float fileSize = videoMetadata.getFileSize();
+        Integer width = videoMetadata.getWidth();
+        Integer height = videoMetadata.getHeight();
+        Float fps = videoMetadata.getFps();
 
         if (start != null && start < 0) {
             throw new IllegalArgumentException("Start point cannot be negative");
@@ -52,6 +55,18 @@ public class EditService {
 
         if (fileSize != null && fileSize < 100) {
             throw new IllegalArgumentException("File size cannot be less than 100kb");
+        }
+
+        if (width != null && width < 1) {
+            throw new IllegalArgumentException("Width cannot be less than 1");
+        }
+
+        if (height != null && height < 1) {
+            throw new IllegalArgumentException("Height cannot be less than 1");
+        }
+
+        if (fps != null && fps < 1) {
+            throw new IllegalArgumentException("FPS cannot be less than 1");
         }
     }
 }
