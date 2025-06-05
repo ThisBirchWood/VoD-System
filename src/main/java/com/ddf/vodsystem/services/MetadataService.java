@@ -39,13 +39,15 @@ public class MetadataService {
         try {
            process = pb.start();
            handleFfprobeError(process);
+           VideoMetadata metadata = parseVideoMetadata(readStandardOutput(process));
            logger.info("Metadata for file {} finished with exit code {}", file.getAbsolutePath(), process.exitValue());
-           return parseVideoMetadata(readStandardOutput(process));
-        } catch (IOException | InterruptedException e) {
+           return metadata;
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new FFMPEGException(e.getMessage());
+        } catch (IOException e) {
+            throw new FFMPEGException(e.getMessage());
         }
-
     }
 
     public VideoMetadata getInputFileMetadata(String uuid) {
