@@ -20,8 +20,11 @@ public class UploadController {
 
     @PostMapping()
     public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
-        String uuid = uploadService.upload(file);
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Invalid file");
+        }
 
+        String uuid = uploadService.upload(file);
         return new ResponseEntity<>(uuid, HttpStatus.OK);
     }
 }
