@@ -1,15 +1,11 @@
 package com.ddf.vodsystem.entities;
 
-import lombok.Data;
 import java.io.File;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Data;
 
 @Data
 public class Job {
-    private static final Logger logger = LoggerFactory.getLogger(Job.class);
-
     private String uuid;
     private File inputFile;
     private File outputFile;
