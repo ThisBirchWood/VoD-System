@@ -8,14 +8,14 @@ const clipUpload = () => {
     const [file, setFile] = useState<File | null>(null);
     const navigate = useNavigate();
 
-    const [noFileError, setNoFileError] = useState(false);
+    const [error, setError] = useState<null | string>(null);
     const press = (() => {
         if (file) {
-            uploadFile(file)
+            uploadFile(file, setError)
                 .then(uuid => navigate(`/create/${uuid}`))
                 .catch(e => console.error(e));
         } else {
-            setNoFileError(true);
+            setError("Please choose a file");
         }
     });
 
@@ -35,9 +35,7 @@ const clipUpload = () => {
                 Upload
             </BlueButton>
 
-            {noFileError &&
-                <label className={"text-center text-red-500"}>Please choose a file</label>
-            }
+            <label className={"text-center text-red-500"}>{error}</label>
         </Box>
     )
 };

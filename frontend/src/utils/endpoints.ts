@@ -1,9 +1,9 @@
-import type {VideoMetadata} from "./types.ts";
+import type {VideoMetadata, APIResponse} from "./types.ts";
 
 /**
  * Uploads a file to the backend.
  */
-const uploadFile = async (file: File): Promise<string> => {
+const uploadFile = async (file: File, setError: Function): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -13,16 +13,15 @@ const uploadFile = async (file: File): Promise<string> => {
             body: formData,
         });
 
-        if (!response.ok) {
-            console.error('File upload failed with status:', response.status);
-            return '';
+        const result: APIResponse = await response.json();
+
+        if (result.status == "error") {
+            setError(result.message);
         }
 
-        const result = await response.json();
-        return result.data?.uuid ?? '';
+        return result.data.uuid;
     } catch (error: unknown) {
-        console.error('Error uploading file:', error);
-        return '';
+        throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 };
 
@@ -31,8 +30,8 @@ const uploadFile = async (file: File): Promise<string> => {
  */
 const editFile = async (
     uuid: string,
-    videoMetadata: VideoMetadata
-): Promise<boolean> => {
+    videoMetadata: VideoMetadata,
+    setError: Function ): Promise<boolean> => {
     const formData = new URLSearchParams();
 
     for (const [key, value] of Object.entries(videoMetadata)) {
@@ -50,7 +49,14 @@ const editFile = async (
             body: formData.toString(),
         });
 
-        return response.ok;
+        const result: APIResponse = await response.json();
+
+        if (result.status === "error") {
+            setError(result.message);
+            return false;
+        }
+
+        return true;
     } catch (error: unknown) {
         console.error('Error editing file:', error);
         return false;
@@ -59,9 +65,16 @@ const editFile = async (
 /**
  * Triggers file processing.
  */
-const processFile = async (uuid: string): Promise<boolean> => {
+const processFile = async (uuid: string, setError: Function): Promise<boolean> => {
     try {
         const response = await fetch(`/api/v1/process/${uuid}`);
+
+        const result: APIResponse = await response.json();
+        if (result.status === "error") {
+            setError(result.message);
+            return false;
+        }
+
         return response.ok;
     } catch (error: unknown) {
         console.error('Error processing file:', error);

@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.entities.APIResponse;
+import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
 import org.springframework.http.HttpStatus;
@@ -59,5 +60,12 @@ public class GlobalExceptionHandler {
         logger.error("JobNotFinished: {}", ex.getMessage(), ex);
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @ExceptionHandler(FFMPEGException.class)
+    public ResponseEntity<APIResponse<Void>> handleFFMPEGException(FFMPEGException ex) {
+        logger.error("FFMPEGException: {}", ex.getMessage(), ex);
+        APIResponse<Void> response = new APIResponse<>(ERROR, "FFMPEG Error: Please upload a valid file", null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

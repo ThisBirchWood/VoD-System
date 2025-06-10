@@ -33,18 +33,15 @@ const ClipEdit = () => {
 
         setDownloadable(false);
 
-        const edited = await editFile(id, outputMetadata);
-        const processed = await processFile(id);
+        const edited = await editFile(id, outputMetadata, setError);
 
         if (!edited) {
-            console.log("Failed to edit file");
-            setError("Failed to edit file. Please check the metadata and try again.");
             return;
         }
 
+        const processed = await processFile(id, setError);
+
         if (!processed) {
-            console.log("Failed to process file");
-            setError("Failed to process file. Please try again later.");
             return;
         }
 
