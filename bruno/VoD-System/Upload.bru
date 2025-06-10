@@ -11,9 +11,9 @@ post {
 }
 
 body:multipart-form {
-  file: @file(/home/dylan/Documents/Test Videos/long_normal.mp4)
+  file: @file(/Users/faoite/Downloads/Why Australia's Economy is Stalling.mp4)
 }
 
 script:post-response {
-  bru.setEnvVar("uuid", res.body);
+  bru.setEnvVar("uuid", res.body.data.uuid);
 }

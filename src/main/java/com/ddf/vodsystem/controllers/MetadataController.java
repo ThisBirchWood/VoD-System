@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.entities.VideoMetadata;
+import com.ddf.vodsystem.entities.APIResponse;
 import com.ddf.vodsystem.services.JobService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,26 +20,28 @@ public class MetadataController {
     }
 
     @GetMapping("/original/{uuid}")
-    public ResponseEntity<VideoMetadata> getMetadata(@PathVariable String uuid) {
+    public ResponseEntity<APIResponse<VideoMetadata>> getMetadata(@PathVariable String uuid) {
         VideoMetadata originalMetadata = jobService.getJob(uuid).getInputVideoMetadata();
 
         if (originalMetadata == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new APIResponse<>("error", "Original metadata not found", null));
         }
 
         return ResponseEntity.ok()
-                .body(originalMetadata);
+                .body(new APIResponse<>("success", "Original metadata retrieved", originalMetadata));
     }
 
     @GetMapping("/converted/{uuid}")
-    public ResponseEntity<VideoMetadata> getConvertedMetadata(@PathVariable String uuid) {
+    public ResponseEntity<APIResponse<VideoMetadata>> getConvertedMetadata(@PathVariable String uuid) {
         VideoMetadata convertedMetadata = jobService.getJob(uuid).getOutputVideoMetadata();
 
         if (convertedMetadata == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new APIResponse<>("error", "Converted metadata not found", null));
         }
 
         return ResponseEntity.ok()
-                .body(convertedMetadata);
+                .body(new APIResponse<>("success", "Converted metadata retrieved", convertedMetadata));
     }
 }

@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.controllers;
 
+import com.ddf.vodsystem.entities.APIResponse;
 import com.ddf.vodsystem.services.UploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,12 +20,13 @@ public class UploadController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> uploadVideo(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<APIResponse<Object>> uploadVideo(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Invalid file");
         }
 
         String uuid = uploadService.upload(file);
-        return new ResponseEntity<>(uuid, HttpStatus.OK);
+        APIResponse<Object> response = new APIResponse<>("success", "File uploaded successfully", java.util.Collections.singletonMap("uuid", uuid));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
