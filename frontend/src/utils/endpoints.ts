@@ -18,7 +18,8 @@ const uploadFile = async (file: File): Promise<string> => {
             return '';
         }
 
-        return await response.text();
+        const result = await response.json();
+        return result.data?.uuid ?? '';
     } catch (error: unknown) {
         console.error('Error uploading file:', error);
         return '';
@@ -81,7 +82,7 @@ const getProgress = async (uuid: string): Promise<number> => {
         }
 
         const result = await response.json();
-        return parseFloat(result);
+        return result.data?.progress ?? 0;
     } catch (error: unknown) {
         console.error('Error getting progress:', error);
         return 0;
@@ -99,7 +100,8 @@ const getMetadata = async (uuid: string): Promise<VideoMetadata> => {
             throw new Error(`Failed to fetch metadata: ${response.status}`);
         }
 
-        return await response.json();
+        const result = await response.json();
+        return result.data;
     } catch (error: unknown) {
         console.error('Error fetching metadata:', error);
 
