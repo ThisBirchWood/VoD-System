@@ -26,17 +26,25 @@ const ClipEdit = () => {
     });
     const [progress, setProgress] = useState(0);
     const [downloadable, setDownloadable] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const sendData = async() => {
         if (!id) return;
 
         setDownloadable(false);
 
-        await editFile(id, outputMetadata);
+        const edited = await editFile(id, outputMetadata);
         const processed = await processFile(id);
+
+        if (!edited) {
+            console.log("Failed to edit file");
+            setError("Failed to edit file. Please check the metadata and try again.");
+            return;
+        }
 
         if (!processed) {
             console.log("Failed to process file");
+            setError("Failed to process file. Please try again later.");
             return;
         }
 
@@ -122,7 +130,14 @@ const ClipEdit = () => {
                         setMetadata={setOutputMetadata}
                         className={"w-full mt-2 bg-primary"}
                     />
-                </Box>}
+
+                    {error && (
+                        <div className="text-red-600 text-center mt-2">
+                            {error}
+                        </div>
+                    )}
+                </Box>
+            }
 
             <Box className={"flex flex-col gap-2 w-4/5 m-auto mt-4 p-5"}>
                 <ExportWidget

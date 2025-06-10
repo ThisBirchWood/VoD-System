@@ -62,7 +62,7 @@ export default function ClipConfig({setMetadata, className}: prop) {
                 </select>
             </Selector>
 
-            <Selector label={"File Size"}>
+            <Selector label={"File Size Limit (MB)"}>
                 <input type="number"
                        min="1"
                        defaultValue="10"
