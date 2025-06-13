@@ -37,3 +37,7 @@ build/
 videos/
 
 generated
+
+### Security ###
+.env.local
+.env.prod
