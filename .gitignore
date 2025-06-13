@@ -1,3 +1,7 @@
+### Security ###
+.env.local
+.env.prod
+
 node_modules
 HELP.md
 target/
