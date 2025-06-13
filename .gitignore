@@ -1,3 +1,7 @@
+### Security ###
+.env.local
+.env.prod
+
 node_modules
 HELP.md
 target/
@@ -37,7 +41,3 @@ build/
 videos/
 
 generated
-
-### Security ###
-.env.local
-.env.prod
