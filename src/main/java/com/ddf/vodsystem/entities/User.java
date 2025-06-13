@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @Data
 public class User {
+    @Id
     @Column(name = "id", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
     private Long id;
 
     @Column(name = "google_id", nullable = false, unique = true)
@@ -25,6 +25,9 @@ public class User {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "role", nullable = false)
+    private Integer role; // 0: user, 1: admin
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
