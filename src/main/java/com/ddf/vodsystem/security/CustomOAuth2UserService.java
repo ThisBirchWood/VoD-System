@@ -1,17 +1,15 @@
 package com.ddf.vodsystem.security;
-
-import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.repositories.UserRepository;
+
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
-public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+public class CustomOAuth2UserService extends DefaultOAuth2UserService  {
 
     private final UserRepository userRepository;
 
@@ -20,25 +18,21 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) {
-        OAuth2User oauthUser = super.loadUser(userRequest);
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        String googleId = oauthUser.getAttribute("sub"); // Google's unique user ID
-        String email = oauthUser.getAttribute("email");
-        String name = oauthUser.getAttribute("name");
+//        String email = oAuth2User.getAttribute("email");
+//        String name = oAuth2User.getAttribute("name");
+//        String googleId = oAuth2User.getAttribute("sub");
+//
+//        userRepository.findByGoogleId(googleId).orElseGet(() -> {
+//            User user = new User();
+//            user.setEmail(email);
+//            user.setName(name);
+//            user.setGoogleId(googleId);
+//            return userRepository.save(user);
+//        });
 
-        Optional<User> userOptional = userRepository.findByGoogleId(googleId);
-        User user;
-        if (userOptional.isEmpty()) {
-            user = new User();
-            user.setGoogleId(googleId);
-            user.setEmail(email);
-            user.setName(name);
-            user.setUsername(email.split("@")[0]);
-            user.setCreatedAt(LocalDateTime.now());
-            userRepository.save(user);
-        }
-
-        return oauthUser;
+        return oAuth2User;
     }
 }

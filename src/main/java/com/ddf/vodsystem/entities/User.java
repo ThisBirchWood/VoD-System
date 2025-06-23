@@ -29,7 +29,7 @@ public class User {
     @Column(name = "role", nullable = false)
     private Integer role; // 0: user, 1: admin
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
 

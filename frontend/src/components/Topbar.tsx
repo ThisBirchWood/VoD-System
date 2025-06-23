@@ -1,18 +1,22 @@
-import { Menu, X} from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import MenuButton from "./buttons/MenuButton.tsx";
 import clsx from "clsx";
 
 type props = {
-    sidebarToggled: boolean,
-    setSidebarToggled: Function
+    sidebarToggled: boolean;
+    setSidebarToggled: Function;
     className?: string;
 }
 
 const Topbar = ({sidebarToggled, setSidebarToggled, className}: props) => {
     return (
-        <div className={clsx(className)}>
+        <div className={clsx(className, "flex justify-between")}>
             <MenuButton onClick={() => setSidebarToggled(!sidebarToggled)}>
                 {sidebarToggled ? <Menu size={24}/> :  <X size={24}/>}
+            </MenuButton>
+
+            <MenuButton className={"w-20 text-gray-600"}>
+                Login
             </MenuButton>
         </div>
     )
