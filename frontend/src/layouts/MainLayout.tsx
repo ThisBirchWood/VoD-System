@@ -26,6 +26,7 @@ const MainLayout = () => {
     return (
         <div className={`transition-all duration-300 grid h-screen ${sidebarToggled ? "grid-cols-[0px_1fr]" : "grid-cols-[240px_1fr]"} grid-rows-[auto_1fr]`}>
             <Sidebar
+                user={user}
                 className={`row-span-2 transition-all duration-300 overflow-hidden whitespace-nowrap ${sidebarToggled ? "-translate-x-full" : "translate-x-0"}`}/>
             <Topbar
                 className="transition-all duration-300"

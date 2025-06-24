@@ -2,12 +2,14 @@ import clsx from "clsx";
 import SidebarButton from "./buttons/SidebarButton.tsx";
 import { Plus, Film, Home } from 'lucide-react';
 import Box from "./Box.tsx";
+import type {User} from "../utils/types.ts";
 
 type props = {
+    user: User | null;
     className?: string
 }
 
-const Sidebar = ({className}: props) => {
+const Sidebar = ({user, className}: props) => {
     return (
         <Box className={clsx("h-screen flex flex-col mr-5", className)}>
             <img
@@ -27,11 +29,13 @@ const Sidebar = ({className}: props) => {
                 label={"Create Clip"}
             />
 
-            <SidebarButton
-                url={"/my-clips"}
-                logo={<Film size={20}/>}
-                label={"My Clips"}
-            />
+            { user && (
+                <SidebarButton
+                    url={"/my-clips"}
+                    logo={<Film size={20}/>}
+                    label={"My Clips"}
+                />
+                )}
         </Box>
     );
 };
