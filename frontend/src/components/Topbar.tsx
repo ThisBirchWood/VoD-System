@@ -37,7 +37,7 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                     onClick={() => globalThis.location.href = loginUrl}>
                     Login
                 </MenuButton>
-            )};
+            )}
 
         </div>
     )
