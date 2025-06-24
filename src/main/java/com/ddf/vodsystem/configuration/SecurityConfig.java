@@ -35,8 +35,10 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
-                        .successHandler(successHandler())
-
+                        .successHandler(successHandler()))
+                .logout(logout -> logout
+                        .logoutUrl("/api/v1/auth/logout")
+                        .logoutSuccessUrl(frontendUrl)
                 );
 
         return http.build();
