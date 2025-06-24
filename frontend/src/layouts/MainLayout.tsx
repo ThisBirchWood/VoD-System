@@ -2,10 +2,26 @@
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
 import { Outlet } from 'react-router-dom';
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import type {User} from "../utils/types";
+import { getUser } from "../utils/endpoints";
 
 const MainLayout = () => {
     const [sidebarToggled, setSidebarToggled] = useState(false);
+    const [user, setUser] = useState<null | User>(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const userData = await getUser();
+                setUser(userData);
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
+            }
+        };
+
+        fetchUser();
+    }, []);
 
     return (
         <div className={`transition-all duration-300 grid h-screen ${sidebarToggled ? "grid-cols-[0px_1fr]" : "grid-cols-[240px_1fr]"} grid-rows-[auto_1fr]`}>
@@ -14,7 +30,8 @@ const MainLayout = () => {
             <Topbar
                 className="transition-all duration-300"
                 sidebarToggled={sidebarToggled}
-                setSidebarToggled={setSidebarToggled}/>
+                setSidebarToggled={setSidebarToggled}
+                user={user}/>
             <div className="overflow-auto">
                 <Outlet />
             </div>

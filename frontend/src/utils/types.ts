@@ -13,7 +13,13 @@ type APIResponse = {
     message: string
 }
 
+type User = {
+    name: string,
+    email: string
+}
+
 export type {
     APIResponse,
-    VideoMetadata
+    VideoMetadata,
+    User
 }

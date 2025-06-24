@@ -1,4 +1,4 @@
-package com.ddf.vodsystem.configuration;
+package com.ddf.vodsystem.security;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.repositories.UserRepository;
 

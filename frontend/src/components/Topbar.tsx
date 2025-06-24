@@ -1,17 +1,18 @@
 import { Menu, X } from 'lucide-react';
 import MenuButton from "./buttons/MenuButton.tsx";
 import clsx from "clsx";
+import type {User} from "../utils/types.ts";
 
 type props = {
     sidebarToggled: boolean;
     setSidebarToggled: Function;
+    user: User | null;
     className?: string;
 }
 
-const Topbar = ({sidebarToggled, setSidebarToggled, className}: props) => {
+const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => {
     const apiUrl = import.meta.env.VITE_API_URL;
-    const redirectUri = encodeURIComponent(window.location.href);
-    const loginUrl = `${apiUrl}/oauth2/authorization/google?redirect_uri=${redirectUri}`;
+    const loginUrl = `${apiUrl}/oauth2/authorization/google`;
 
     return (
         <div className={clsx(className, "flex justify-between")}>
@@ -19,9 +20,9 @@ const Topbar = ({sidebarToggled, setSidebarToggled, className}: props) => {
                 {sidebarToggled ? <Menu size={24}/> :  <X size={24}/>}
             </MenuButton>
 
-            <MenuButton className={"w-20 text-gray-600"}
+            <MenuButton className={"w-40 text-gray-600"}
             onClick={() => globalThis.location.href = loginUrl}>
-                Login
+                { user ? user.name : "Login" }
             </MenuButton>
         </div>
     )
