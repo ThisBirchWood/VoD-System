@@ -16,9 +16,4 @@ public class AuthController {
     public Map<String, Object> user(@AuthenticationPrincipal OAuth2User principal) {
         return principal.getAttributes();
     }
-
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
 }

@@ -1,4 +1,4 @@
-package com.ddf.vodsystem.security;
+package com.ddf.vodsystem.configuration;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.repositories.UserRepository;
 
@@ -7,6 +7,9 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 
 @Service
@@ -26,15 +29,18 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService  {
         String name = oAuth2User.getAttribute("name");
         String googleId = oAuth2User.getAttribute("sub");
 
-        userRepository.findByGoogleId(googleId).orElseGet(() -> {
+        Optional<User> existingUser = userRepository.findByGoogleId(googleId);
+
+        if (existingUser.isEmpty()) {
             User user = new User();
             user.setEmail(email);
             user.setName(name);
             user.setGoogleId(googleId);
             user.setUsername(email);
             user.setRole(0);
-            return userRepository.save(user);
-        });
+            user.setCreatedAt(LocalDateTime.now());
+            userRepository.save(user);
+        }
 
         return oAuth2User;
     }
