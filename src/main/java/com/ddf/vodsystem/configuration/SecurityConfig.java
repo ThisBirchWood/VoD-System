@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -41,7 +42,9 @@ public class SecurityConfig {
                         .successHandler(successHandler()))
                 .logout(logout -> logout
                         .logoutUrl("/api/v1/auth/logout")
-                        .logoutSuccessUrl(frontendUrl)
+                        .logoutSuccessHandler(logoutSuccessHandler())
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                 );
 
         return http.build();
@@ -49,6 +52,11 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationSuccessHandler successHandler() {
+        return (request, response, authentication) -> response.sendRedirect(frontendUrl);
+    }
+
+    @Bean
+    public LogoutSuccessHandler logoutSuccessHandler() {
         return (request, response, authentication) -> response.sendRedirect(frontendUrl);
     }
 
