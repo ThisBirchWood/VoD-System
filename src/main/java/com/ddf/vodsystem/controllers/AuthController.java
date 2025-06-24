@@ -26,10 +26,22 @@ public class AuthController {
                     ));
         }
 
+        if (principal.getAttribute("email") == null
+                || principal.getAttribute("name") == null
+                || principal.getAttribute("picture") == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).
+                    body(new APIResponse<>(
+                            "error",
+                            "Required user attributes are missing",
+                            null
+                    ));
+        }
+
         return ResponseEntity.ok(
                 new APIResponse<>("success", "User details retrieved successfully", Map.of(
                         "name", principal.getAttribute("name"),
-                        "email", principal.getAttribute("email"))
+                        "email", principal.getAttribute("email"),
+                        "profilePicture", principal.getAttribute("picture"))
                 )
         );
     }

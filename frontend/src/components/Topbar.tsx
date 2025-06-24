@@ -2,6 +2,7 @@ import { Menu, X } from 'lucide-react';
 import MenuButton from "./buttons/MenuButton.tsx";
 import clsx from "clsx";
 import type {User} from "../utils/types.ts";
+import { Dropdown, DropdownItem } from "./Dropdown.tsx";
 
 type props = {
     sidebarToggled: boolean;
@@ -23,13 +24,22 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
 
             { user ? (
                 <div>
-                    <MenuButton className={"w-40 text-gray-600"}>
-                        {user.name}
-                    </MenuButton>
-                    <MenuButton className={"w-20 text-gray-600"}
-                                onClick={() => globalThis.location.href = logoutUrl}>
-                        Logout
-                    </MenuButton>
+                    <img
+                        className={"w-8 h-8 rounded-full inline-block mr-2"}
+                        src={user.profilePicture}
+                        referrerPolicy="no-referrer"
+                    />
+
+                    <Dropdown label={user.name}>
+                        <DropdownItem item="Logout" onClick={() => globalThis.location.href = logoutUrl} className="text-red-600" />
+                    </Dropdown>
+
+                    {/*<Dropdown label={user.name}>*/}
+                    {/*    <DropdownItem>*/}
+                    {/*        <a href={logoutUrl}>Logout</a>*/}
+                    {/*    </DropdownItem>*/}
+                    {/*</Dropdown>*/}
+
                 </div>
             ) :
             (
