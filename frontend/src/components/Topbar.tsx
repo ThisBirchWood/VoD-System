@@ -25,21 +25,14 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
             { user ? (
                 <div>
                     <img
-                        className={"w-8 h-8 rounded-full inline-block mr-2"}
+                        className={"w-8 h-8 rounded-full inline-block"}
                         src={user.profilePicture}
                         referrerPolicy="no-referrer"
                     />
 
                     <Dropdown label={user.name}>
-                        <DropdownItem item="Logout" onClick={() => globalThis.location.href = logoutUrl} className="text-red-600" />
+                        <DropdownItem item="Logout" onClick={() => globalThis.location.href = logoutUrl} className={"text-red-500 font-medium"} />
                     </Dropdown>
-
-                    {/*<Dropdown label={user.name}>*/}
-                    {/*    <DropdownItem>*/}
-                    {/*        <a href={logoutUrl}>Logout</a>*/}
-                    {/*    </DropdownItem>*/}
-                    {/*</Dropdown>*/}
-
                 </div>
             ) :
             (
