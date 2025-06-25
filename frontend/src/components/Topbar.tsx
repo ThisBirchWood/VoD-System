@@ -31,7 +31,9 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                     />
 
                     <Dropdown label={user.name}>
-                        <DropdownItem item="Logout" onClick={() => globalThis.location.href = logoutUrl} className={"text-red-500 font-medium"} />
+                        <DropdownItem item="Logout"
+                                      onClick={() => globalThis.location.href = logoutUrl}
+                                      className={"text-red-500 font-medium"} />
                     </Dropdown>
                 </div>
             ) :

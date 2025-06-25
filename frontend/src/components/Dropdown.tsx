@@ -47,12 +47,12 @@ const Dropdown = ({ label, children, className }: DropdownProps) => {
             ref={ref}>
             <button
                 onClick={toggleDropdown}
-                className="inline-flex justify-between w-full rounded-xl px-4 py-2 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className={"inline-flex justify-between w-full rounded-xl px-4 py-2 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50"}
             >
                 {label}
             </button>
             {isOpen && (
-                <ul className="absolute w-48 origin-top-right rounded-md bg-white shadow-lg font-medium">
+                <ul className={"absolute w-48 origin-top-right rounded-md bg-white shadow-lg font-medium"}>
                     {children}
                 </ul>
             )}

@@ -29,7 +29,7 @@ const MainLayout = () => {
                 user={user}
                 className={`row-span-2 transition-all duration-300 overflow-hidden whitespace-nowrap ${sidebarToggled ? "-translate-x-full" : "translate-x-0"}`}/>
             <Topbar
-                className="transition-all duration-300"
+                className={"transition-all duration-300"}
                 sidebarToggled={sidebarToggled}
                 setSidebarToggled={setSidebarToggled}
                 user={user}/>

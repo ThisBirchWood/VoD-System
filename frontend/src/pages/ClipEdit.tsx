@@ -129,7 +129,7 @@ const ClipEdit = () => {
                     />
 
                     {error && (
-                        <div className="text-red-600 text-center mt-2">
+                        <div className={"text-red-600 text-center mt-2"}>
                             {error}
                         </div>
                     )}

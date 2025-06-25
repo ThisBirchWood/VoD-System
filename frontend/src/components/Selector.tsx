@@ -12,7 +12,7 @@ const Selector = ({children, label}: props) => {
                 className={"w-full"}>
                 { label }
             </label>
-            <div className="w-px h-6 bg-gray-400 mx-3" />
+            <div className={"w-px h-6 bg-gray-400 mx-3"} />
             {children}
         </div>
     )
