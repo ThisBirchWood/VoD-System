@@ -24,14 +24,14 @@ public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
     private final BlockingQueue<Job> jobQueue = new LinkedBlockingQueue<>();
-    private final CompressionService compressionService;
+    private final ClipService clipService;
 
     /**
      * Constructs a JobService with the given CompressionService.
-     * @param compressionService the compression service to use for processing jobs
+     * @param clipService the compression service to use for processing jobs
      */
-    public JobService(CompressionService compressionService) {
-        this.compressionService = compressionService;
+    public JobService(ClipService clipService) {
+        this.clipService = clipService;
     }
 
     /**
@@ -78,7 +78,7 @@ public class JobService {
      */
     private void processJob(Job job) {
         try {
-            compressionService.run(job);
+            clipService.run(job);
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Error while running job {}", job.getUuid(), e);

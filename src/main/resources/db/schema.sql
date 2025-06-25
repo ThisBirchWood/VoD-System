@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS clips (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     width INTEGER NOT NULL,
     height INTEGER NOT NULL,
-    fps INTEGER NOT NULL,
-    duration INTEGER NOT NULL,
-    file_size BIGINT NOT NULL,
+    fps FLOAT NOT NULL,
+    duration FLOAT NOT NULL,
+    file_size FLOAT NOT NULL,
     video_path VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
