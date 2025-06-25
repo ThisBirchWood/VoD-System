@@ -1,16 +1,22 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.VideoMetadata;
-import com.ddf.vodsystem.entities.Job;
-import com.ddf.vodsystem.entities.JobStatus;
+import com.ddf.vodsystem.entities.*;
+import com.ddf.vodsystem.repositories.ClipRepository;
+import com.ddf.vodsystem.security.CustomOAuth2User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class EditService {
     private final JobService jobService;
+    private final ClipRepository clipRepository;
 
-    public EditService(JobService jobService) {
+    public EditService(JobService jobService, ClipRepository clipRepository) {
         this.jobService = jobService;
+        this.clipRepository = clipRepository;
     }
 
     public void edit(String uuid, VideoMetadata videoMetadata) {
@@ -21,6 +27,26 @@ public class EditService {
 
     public void process(String uuid) {
         jobService.jobReady(uuid);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomOAuth2User oAuth2user) {
+            VideoMetadata videoMetadata = jobService.getJob(uuid).getOutputVideoMetadata();
+            User user = oAuth2user.getUser();
+
+            Clip clip = new Clip();
+            clip.setTitle("test");
+            clip.setUser(user);
+            clip.setDescription("This is a test");
+            clip.setCreatedAt(LocalDateTime.now());
+            clip.setWidth(videoMetadata.getWidth());
+            clip.setHeight(videoMetadata.getHeight());
+            clip.setFps(videoMetadata.getFps());
+            clip.setDuration(videoMetadata.getEndPoint() -
+                            videoMetadata.getStartPoint());
+            clip.setFileSize(videoMetadata.getFileSize());
+            clip.setVideoPath("test");
+            clipRepository.save(clip);
+        }
     }
 
     public float getProgress(String uuid) {
