@@ -1,4 +1,4 @@
-import type {VideoMetadata, APIResponse} from "./types.ts";
+import type {VideoMetadata, APIResponse, User} from "./types.ts";
 
 /**
  * Uploads a file to the backend.
@@ -129,10 +129,23 @@ const getMetadata = async (uuid: string): Promise<VideoMetadata> => {
     }
 };
 
+const getUser = async (): Promise<null | User > => {
+    try {
+        const response = await fetch('/api/v1/auth/user', {credentials: "include",});
+
+        const result = await response.json();
+        return result.data;
+    } catch (error: unknown) {
+        console.error('Error fetching user:', error);
+        return null;
+    }
+}
+
 export {
     uploadFile,
     editFile,
     processFile,
     getProgress,
     getMetadata,
+    getUser
 };
