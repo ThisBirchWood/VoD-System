@@ -14,6 +14,8 @@ public class EditService {
     private final JobService jobService;
     private final ClipRepository clipRepository;
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EditService.class);
+
     public EditService(JobService jobService, ClipRepository clipRepository) {
         this.jobService = jobService;
         this.clipRepository = clipRepository;
@@ -30,22 +32,11 @@ public class EditService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomOAuth2User oAuth2user) {
+            logger.debug("Saving clip {} for user {}", uuid, oAuth2user.getName());
             VideoMetadata videoMetadata = jobService.getJob(uuid).getOutputVideoMetadata();
             User user = oAuth2user.getUser();
 
-            Clip clip = new Clip();
-            clip.setTitle("test");
-            clip.setUser(user);
-            clip.setDescription("This is a test");
-            clip.setCreatedAt(LocalDateTime.now());
-            clip.setWidth(videoMetadata.getWidth());
-            clip.setHeight(videoMetadata.getHeight());
-            clip.setFps(videoMetadata.getFps());
-            clip.setDuration(videoMetadata.getEndPoint() -
-                            videoMetadata.getStartPoint());
-            clip.setFileSize(videoMetadata.getFileSize());
-            clip.setVideoPath("test");
-            clipRepository.save(clip);
+            createClip(videoMetadata, user);
         }
     }
 
@@ -94,5 +85,20 @@ public class EditService {
         if (fps != null && fps < 1) {
             throw new IllegalArgumentException("FPS cannot be less than 1");
         }
+    }
+
+    private void createClip(VideoMetadata videoMetadata, User user) {
+        Clip clip = new Clip();
+        clip.setTitle("test");
+        clip.setUser(user);
+        clip.setDescription("This is a test");
+        clip.setCreatedAt(LocalDateTime.now());
+        clip.setWidth(videoMetadata.getWidth());
+        clip.setHeight(videoMetadata.getHeight());
+        clip.setFps(videoMetadata.getFps());
+        clip.setDuration(videoMetadata.getEndPoint() - videoMetadata.getStartPoint());
+        clip.setFileSize(videoMetadata.getFileSize());
+        clip.setVideoPath("test");
+        clipRepository.save(clip);
     }
 }
