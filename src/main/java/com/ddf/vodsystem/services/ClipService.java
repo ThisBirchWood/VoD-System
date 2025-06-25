@@ -19,14 +19,46 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CompressionService {
-    private static final Logger logger = LoggerFactory.getLogger(CompressionService.class);
+public class ClipService {
+    private static final Logger logger = LoggerFactory.getLogger(ClipService.class);
 
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
 
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
+
+    public void run(Job job) throws IOException, InterruptedException {
+        logger.info("FFMPEG starting...");
+
+        validateVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
+
+        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata());
+        Process process = pb.start();
+        job.setStatus(JobStatus.RUNNING);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        float length = job.getOutputVideoMetadata().getEndPoint() - job.getOutputVideoMetadata().getStartPoint();
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            logger.debug(line);
+            Matcher matcher = timePattern.matcher(line);
+
+            if (matcher.find()) {
+                Float progress = Long.parseLong(matcher.group(1))/(length*1000000);
+                job.setProgress(progress);
+            }
+        }
+
+        if (process.waitFor() != 0) {
+            job.setStatus(JobStatus.FAILED);
+            throw new FFMPEGException("FFMPEG process failed");
+        }
+
+        job.setStatus(JobStatus.FINISHED);
+        logger.info("FFMPEG finished");
+    }
 
     private void validateVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
         if (outputFileMetadata.getStartPoint() == null) {
@@ -107,38 +139,6 @@ public class CompressionService {
 
         logger.info("Running command: {}", command);
         return new ProcessBuilder(command);
-    }
-
-    public void run(Job job) throws IOException, InterruptedException {
-        logger.info("FFMPEG starting...");
-
-        validateVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
-
-        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata());
-        Process process = pb.start();
-        job.setStatus(JobStatus.RUNNING);
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        float length = job.getOutputVideoMetadata().getEndPoint() - job.getOutputVideoMetadata().getStartPoint();
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            logger.debug(line);
-            Matcher matcher = timePattern.matcher(line);
-
-            if (matcher.find()) {
-                Float progress = Long.parseLong(matcher.group(1))/(length*1000000);
-                job.setProgress(progress);
-            }
-        }
-
-        if (process.waitFor() != 0) {
-            job.setStatus(JobStatus.FAILED);
-            throw new FFMPEGException("FFMPEG process failed");
-        }
-
-        job.setStatus(JobStatus.FINISHED);
-        logger.info("FFMPEG finished");
     }
 
 }
