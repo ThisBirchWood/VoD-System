@@ -7,6 +7,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ddf.vodsystem.entities.Job;
@@ -67,6 +69,9 @@ public class JobService {
         Job job = getJob(uuid);
         job.setProgress(0f);
 
+        SecurityContext context = SecurityContextHolder.getContext();
+        job.setSecurityContext(context);
+
         logger.info("Job ready: {}", job.getUuid());
         job.setStatus(JobStatus.PENDING);
         jobQueue.add(job);
@@ -77,11 +82,21 @@ public class JobService {
      * @param job the job to process
      */
     private void processJob(Job job) {
+        SecurityContext previousContext = SecurityContextHolder.getContext(); // optional, for restoring later
         try {
+            if (job.getSecurityContext() != null) {
+                SecurityContextHolder.setContext(job.getSecurityContext());
+            }
+
             clipService.run(job);
+
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Error while running job {}", job.getUuid(), e);
+
+        } finally {
+            // 🔄 Restore previous context to avoid leaking across jobs
+            SecurityContextHolder.setContext(previousContext);
         }
     }
 

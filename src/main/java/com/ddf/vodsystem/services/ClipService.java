@@ -1,21 +1,24 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.VideoMetadata;
-import com.ddf.vodsystem.entities.JobStatus;
-import com.ddf.vodsystem.entities.Job;
+import com.ddf.vodsystem.entities.*;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.ddf.vodsystem.exceptions.FFMPEGException;
+import com.ddf.vodsystem.repositories.ClipRepository;
+import com.ddf.vodsystem.security.CustomOAuth2User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,7 +29,12 @@ public class ClipService {
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
 
+    private final ClipRepository clipRepository;
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
+
+    public ClipService(ClipRepository clipRepository) {
+        this.clipRepository = clipRepository;
+    }
 
     public void run(Job job) throws IOException, InterruptedException {
         logger.info("FFMPEG starting...");
@@ -56,8 +64,21 @@ public class ClipService {
             throw new FFMPEGException("FFMPEG process failed");
         }
 
+        User user = getUser();
+        if (user != null) {
+            createClip(job.getOutputVideoMetadata(), user);
+        }
+
         job.setStatus(JobStatus.FINISHED);
         logger.info("FFMPEG finished");
+    }
+
+    private User getUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomOAuth2User oAuth2user) {
+            return oAuth2user.getUser();
+        }
+        return null;
     }
 
     private void validateVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
@@ -139,6 +160,21 @@ public class ClipService {
 
         logger.info("Running command: {}", command);
         return new ProcessBuilder(command);
+    }
+
+    private void createClip(VideoMetadata videoMetadata, User user) {
+        Clip clip = new Clip();
+        clip.setTitle(videoMetadata.getTitle() != null ? videoMetadata.getTitle() : "Untitled Clip");
+        clip.setUser(user);
+        clip.setDescription(videoMetadata.getDescription());
+        clip.setCreatedAt(LocalDateTime.now());
+        clip.setWidth(videoMetadata.getWidth());
+        clip.setHeight(videoMetadata.getHeight());
+        clip.setFps(videoMetadata.getFps());
+        clip.setDuration(videoMetadata.getEndPoint() - videoMetadata.getStartPoint());
+        clip.setFileSize(videoMetadata.getFileSize());
+        clip.setVideoPath("test");
+        clipRepository.save(clip);
     }
 
 }

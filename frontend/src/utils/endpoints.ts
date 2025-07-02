@@ -119,6 +119,8 @@ const getMetadata = async (uuid: string): Promise<VideoMetadata> => {
         console.error('Error fetching metadata:', error);
 
         return {
+            title: '',
+            description: '',
             startPoint: 0,
             endPoint: 0,
             fps: 0,

@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.entities;
 
 import java.io.File;
+import org.springframework.security.core.context.SecurityContext;
 
 import lombok.Data;
 
@@ -13,6 +14,9 @@ public class Job {
     // configs
     private VideoMetadata inputVideoMetadata;
     private VideoMetadata outputVideoMetadata = new VideoMetadata();
+
+    // security
+    private SecurityContext securityContext;
 
     // job status
     private JobStatus status = JobStatus.NOT_READY;
