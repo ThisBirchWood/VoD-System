@@ -18,12 +18,6 @@ import java.io.InputStreamReader;
 public class MetadataService {
     private static Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
-    private final JobService jobService;
-
-    public MetadataService(JobService jobService) {
-        this.jobService = jobService;
-    }
-
     public VideoMetadata getVideoMetadata(File file) {
         logger.info("Getting metadata for file {}", file.getAbsolutePath());
 
@@ -48,16 +42,6 @@ public class MetadataService {
         } catch (IOException e) {
             throw new FFMPEGException(e.getMessage());
         }
-    }
-
-    public VideoMetadata getInputFileMetadata(String uuid) {
-        Job job = jobService.getJob(uuid);
-        return getVideoMetadata(job.getInputFile());
-    }
-
-    public VideoMetadata getOutputFileMetadata(String uuid) {
-        Job job = jobService.getJob(uuid);
-        return getVideoMetadata(job.getOutputFile());
     }
 
     private JsonNode readStandardOutput(Process process) throws IOException{
