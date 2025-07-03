@@ -30,12 +30,25 @@ public class ClipService {
     private static final float BITRATE_MULTIPLIER = 0.9f;
 
     private final ClipRepository clipRepository;
+    private final MetadataService metadataService;
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
-    public ClipService(ClipRepository clipRepository) {
+    public ClipService(ClipRepository clipRepository, MetadataService metadataService) {
         this.clipRepository = clipRepository;
+        this.metadataService = metadataService;
     }
 
+    /**
+     * Runs the FFMPEG command to create a video clip based on the provided job.
+     * Updates the job status and progress as the command executes.
+     * This method validates the input and output video metadata,
+     * Updates the job VideoMetadata with the output file size,
+     *
+     * @param job the job containing input and output video metadata
+     * @throws IOException if an I/O error occurs during command execution
+     * @throws InterruptedException if the thread is interrupted while waiting for the process to finish
+     *
+     */
     public void run(Job job) throws IOException, InterruptedException {
         logger.info("FFMPEG starting...");
 
@@ -45,6 +58,26 @@ public class ClipService {
         Process process = pb.start();
         job.setStatus(JobStatus.RUNNING);
 
+        updateJobProgress(process, job);
+
+        if (process.waitFor() != 0) {
+            job.setStatus(JobStatus.FAILED);
+            throw new FFMPEGException("FFMPEG process failed");
+        }
+
+        Float fileSize = metadataService.getFileSize(job.getOutputFile());
+        job.getOutputVideoMetadata().setFileSize(fileSize);
+
+        User user = getUser();
+        if (user != null) {
+            createClip(job.getOutputVideoMetadata(), user);
+        }
+
+        job.setStatus(JobStatus.FINISHED);
+        logger.info("FFMPEG finished");
+    }
+
+    private void updateJobProgress(Process process, Job job) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         float length = job.getOutputVideoMetadata().getEndPoint() - job.getOutputVideoMetadata().getStartPoint();
 
@@ -58,19 +91,6 @@ public class ClipService {
                 job.setProgress(progress);
             }
         }
-
-        if (process.waitFor() != 0) {
-            job.setStatus(JobStatus.FAILED);
-            throw new FFMPEGException("FFMPEG process failed");
-        }
-
-        User user = getUser();
-        if (user != null) {
-            createClip(job.getOutputVideoMetadata(), user);
-        }
-
-        job.setStatus(JobStatus.FINISHED);
-        logger.info("FFMPEG finished");
     }
 
     private User getUser() {

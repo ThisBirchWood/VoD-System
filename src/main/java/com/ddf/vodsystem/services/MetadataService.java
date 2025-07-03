@@ -1,6 +1,5 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.entities.VideoMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +15,7 @@ import java.io.InputStreamReader;
 
 @Service
 public class MetadataService {
-    private static Logger logger = LoggerFactory.getLogger(MetadataService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
     public VideoMetadata getVideoMetadata(File file) {
         logger.info("Getting metadata for file {}", file.getAbsolutePath());
@@ -42,6 +41,26 @@ public class MetadataService {
         } catch (IOException e) {
             throw new FFMPEGException(e.getMessage());
         }
+    }
+
+    public Float getFileSize(File file) {
+        logger.info("Getting file size for {}", file.getAbsolutePath());
+        VideoMetadata metadata = getVideoMetadata(file);
+
+        if (metadata.getFileSize() == null) {
+            throw new FFMPEGException("File size not found");
+        }
+
+        return metadata.getFileSize();
+    }
+
+    public Float getVideoDuration(File file) {
+        logger.info("Getting video duration for {}", file.getAbsolutePath());
+        VideoMetadata metadata = getVideoMetadata(file);
+        if (metadata.getEndPoint() == null) {
+            throw new FFMPEGException("Video duration not found");
+        }
+        return metadata.getEndPoint();
     }
 
     private JsonNode readStandardOutput(Process process) throws IOException{
