@@ -17,6 +17,8 @@ const ClipEdit = () => {
     const [playbackValue, setPlaybackValue] = useState(0);
     const [outputMetadata, setOutputMetadata] = useState<VideoMetadata>({
         // default values
+        title: "",
+        description: "",
         startPoint: 0,
         endPoint: 5,
         width: 1280,
