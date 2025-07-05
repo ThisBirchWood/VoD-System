@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class VideoMetadata {
+    private String title;
+    private String description;
     private Float startPoint;
     private Float endPoint;
     private Float fps;

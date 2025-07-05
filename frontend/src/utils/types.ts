@@ -1,4 +1,6 @@
 type VideoMetadata = {
+    title: string,
+    description: string,
     startPoint: number,
     endPoint: number,
     fps: number,
