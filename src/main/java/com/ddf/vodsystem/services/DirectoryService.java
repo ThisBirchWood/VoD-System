@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +28,8 @@ public class DirectoryService {
 
     @Value("${storage.temp.outputs}")
     private String tempOutputsDir;
+
+    private static final long TEMP_DIR_TIMELIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
 
     public File getTempInputFile(String id, String extension) {
         String dir = tempInputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
@@ -75,7 +78,7 @@ public class DirectoryService {
         return fileName.substring(dotIndex + 1);
     }
 
-    public void createDirectory(String dir) throws IOException {
+    private void createDirectory(String dir) throws IOException {
         // Create the directory if it doesn't exist
         Path outputPath = Paths.get(dir);
         if (Files.notExists(outputPath)) {
@@ -84,10 +87,33 @@ public class DirectoryService {
         }
     }
 
+    private void cleanUpDirectory(String dir) throws IOException {
+        File file = new File(dir);
+        File[] files = file.listFiles();
+
+        if (files == null) {
+            logger.warn("No files found in directory: {}", dir);
+            return;
+        }
+
+        for (File f : files){
+            if (f.isFile() && f.lastModified() < (System.currentTimeMillis() - TEMP_DIR_TIMELIMIT)) {
+                Files.delete(f.toPath());
+            }
+        }
+
+    }
+
     @PostConstruct
     public void createDirectoriesIfNotExist() throws IOException {
         createDirectory(tempInputsDir);
         createDirectory(tempOutputsDir);
         createDirectory(outputDir);
+    }
+
+    @Scheduled(fixedRate = (30 * 60 * 1000))
+    public void cleanTempDirectories() throws IOException {
+        cleanUpDirectory(tempInputsDir);
+        cleanUpDirectory(tempOutputsDir);
     }
 }
