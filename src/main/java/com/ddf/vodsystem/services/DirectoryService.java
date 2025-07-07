@@ -28,18 +28,18 @@ public class DirectoryService {
     @Value("${storage.temp.outputs}")
     private String tempOutputsDir;
 
-    public File getTempInputFile(String id) {
-        String dir = tempInputsDir + File.separator + id;
+    public File getTempInputFile(String id, String extension) {
+        String dir = tempInputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
         return new File(dir);
     }
 
-    public File getTempOutputFile(String id) {
-        String dir = tempOutputsDir + File.separator + id;
+    public File getTempOutputFile(String id, String extension) {
+        String dir = tempOutputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
         return new File(dir);
     }
 
-    public File getOutputFile(String id) {
-        String dir = outputDir + File.separator + id;
+    public File getOutputFile(String id, String extension) {
+        String dir = outputDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
         return new File(dir);
     }
 
@@ -50,6 +50,29 @@ public class DirectoryService {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    public void copyFile(File source, File target) {
+        Path sourcePath = Paths.get(source.getAbsolutePath());
+        Path destPath = Paths.get(target.getAbsolutePath());
+
+        try {
+            Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
+            logger.info("Copied file from {} to {}", sourcePath, destPath);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    public String getFileExtension(String filePath) {
+        Path path = Paths.get(filePath);
+        String fileName = path.getFileName().toString();
+
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex == -1) {
+            return ""; // No extension
+        }
+        return fileName.substring(dotIndex + 1);
     }
 
     public void createDirectory(String dir) throws IOException {

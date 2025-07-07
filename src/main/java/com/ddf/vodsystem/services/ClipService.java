@@ -31,11 +31,15 @@ public class ClipService {
 
     private final ClipRepository clipRepository;
     private final MetadataService metadataService;
+    private final DirectoryService directoryService;
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
-    public ClipService(ClipRepository clipRepository, MetadataService metadataService) {
+    public ClipService(ClipRepository clipRepository,
+                       MetadataService metadataService,
+                       DirectoryService directoryService) {
         this.clipRepository = clipRepository;
         this.metadataService = metadataService;
+        this.directoryService = directoryService;
     }
 
     /**
@@ -70,7 +74,7 @@ public class ClipService {
 
         User user = getUser();
         if (user != null) {
-            createClip(job.getOutputVideoMetadata(), user);
+            persistClip(job.getOutputVideoMetadata(), user, job);
         }
 
         job.setStatus(JobStatus.FINISHED);
@@ -182,10 +186,16 @@ public class ClipService {
         return new ProcessBuilder(command);
     }
 
-    private void createClip(VideoMetadata videoMetadata, User user) {
+    private void persistClip(VideoMetadata videoMetadata, User user, Job job) {
+        // Move clip from temp to output directory
+        String fileExtension = directoryService.getFileExtension(job.getOutputFile().getAbsolutePath());
+        File outputFile = directoryService.getOutputFile(job.getUuid(), fileExtension);
+        directoryService.copyFile(job.getOutputFile(), outputFile);
+
+        // Save clip to database
         Clip clip = new Clip();
-        clip.setTitle(videoMetadata.getTitle() != null ? videoMetadata.getTitle() : "Untitled Clip");
         clip.setUser(user);
+        clip.setTitle(videoMetadata.getTitle() != null ? videoMetadata.getTitle() : "Untitled Clip");
         clip.setDescription(videoMetadata.getDescription());
         clip.setCreatedAt(LocalDateTime.now());
         clip.setWidth(videoMetadata.getWidth());
@@ -193,8 +203,7 @@ public class ClipService {
         clip.setFps(videoMetadata.getFps());
         clip.setDuration(videoMetadata.getEndPoint() - videoMetadata.getStartPoint());
         clip.setFileSize(videoMetadata.getFileSize());
-        clip.setVideoPath("test");
+        clip.setVideoPath(outputFile.getPath());
         clipRepository.save(clip);
     }
-
 }

@@ -8,8 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -36,11 +34,10 @@ public class UploadService {
     public String upload(MultipartFile file) {
         // generate uuid, filename
         String uuid = generateShortUUID();
-        String extension = getFileExtension(file.getOriginalFilename());
-        String filename = uuid + (extension.isEmpty() ? "" : "." + extension);
+        String extension = directoryService.getFileExtension(file.getOriginalFilename());
 
-        File inputFile = directoryService.getTempInputFile(filename);
-        File outputFile = directoryService.getTempOutputFile(filename);
+        File inputFile = directoryService.getTempInputFile(uuid, extension);
+        File outputFile = directoryService.getTempOutputFile(uuid, extension);
         directoryService.saveData(inputFile, file);
 
         // add job
@@ -59,14 +56,4 @@ public class UploadService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bb.array());
     }
 
-    private static String getFileExtension(String filePath) {
-        Path path = Paths.get(filePath);
-        String fileName = path.getFileName().toString();
-
-        int dotIndex = fileName.lastIndexOf('.');
-        if (dotIndex == -1) {
-            return ""; // No extension
-        }
-        return fileName.substring(dotIndex + 1);
-    }
 }
