@@ -41,6 +41,7 @@ public class UploadService {
         directoryService.saveData(inputFile, file);
 
         // add job
+        logger.info("Uploaded file and creating job with UUID: {}", uuid);
         VideoMetadata videoMetadata = metadataService.getVideoMetadata(inputFile);
         Job job = new Job(uuid, inputFile, outputFile, videoMetadata);
         jobService.add(job);

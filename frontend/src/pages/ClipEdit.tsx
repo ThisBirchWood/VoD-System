@@ -8,6 +8,7 @@ import ExportWidget from "../components/video/ExportWidget.tsx";
 import {editFile, getMetadata, processFile, getProgress} from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
+import ClipNames from "../components/video/ClipNames.tsx";
 
 const ClipEdit = () => {
     const { id } = useParams();
@@ -100,6 +101,9 @@ const ClipEdit = () => {
 
 
             <Box className={"w-4/5 h-full m-auto"}>
+                <ClipNames
+                    setMetadata={setOutputMetadata}
+                />
                 <ClipConfig
                     setMetadata={setOutputMetadata}
                 />
