@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import Playbar from "./../components/video/Playbar";
 import PlaybackSlider from "./../components/video/PlaybackSlider";
 import ClipRangeSlider from "./../components/video/ClipRangeSlider";
-import ClipConfig from "./../components/video/ClipConfig";
+import ConfigBox from "../components/video/ConfigBox.tsx";
 import ExportWidget from "../components/video/ExportWidget.tsx";
 import {editFile, getMetadata, processFile, getProgress} from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
-import ClipNames from "../components/video/ClipNames.tsx";
+import MetadataBox from "../components/video/MetadataBox.tsx";
 
 const ClipEdit = () => {
     const { id } = useParams();
@@ -101,10 +101,10 @@ const ClipEdit = () => {
 
 
             <Box className={"w-4/5 h-full m-auto"}>
-                <ClipNames
+                <MetadataBox
                     setMetadata={setOutputMetadata}
                 />
-                <ClipConfig
+                <ConfigBox
                     setMetadata={setOutputMetadata}
                 />
             </Box>

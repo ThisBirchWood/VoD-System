@@ -30,6 +30,7 @@ public class DirectoryService {
     private String tempOutputsDir;
 
     private static final long TEMP_DIR_TIMELIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
+    private static final long TEMP_DIR_CLEANUP_RATE = 30 * 60 * (long) 1000; // 30 minutes
 
     public File getTempInputFile(String id, String extension) {
         String dir = tempInputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
@@ -111,7 +112,7 @@ public class DirectoryService {
         createDirectory(outputDir);
     }
 
-    @Scheduled(fixedRate = (30 * 60 * 1000))
+    @Scheduled(fixedRate = TEMP_DIR_CLEANUP_RATE)
     public void cleanTempDirectories() throws IOException {
         cleanUpDirectory(tempInputsDir);
         cleanUpDirectory(tempOutputsDir);
