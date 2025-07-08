@@ -63,6 +63,16 @@ public class MetadataService {
         return metadata.getEndPoint();
     }
 
+    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
+        if (outputFileMetadata.getStartPoint() == null) {
+            outputFileMetadata.setStartPoint(0f);
+        }
+
+        if (outputFileMetadata.getEndPoint() == null) {
+            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
+        }
+    }
+
     private JsonNode readStandardOutput(Process process) throws IOException{
         // Read the standard output (JSON metadata)
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

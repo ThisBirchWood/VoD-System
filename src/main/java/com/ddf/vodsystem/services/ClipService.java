@@ -7,8 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,21 +23,20 @@ import org.springframework.stereotype.Service;
 public class ClipService {
     private static final Logger logger = LoggerFactory.getLogger(ClipService.class);
 
-    private static final float AUDIO_RATIO = 0.15f;
-    private static final float MAX_AUDIO_BITRATE = 128f;
-    private static final float BITRATE_MULTIPLIER = 0.9f;
-
     private final ClipRepository clipRepository;
     private final MetadataService metadataService;
     private final DirectoryService directoryService;
+    private final FfmpegService ffmpegService;
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     public ClipService(ClipRepository clipRepository,
                        MetadataService metadataService,
-                       DirectoryService directoryService) {
+                       DirectoryService directoryService,
+                       FfmpegService ffmpegService) {
         this.clipRepository = clipRepository;
         this.metadataService = metadataService;
         this.directoryService = directoryService;
+        this.ffmpegService = ffmpegService;
     }
 
     /**
@@ -55,10 +52,9 @@ public class ClipService {
      */
     public void run(Job job) throws IOException, InterruptedException {
         logger.info("FFMPEG starting...");
+        metadataService.normalizeVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
 
-        validateVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
-
-        ProcessBuilder pb = buildCommand(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata());
+        ProcessBuilder pb = ffmpegService.buildCommand(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata());
         Process process = pb.start();
         job.setStatus(JobStatus.RUNNING);
 
@@ -103,87 +99,6 @@ public class ClipService {
             return oAuth2user.getUser();
         }
         return null;
-    }
-
-    private void validateVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
-        if (outputFileMetadata.getStartPoint() == null) {
-            outputFileMetadata.setStartPoint(0f);
-        }
-
-        if (outputFileMetadata.getEndPoint() == null) {
-            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
-        }
-    }
-
-    private void buildFilters(ArrayList<String> command, Float fps, Integer width, Integer height) {
-        List<String> filters = new ArrayList<>();
-
-        if (fps != null) {
-            filters.add("fps=" + fps);
-        }
-
-        if (!(width == null && height == null)) {
-            String w = (width != null) ? width.toString() : "-1";
-            String h = (height != null) ? height.toString() : "-1";
-            filters.add("scale=" + w + ":" + h);
-        }
-
-        if (!filters.isEmpty()) {
-            command.add("-vf");
-            command.add(String.join(",", filters));
-        }
-    }
-
-    private void buildBitrate(ArrayList<String> command, Float length, Float fileSize) {
-        float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
-
-        float audioBitrate = bitrate * AUDIO_RATIO;
-        float videoBitrate;
-
-        if (audioBitrate > MAX_AUDIO_BITRATE) {
-            audioBitrate = MAX_AUDIO_BITRATE;
-            videoBitrate = bitrate - MAX_AUDIO_BITRATE;
-        } else {
-            videoBitrate = bitrate * (1 - AUDIO_RATIO);
-        }
-
-        command.add("-b:v");
-        command.add(videoBitrate + "k");
-        command.add("-b:a");
-        command.add(audioBitrate + "k");
-    }
-
-    private void buildInputs(ArrayList<String> command, File inputFile, Float startPoint, Float length) {
-        command.add("-ss");
-        command.add(startPoint.toString());
-
-        command.add("-i");
-        command.add(inputFile.getAbsolutePath());
-
-        command.add("-t");
-        command.add(Float.toString(length));
-    }
-
-    private ProcessBuilder buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
-        ArrayList<String> command = new ArrayList<>();
-        command.add("ffmpeg");
-        command.add("-progress");
-        command.add("pipe:1");
-        command.add("-y");
-
-        Float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
-        buildInputs(command, inputFile, videoMetadata.getStartPoint(), length);
-        buildFilters(command, videoMetadata.getFps(), videoMetadata.getWidth(), videoMetadata.getHeight());
-
-        if (videoMetadata.getFileSize() != null) {
-            buildBitrate(command, length, videoMetadata.getFileSize());
-        }
-
-        // Output file
-        command.add(outputFile.getAbsolutePath());
-
-        logger.info("Running command: {}", command);
-        return new ProcessBuilder(command);
     }
 
     private void persistClip(VideoMetadata videoMetadata, User user, Job job) {
