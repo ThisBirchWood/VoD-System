@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { formatTime } from "../../utils/utils.ts";
+import { formatTime, stringToDate, dateToTimeAgo } from "../../utils/utils.ts";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 
@@ -8,6 +8,7 @@ type VideoCardProps = {
     duration: number,
     thumbnailPath: string | null,
     videoPath: string,
+    createdAt: string,
     className?: string
 }
 
@@ -18,6 +19,7 @@ const VideoCard = ({
                        duration,
                        thumbnailPath,
                        videoPath,
+                       createdAt,
                        className
                    }: VideoCardProps) => {
 
@@ -52,6 +54,10 @@ const VideoCard = ({
                             z-1
                           ">
                         {formatTime(duration)}
+                    </p>
+
+                    <p>
+                        {dateToTimeAgo(stringToDate(createdAt))}
                     </p>
                 </div>
 

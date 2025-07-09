@@ -12,6 +12,50 @@ function formatTime(seconds: number): string {
     }
 }
 
+function stringToDate(dateString: string): Date {
+    const validIso = dateString.substring(0, 23);
+    const date = new Date(validIso);
+    if (isNaN(date.getTime())) {
+        throw new Error("Invalid date string");
+    }
+    return date;
+}
+
+function dateToTimeAgo(date: Date): string {
+    const now = new Date();
+    const secondsAgo = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (secondsAgo < 60) {
+        return `${secondsAgo} seconds ago`;
+    } else if (secondsAgo < 3600) {
+        const minutes = Math.floor(secondsAgo / 60);
+
+        if (minutes === 1) {
+            return "1 minute ago";
+        }
+
+        return `${minutes} minutes ago`;
+    } else if (secondsAgo < 86400) {
+        const hours = Math.floor(secondsAgo / 3600);
+
+        if (hours === 1) {
+            return "1 hour ago";
+        }
+
+        return `${hours} hours ago`;
+    } else {
+        const days = Math.floor(secondsAgo / 86400);
+
+        if (days === 1) {
+            return "1 day ago";
+        }
+
+        return `${days} days ago`;
+    }
+}
+
 export {
-    formatTime
+    formatTime,
+    stringToDate,
+    dateToTimeAgo
 }

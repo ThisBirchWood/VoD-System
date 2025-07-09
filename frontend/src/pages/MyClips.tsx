@@ -20,6 +20,7 @@ const MyClips = () => {
                     duration={clip.duration}
                     thumbnailPath={clip.thumbnailPath}
                     videoPath={clip.videoPath}
+                    createdAt={clip.createdAt}
                     className={"w-40 m-5"}
                 />
             ))}
