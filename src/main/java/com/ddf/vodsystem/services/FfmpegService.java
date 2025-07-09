@@ -5,9 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class FfmpegService {
@@ -16,8 +22,51 @@ public class FfmpegService {
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
+    private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
-    private void buildFilters(ArrayList<String> command, Float fps, Integer width, Integer height) {
+    public void runWithProgress(File inputFile, File outputFile, VideoMetadata videoMetadata, AtomicReference<Float> progress) throws IOException, InterruptedException {
+        logger.info("Starting FFMPEG process");
+
+        List<String> command = buildCommand(inputFile, outputFile, videoMetadata);
+
+        String strCommand = String.join(" ", command);
+        logger.info("FFMPEG command: {}", strCommand);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+        logger.info("FFMPEG process started with PID: {}", process.pid());
+
+        updateJobProgress(process, progress, videoMetadata.getEndPoint() - videoMetadata.getStartPoint());
+        process.waitFor();
+
+        logger.info("FFMPEG process completed successfully");
+    }
+
+    public void run(File inputFile, File outputFile, VideoMetadata videoMetadata) throws IOException, InterruptedException {
+        runWithProgress(inputFile, outputFile, videoMetadata, new AtomicReference<>(0f));
+    }
+
+    private void updateJobProgress(Process process, AtomicReference<Float> progress, Float length) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            logger.debug(line);
+            Matcher matcher = timePattern.matcher(line);
+
+            if (matcher.find()) {
+                Float timeInMs = Float.parseFloat(matcher.group(1)) / 1000000f;
+                progress.set(timeInMs/length);
+            }
+        }
+    }
+
+    private List<String> buildFilters(Float fps, Integer width, Integer height) {
+        List<String> command = new ArrayList<>();
+        command.add("-vf");
+
         List<String> filters = new ArrayList<>();
 
         if (fps != null) {
@@ -32,16 +81,15 @@ public class FfmpegService {
             filters.add("scale=" + w + ":" + h);
         }
 
-        if (!filters.isEmpty()) {
-            logger.info("Adding video filters");
-            command.add("-vf");
-            command.add(String.join(",", filters));
-        }
+        logger.info("Adding video filters");
+        command.add(String.join(",", filters));
+        return command;
     }
 
-    private void buildBitrate(ArrayList<String> command, Float length, Float fileSize) {
-        float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
+    private List<String> buildBitrate(Float length, Float fileSize) {
+        List<String> command = new ArrayList<>();
 
+        float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
         float audioBitrate = bitrate * AUDIO_RATIO;
         float videoBitrate;
 
@@ -56,9 +104,13 @@ public class FfmpegService {
         command.add(videoBitrate + "k");
         command.add("-b:a");
         command.add(audioBitrate + "k");
+
+        return command;
     }
 
-    private void buildInputs(ArrayList<String> command, File inputFile, Float startPoint, Float length) {
+    private List<String> buildInputs(File inputFile, Float startPoint, Float length) {
+        List<String> command = new ArrayList<>();
+
         command.add("-ss");
         command.add(startPoint.toString());
 
@@ -67,25 +119,30 @@ public class FfmpegService {
 
         command.add("-t");
         command.add(Float.toString(length));
+
+        return command;
     }
 
-    public ProcessBuilder buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
-        ArrayList<String> command = new ArrayList<>();
+    private List<String> buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
+        List<String> command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");
         command.add("pipe:1");
         command.add("-y");
 
         Float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
-        buildInputs(command, inputFile, videoMetadata.getStartPoint(), length);
-        buildFilters(command, videoMetadata.getFps(), videoMetadata.getWidth(), videoMetadata.getHeight());
+        command.addAll(buildInputs(inputFile, length, length));
+
+        if (videoMetadata.getFps() != null || videoMetadata.getWidth() != null || videoMetadata.getHeight() != null) {
+            command.addAll(buildFilters(videoMetadata.getFps(), videoMetadata.getWidth(), videoMetadata.getHeight()));
+        }
 
         if (videoMetadata.getFileSize() != null) {
-            buildBitrate(command, length, videoMetadata.getFileSize());
+            command.addAll(buildBitrate(length, videoMetadata.getFileSize()));
         }
 
         // Output file
         command.add(outputFile.getAbsolutePath());
-        return new ProcessBuilder(command);
+        return command;
     }
 }

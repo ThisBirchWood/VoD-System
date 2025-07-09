@@ -2,15 +2,10 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.*;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.time.LocalDateTime;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.repositories.ClipRepository;
 import com.ddf.vodsystem.security.CustomOAuth2User;
 import org.slf4j.Logger;
@@ -27,7 +22,6 @@ public class ClipService {
     private final MetadataService metadataService;
     private final DirectoryService directoryService;
     private final FfmpegService ffmpegService;
-    private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     public ClipService(ClipRepository clipRepository,
                        MetadataService metadataService,
@@ -51,19 +45,8 @@ public class ClipService {
      *
      */
     public void run(Job job) throws IOException, InterruptedException {
-        logger.info("FFMPEG starting...");
         metadataService.normalizeVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
-
-        ProcessBuilder pb = ffmpegService.buildCommand(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata());
-        Process process = pb.start();
-        job.setStatus(JobStatus.RUNNING);
-
-        updateJobProgress(process, job);
-
-        if (process.waitFor() != 0) {
-            job.setStatus(JobStatus.FAILED);
-            throw new FFMPEGException("FFMPEG process failed");
-        }
+        ffmpegService.runWithProgress(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata(), job.getProgress());
 
         Float fileSize = metadataService.getFileSize(job.getOutputFile());
         job.getOutputVideoMetadata().setFileSize(fileSize);
@@ -74,24 +57,9 @@ public class ClipService {
         }
 
         job.setStatus(JobStatus.FINISHED);
-        logger.info("FFMPEG finished");
+        logger.info("FFMPEG finished successfully for job: {}", job.getUuid());
     }
 
-    private void updateJobProgress(Process process, Job job) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        float length = job.getOutputVideoMetadata().getEndPoint() - job.getOutputVideoMetadata().getStartPoint();
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            logger.debug(line);
-            Matcher matcher = timePattern.matcher(line);
-
-            if (matcher.find()) {
-                Float progress = Long.parseLong(matcher.group(1))/(length*1000000);
-                job.setProgress(progress);
-            }
-        }
-    }
 
     private User getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

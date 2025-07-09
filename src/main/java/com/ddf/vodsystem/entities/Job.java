@@ -1,6 +1,8 @@
 package com.ddf.vodsystem.entities;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.springframework.security.core.context.SecurityContext;
 
 import lombok.Data;
@@ -20,7 +22,7 @@ public class Job {
 
     // job status
     private JobStatus status = JobStatus.NOT_READY;
-    private Float progress = 0.0f;
+    private AtomicReference<Float> progress = new AtomicReference<>(0f);
 
     public Job(String uuid, File inputFile, File outputFile, VideoMetadata inputVideoMetadata) {
         this.uuid = uuid;

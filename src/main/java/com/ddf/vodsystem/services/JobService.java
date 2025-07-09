@@ -67,7 +67,6 @@ public class JobService {
      */
     public void jobReady(String uuid) {
         Job job = getJob(uuid);
-        job.setProgress(0f);
 
         SecurityContext context = SecurityContextHolder.getContext();
         job.setSecurityContext(context);
@@ -113,6 +112,7 @@ public class JobService {
                     Job job = jobQueue.take(); // Blocks until a job is available
 
                     logger.info("Starting job {}", job.getUuid());
+                    job.setStatus(JobStatus.RUNNING);
                     processJob(job);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
