@@ -5,6 +5,7 @@ import com.ddf.vodsystem.entities.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.ddf.vodsystem.repositories.ClipRepository;
 import com.ddf.vodsystem.security.CustomOAuth2User;
@@ -58,6 +59,17 @@ public class ClipService {
 
         job.setStatus(JobStatus.FINISHED);
         logger.info("FFMPEG finished successfully for job: {}", job.getUuid());
+    }
+
+    public List<Clip> getClipsByUser() {
+        User user = getUser();
+
+        if (user == null) {
+            logger.warn("No authenticated user found");
+            return List.of();
+        }
+
+        return clipRepository.findByUser(user);
     }
 
 

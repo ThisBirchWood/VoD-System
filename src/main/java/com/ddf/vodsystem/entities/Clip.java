@@ -1,8 +1,9 @@
 package com.ddf.vodsystem.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.ToString;
+
 
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ public class Clip {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

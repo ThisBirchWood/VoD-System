@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.entities.APIResponse;
+import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,21 +15,17 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/auth/")
 public class AuthController {
-
     @GetMapping("/user")
     public ResponseEntity<APIResponse<Map<String, Object>>> user(@AuthenticationPrincipal OAuth2User principal) {
         if (principal == null) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).
-                    body(new APIResponse<>(
-                            "error", 
-                            "User not authenticated", 
-                            null
-                    ));
+            throw new NotAuthenticated("User is not authenticated");
         }
 
-        if (principal.getAttribute("email") == null
+        if (
+                principal.getAttribute("email") == null
                 || principal.getAttribute("name") == null
-                || principal.getAttribute("picture") == null) {
+                || principal.getAttribute("picture") == null)
+        {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).
                     body(new APIResponse<>(
                             "error",

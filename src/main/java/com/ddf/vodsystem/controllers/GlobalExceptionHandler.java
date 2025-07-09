@@ -4,6 +4,7 @@ import com.ddf.vodsystem.entities.APIResponse;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
+import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -67,5 +68,12 @@ public class GlobalExceptionHandler {
         logger.error("FFMPEGException: {}", ex.getMessage(), ex);
         APIResponse<Void> response = new APIResponse<>(ERROR, "FFMPEG Error: Please upload a valid file", null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler(NotAuthenticated.class)
+    public ResponseEntity<APIResponse<Void>> handleNotAuthenticated(NotAuthenticated ex) {
+        logger.error("NotAuthenticated: {}", ex.getMessage(), ex);
+        APIResponse<Void> response = new APIResponse<>(ERROR, "User is not authenticated", null);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }
