@@ -27,19 +27,37 @@ const VideoCard = ({
     return (
         <Link to={videoPath}>
             <div className={clsx("flex flex-col", className)}>
-                <img
-                    src={imgSrc}
-                    alt="Video Thumbnail"
-                    onError={() => {
-                        if (imgSrc !== fallbackThumbnail) {
-                            setImgSrc(fallbackThumbnail);
-                        }
-                    }}
-                />
+                <div className={"relative inline-block"}>
+                    <img
+                        src={imgSrc}
+                        alt="Video Thumbnail"
+                        onError={() => {
+                            if (imgSrc !== fallbackThumbnail) {
+                                setImgSrc(fallbackThumbnail);
+                            }
+                        }}
+                    />
+
+                    <p className="
+                            absolute
+                            top-2
+                            left-2
+                            bg-black bg-opacity-60
+                            text-white
+                            px-2
+                            py-1
+                            rounded
+                            pointer-events-none
+                            text-sm
+                            z-1
+                          ">
+                        {formatTime(duration)}
+                    </p>
+                </div>
+
 
                 <div className={"flex flex-row justify-between items-center p-2"}>
-                    <p>{title}</p>
-                    <p>{formatTime(duration)}</p>
+                    <p>{title == "" ? "(No Title)" : title}</p>
                 </div>
             </div>
         </Link>
