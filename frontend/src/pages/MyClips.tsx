@@ -20,7 +20,7 @@ const MyClips = () => {
                     duration={clip.duration}
                     thumbnailPath={clip.thumbnailPath}
                     videoPath={clip.videoPath}
-                    className={"w-30 p-5"}
+                    className={"w-40 p-5"}
                 />
             ))}
 
