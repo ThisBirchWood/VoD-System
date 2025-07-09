@@ -21,8 +21,21 @@ type User = {
     profilePicture: string
 }
 
+type Clip = {
+    title: string,
+    description: string,
+    duration: number,
+    thumbnailPath: string,
+    videoPath: string,
+    fps: number,
+    width: number,
+    height: number,
+    createdAt: string,
+}
+
 export type {
     APIResponse,
     VideoMetadata,
-    User
+    User,
+    Clip
 }

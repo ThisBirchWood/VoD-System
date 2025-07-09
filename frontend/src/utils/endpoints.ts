@@ -1,4 +1,4 @@
-import type {VideoMetadata, APIResponse, User} from "./types.ts";
+import type {VideoMetadata, APIResponse, User, Clip} from "./types.ts";
 
 /**
  * Uploads a file to the backend.
@@ -65,7 +65,9 @@ const editFile = async (
 /**
  * Triggers file processing.
  */
-const processFile = async (uuid: string, setError: Function): Promise<boolean> => {
+const processFile = async (
+    uuid: string,
+    setError: Function): Promise<boolean> => {
     try {
         const response = await fetch(`/api/v1/process/${uuid}`);
 
@@ -85,7 +87,8 @@ const processFile = async (uuid: string, setError: Function): Promise<boolean> =
 /**
  * Fetches the processing progress percentage.
  */
-const getProgress = async (uuid: string): Promise<number> => {
+const getProgress = async (
+    uuid: string): Promise<number> => {
     try {
         const response = await fetch(`/api/v1/progress/${uuid}`);
 
@@ -105,7 +108,8 @@ const getProgress = async (uuid: string): Promise<number> => {
 /**
  * Fetches original metadata from the backend.
  */
-const getMetadata = async (uuid: string): Promise<VideoMetadata> => {
+const getMetadata = async (
+    uuid: string): Promise<VideoMetadata> => {
     try {
         const response = await fetch(`/api/v1/metadata/original/${uuid}`);
 
@@ -143,11 +147,32 @@ const getUser = async (): Promise<null | User > => {
     }
 }
 
+const getClips = async (setError: Function): Promise< Clip[]> => {
+    try {
+        const response = await fetch('/api/v1/clips/', {credentials: "include",});
+
+        if (!response.ok) {
+            const errorResult: APIResponse = await response.json();
+            setError(errorResult.message);
+            return [];
+        }
+
+        const result: APIResponse = await response.json();
+        return result.data;
+
+    } catch (error: unknown) {
+        console.error('Error fetching clips:', error);
+        setError('Failed to fetch clips');
+        return [];
+    }
+}
+
 export {
     uploadFile,
     editFile,
     processFile,
     getProgress,
     getMetadata,
-    getUser
+    getUser,
+    getClips
 };

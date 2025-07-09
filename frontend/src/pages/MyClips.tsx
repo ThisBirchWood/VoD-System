@@ -1,17 +1,30 @@
 import VideoCard from "../components/video/VideoCard";
+import {useEffect, useState} from "react";
+import { getClips } from "../utils/endpoints";
+import type { Clip } from "../utils/types";
 
 const MyClips = () => {
+    const [clips, setClips] = useState<Clip[]>([]);
+    const [error, setError] = useState<null | string>(null);
+
+    useEffect(() => {
+        getClips(setError).then((data) => setClips(data));
+    }, []);
+
     return (
-        <div>
-            <VideoCard
-                title={"My First Clip"}
-                length={120}
-                thumbnailUrl={"https://upload.wikimedia.org/wikipedia/commons/1/19/Billy_Joel_Shankbone_NYC_2009.jpg"}
-                videoUrl={"https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
-                className={"w-40"}
-            />
+        <div className={"flex flex-row"}>
+            {clips.map((clip) => (
+                <VideoCard
+                    key={clip.videoPath}
+                    title={clip.title}
+                    duration={clip.duration}
+                    thumbnailPath={clip.thumbnailPath}
+                    videoPath={clip.videoPath}
+                    className={"w-30 p-5"}
+                />
+            ))}
 
-
+            {error}
         </div>
     );
 }
