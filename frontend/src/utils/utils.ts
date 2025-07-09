@@ -43,7 +43,7 @@ function dateToTimeAgo(date: Date): string {
         }
 
         return `${hours} hours ago`;
-    } else {
+    } else if (secondsAgo < 2592000) {
         const days = Math.floor(secondsAgo / 86400);
 
         if (days === 1) {
@@ -51,6 +51,22 @@ function dateToTimeAgo(date: Date): string {
         }
 
         return `${days} days ago`;
+    } else if (secondsAgo < 31536000) {
+        const months = Math.floor(secondsAgo / 2592000);
+
+        if (months === 1) {
+            return "1 month ago";
+        }
+
+        return `${months} months ago`;
+    } else {
+        const years = Math.floor(secondsAgo / 31536000);
+
+        if (years === 1) {
+            return "1 year ago";
+        }
+
+        return `${years} years ago`;
     }
 }
 
