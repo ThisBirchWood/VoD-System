@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 
 type VideoCardProps = {
+    id: number,
     title: string,
     duration: number,
     thumbnailPath: string | null,
@@ -15,19 +16,24 @@ type VideoCardProps = {
 const fallbackThumbnail = "../../../public/default_thumbnail.png";
 
 const VideoCard = ({
+                       id,
                        title,
                        duration,
                        thumbnailPath,
-                       videoPath,
                        createdAt,
                        className
                    }: VideoCardProps) => {
 
     const initialSrc = thumbnailPath && thumbnailPath.trim() !== "" ? thumbnailPath : fallbackThumbnail;
     const [imgSrc, setImgSrc] = useState(initialSrc);
+    const [timeAgo, setTimeAgo] = useState(dateToTimeAgo(stringToDate(createdAt)));
+
+    setTimeout(() => {
+        setTimeAgo(dateToTimeAgo(stringToDate(createdAt)))
+    }, 1000);
 
     return (
-        <Link to={videoPath}>
+        <Link to={"/video/" + id}>
             <div className={clsx("flex flex-col", className)}>
                 <div className={"relative inline-block"}>
                     <img
@@ -55,15 +61,16 @@ const VideoCard = ({
                           ">
                         {formatTime(duration)}
                     </p>
-
-                    <p>
-                        {dateToTimeAgo(stringToDate(createdAt))}
-                    </p>
                 </div>
 
 
-                <div className={"flex flex-row justify-between items-center p-2"}>
+                <div className={"flex flex-col justify-between p-2"}>
                     <p>{title == "" ? "(No Title)" : title}</p>
+                    <p
+                        className={"text-gray-600 text-sm"}
+                    >
+                        {timeAgo}
+                    </p>
                 </div>
             </div>
         </Link>

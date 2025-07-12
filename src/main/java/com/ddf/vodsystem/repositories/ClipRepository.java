@@ -13,3 +13,5 @@ public interface ClipRepository extends JpaRepository<Clip, Long> {
     @Query("SELECT c FROM Clip c WHERE c.user = ?1")
     List<Clip> findByUser(User user);
 }
+
+

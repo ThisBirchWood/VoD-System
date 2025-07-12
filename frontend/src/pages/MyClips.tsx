@@ -15,6 +15,7 @@ const MyClips = () => {
         <div className={"flex flex-row"}>
             {clips.map((clip) => (
                 <VideoCard
+                    id={clip.id}
                     key={clip.videoPath}
                     title={clip.title}
                     duration={clip.duration}

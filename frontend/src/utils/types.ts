@@ -22,6 +22,7 @@ type User = {
 }
 
 type Clip = {
+    id: number,
     title: string,
     description: string,
     duration: number,

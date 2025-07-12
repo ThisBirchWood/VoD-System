@@ -6,6 +6,7 @@ import ClipEdit from './pages/ClipEdit';
 import Home from './pages/Home';
 import {useEffect} from "react";
 import MyClips from './pages/MyClips';
+import VideoPlayer from "./pages/VideoPlayer.tsx";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
                     <Route path="/create" element={<ClipUpload />} />
                     <Route path="/create/:id" element={<ClipEdit />} />
                     <Route path="/my-clips" element={<MyClips />} />
+                    <Route path="/video/:id" element={<VideoPlayer />} />
                 </Route>
             </Routes>
         </Router>
