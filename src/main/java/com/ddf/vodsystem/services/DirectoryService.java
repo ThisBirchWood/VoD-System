@@ -43,12 +43,27 @@ public class DirectoryService {
     }
 
     public File getOutputFile(String id, String extension) {
-        String dir = outputDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
+        if (id == null || id.length() < 2) {
+            throw new IllegalArgumentException("ID must be at least 2 characters long");
+        }
+
+        // Create subdirectories from first 2 characters of the ID
+        String shard1 = id.substring(0, 2);
+        String shard2 = id.substring(2);
+
+        String dir = outputDir +
+                File.separator +
+                shard1 +
+                File.separator +
+                shard2 +
+                (extension.isEmpty() ? "" : "." + extension);
+
         return new File(dir);
     }
 
-    public void saveData(File file, MultipartFile multipartFile) {
+    public void saveAtDir(File file, MultipartFile multipartFile) {
         try {
+            createDirectory(file.getAbsolutePath());
             Path filePath = Paths.get(file.getAbsolutePath());
             Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
@@ -61,6 +76,7 @@ public class DirectoryService {
         Path destPath = Paths.get(target.getAbsolutePath());
 
         try {
+            Files.createDirectories(destPath.getParent());
             Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
             logger.info("Copied file from {} to {}", sourcePath, destPath);
         } catch (IOException e) {

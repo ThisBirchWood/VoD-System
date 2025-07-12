@@ -38,7 +38,7 @@ public class UploadService {
 
         File inputFile = directoryService.getTempInputFile(uuid, extension);
         File outputFile = directoryService.getTempOutputFile(uuid, extension);
-        directoryService.saveData(inputFile, file);
+        directoryService.saveAtDir(inputFile, file);
 
         // add job
         logger.info("Uploaded file and creating job with UUID: {}", uuid);

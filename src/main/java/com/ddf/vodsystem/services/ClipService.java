@@ -72,7 +72,6 @@ public class ClipService {
         return clipRepository.findByUser(user);
     }
 
-
     private User getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomOAuth2User oAuth2user) {
