@@ -10,13 +10,14 @@ const clipUpload = () => {
 
     const [error, setError] = useState<null | string>(null);
     const press = (() => {
-        if (file) {
-            uploadFile(file, setError)
-                .then(uuid => navigate(`/create/${uuid}`))
-                .catch(e => console.error(e));
-        } else {
+        if (!file) {
             setError("Please choose a file");
+            return;
         }
+
+        uploadFile(file)
+            .then(uuid => navigate(`/create/${uuid}`))
+            .catch((e: Error) => setError(`Failed to upload file: ${e.message}`));
     });
 
     return (

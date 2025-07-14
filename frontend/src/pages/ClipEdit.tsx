@@ -34,30 +34,32 @@ const ClipEdit = () => {
     const sendData = async() => {
         if (!id) return;
 
-        setDownloadable(false);
+        editFile(id, outputMetadata)
+            .then(() => {
 
-        const edited = await editFile(id, outputMetadata, setError);
+                processFile(id)
+                    .catch((err: Error) => setError(`Failed to process file: ${err.message}`));
 
-        if (!edited) {
-            return;
-        }
+            })
+            .catch((err: Error) => setError(`Failed to edit file: ${err.message}`));
 
-        const processed = await processFile(id, setError);
+        const interval = setInterval(async() => await pollProgress(id, interval), 500);
+    }
 
-        if (!processed) {
-            return;
-        }
+    const pollProgress = async (id: string, intervalId: number) => {
+        getProgress(id)
+            .then((progress) => {
+                setProgress(progress);
 
-        const interval = setInterval(async () => {
-           const progress = await getProgress(id);
-           setProgress(progress);
-
-           if (progress >= 1) {
-               clearInterval(interval);
-               setDownloadable(true);
-               console.log("Downloadable");
-           }
-        }, 500);
+                if (progress >= 1) {
+                    clearInterval(intervalId);
+                    setDownloadable(true);
+                }
+        })
+            .catch((err: Error) => {
+                setError(`Failed to fetch progress: ${err.message}`);
+                clearInterval(intervalId);
+            });
     }
 
     const handleDownload = async () => {

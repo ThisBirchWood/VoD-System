@@ -8,7 +8,9 @@ const MyClips = () => {
     const [error, setError] = useState<null | string>(null);
 
     useEffect(() => {
-        getClips(setError).then((data) => setClips(data));
+        getClips()
+            .then((data) => setClips(data))
+            .catch((err) => setError(err));
     }, []);
 
     return (
