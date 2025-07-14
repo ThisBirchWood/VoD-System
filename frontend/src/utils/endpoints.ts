@@ -167,6 +167,23 @@ const getClips = async (setError: Function): Promise< Clip[]> => {
     }
 }
 
+const getClipById = async (id: string): Promise<Clip | null> => {
+    try {
+        const response = await fetch(`/api/v1/clips/${id}`, {credentials: "include",});
+
+        if (!response.ok) {
+            console.error('Failed to fetch clip:', response.status);
+            return null;
+        }
+
+        const result: APIResponse = await response.json();
+        return result.data;
+    } catch (error: unknown) {
+        console.error('Error fetching clip:', error);
+        return null;
+    }
+};
+
 export {
     uploadFile,
     editFile,
@@ -174,5 +191,6 @@ export {
     getProgress,
     getMetadata,
     getUser,
-    getClips
+    getClips,
+    getClipById
 };

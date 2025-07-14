@@ -100,4 +100,8 @@ public class ClipService {
         clip.setVideoPath(outputFile.getPath());
         clipRepository.save(clip);
     }
+
+    public Clip getClipById(Long id) {
+        return clipRepository.findById(id).orElse(null);
+    }
 }

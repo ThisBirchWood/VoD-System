@@ -1,10 +1,14 @@
 import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
+import type {Clip} from "../utils/types";
+import {getClipById} from "../utils/endpoints.ts";
+import Box from "../components/Box.tsx"
 
 const VideoPlayer = () => {
     const { id } = useParams();
     const [videoUrl, setVideoUrl] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
+    const [clip, setClip] = useState<Clip | null>(null);
 
     useEffect(() => {
         // Fetch the video URL from the server
@@ -23,6 +27,14 @@ const VideoPlayer = () => {
                 console.error("Error fetching video:", err);
                 setError("Failed to load video. Please try again later.");
             });
+
+        if (!id) {
+            setError("Clip ID is required.");
+            return;
+        }
+
+        getClipById(id).then((fetchedClip) => {setClip(fetchedClip)})
+
     }, [id]);
 
     return (
@@ -41,6 +53,11 @@ const VideoPlayer = () => {
 
             {error && <div className="text-red-500 mt-2">{error}</div>}
             {!videoUrl && !error && <div className="text-gray-500 mt-2">Loading video...</div>}
+
+            <Box className={"p-2 m-2"}>
+                <p className={"text-2xl font-bold text-gray-600"}>{clip?.title}</p>
+            </Box>
+
         </div>
     );
 };
