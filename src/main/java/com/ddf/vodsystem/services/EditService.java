@@ -1,13 +1,12 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.VideoMetadata;
-import com.ddf.vodsystem.entities.Job;
-import com.ddf.vodsystem.entities.JobStatus;
+import com.ddf.vodsystem.entities.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EditService {
     private final JobService jobService;
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EditService.class);
 
     public EditService(JobService jobService) {
         this.jobService = jobService;
@@ -30,7 +29,7 @@ public class EditService {
             return 1f;
         }
 
-        return job.getProgress();
+        return job.getProgress().get();
     }
 
     private void validateClipConfig(VideoMetadata videoMetadata) {
@@ -69,4 +68,5 @@ public class EditService {
             throw new IllegalArgumentException("FPS cannot be less than 1");
         }
     }
+
 }

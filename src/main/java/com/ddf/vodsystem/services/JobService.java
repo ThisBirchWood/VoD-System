@@ -7,6 +7,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ddf.vodsystem.entities.Job;
@@ -24,14 +26,14 @@ public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
     private final BlockingQueue<Job> jobQueue = new LinkedBlockingQueue<>();
-    private final CompressionService compressionService;
+    private final ClipService clipService;
 
     /**
      * Constructs a JobService with the given CompressionService.
-     * @param compressionService the compression service to use for processing jobs
+     * @param clipService the compression service to use for processing jobs
      */
-    public JobService(CompressionService compressionService) {
-        this.compressionService = compressionService;
+    public JobService(ClipService clipService) {
+        this.clipService = clipService;
     }
 
     /**
@@ -65,7 +67,9 @@ public class JobService {
      */
     public void jobReady(String uuid) {
         Job job = getJob(uuid);
-        job.setProgress(0f);
+
+        SecurityContext context = SecurityContextHolder.getContext();
+        job.setSecurityContext(context);
 
         logger.info("Job ready: {}", job.getUuid());
         job.setStatus(JobStatus.PENDING);
@@ -77,11 +81,21 @@ public class JobService {
      * @param job the job to process
      */
     private void processJob(Job job) {
+        SecurityContext previousContext = SecurityContextHolder.getContext(); // optional, for restoring later
         try {
-            compressionService.run(job);
+            if (job.getSecurityContext() != null) {
+                SecurityContextHolder.setContext(job.getSecurityContext());
+            }
+
+            clipService.run(job);
+
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("Error while running job {}", job.getUuid(), e);
+
+        } finally {
+            // 🔄 Restore previous context to avoid leaking across jobs
+            SecurityContextHolder.setContext(previousContext);
         }
     }
 
@@ -98,6 +112,7 @@ public class JobService {
                     Job job = jobQueue.take(); // Blocks until a job is available
 
                     logger.info("Starting job {}", job.getUuid());
+                    job.setStatus(JobStatus.RUNNING);
                     processJob(job);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

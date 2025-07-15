@@ -1,8 +1,9 @@
 package com.ddf.vodsystem.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.ToString;
+
 
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ public class Clip {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -36,13 +37,13 @@ public class Clip {
     private Integer height;
 
     @Column(name = "fps", nullable = false)
-    private Integer fps;
+    private Float fps;
 
     @Column(name = "duration", nullable = false)
-    private Integer duration;
+    private Float duration;
 
     @Column(name = "file_size", nullable = false)
-    private Long fileSize;
+    private Float fileSize;
 
     @Column(name = "video_path", nullable = false, length = 255)
     private String videoPath;

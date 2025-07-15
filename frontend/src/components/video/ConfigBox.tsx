@@ -7,7 +7,7 @@ type prop = {
     className?: string;
 }
 
-export default function ClipConfig({setMetadata, className}: prop) {
+export default function ConfigBox({setMetadata, className}: prop) {
     const updateRes = (e: React.ChangeEvent<HTMLSelectElement>) => {
         var vals = e.target.value.split(",");
         setMetadata((prevState: VideoMetadata) => ({

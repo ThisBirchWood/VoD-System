@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +41,20 @@ public class DownloadController {
     @GetMapping("/input/{uuid}")
     public ResponseEntity<Resource> downloadInput(@PathVariable String uuid) {
         Resource resource = downloadService.downloadInput(uuid);
+
+        if (resource == null || !resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                .body(resource);
+    }
+
+    @GetMapping("/clip/{id}")
+    public ResponseEntity<Resource> downloadClip(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
+        Resource resource = downloadService.downloadClip(id);
 
         if (resource == null || !resource.exists()) {
             return ResponseEntity.notFound().build();

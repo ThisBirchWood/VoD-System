@@ -2,6 +2,7 @@ import { useEffect, useState} from "react";
 import { Volume1, Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import clsx from 'clsx';
 import type { VideoMetadata } from "../../utils/types.ts";
+import { formatTime } from "../../utils/utils.ts";
 
 
 type Props = {
@@ -9,20 +10,6 @@ type Props = {
     videoMetadata: VideoMetadata;
     className?: string;
 };
-
-function formatTime(seconds: number): string {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-
-    const padded = (n: number) => n.toString().padStart(2, '0');
-
-    if (h > 0) {
-        return `${h}:${padded(m)}:${padded(s)}`;
-    } else {
-        return `${m}:${padded(s)}`;
-    }
-}
 
 export default function Playbar({ video, videoMetadata, className }: Props) {
     const [isPlaying, setIsPlaying] = useState(false);

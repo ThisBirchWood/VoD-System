@@ -1,4 +1,6 @@
 type VideoMetadata = {
+    title: string,
+    description: string,
     startPoint: number,
     endPoint: number,
     fps: number,
@@ -19,8 +21,22 @@ type User = {
     profilePicture: string
 }
 
+type Clip = {
+    id: number,
+    title: string,
+    description: string,
+    duration: number,
+    thumbnailPath: string,
+    videoPath: string,
+    fps: number,
+    width: number,
+    height: number,
+    createdAt: string,
+}
+
 export type {
     APIResponse,
     VideoMetadata,
-    User
+    User,
+    Clip
 }

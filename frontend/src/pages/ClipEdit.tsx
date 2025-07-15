@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import Playbar from "./../components/video/Playbar";
 import PlaybackSlider from "./../components/video/PlaybackSlider";
 import ClipRangeSlider from "./../components/video/ClipRangeSlider";
-import ClipConfig from "./../components/video/ClipConfig";
+import ConfigBox from "../components/video/ConfigBox.tsx";
 import ExportWidget from "../components/video/ExportWidget.tsx";
 import {editFile, getMetadata, processFile, getProgress} from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
+import MetadataBox from "../components/video/MetadataBox.tsx";
 
 const ClipEdit = () => {
     const { id } = useParams();
@@ -17,6 +18,8 @@ const ClipEdit = () => {
     const [playbackValue, setPlaybackValue] = useState(0);
     const [outputMetadata, setOutputMetadata] = useState<VideoMetadata>({
         // default values
+        title: "",
+        description: "",
         startPoint: 0,
         endPoint: 5,
         width: 1280,
@@ -31,30 +34,32 @@ const ClipEdit = () => {
     const sendData = async() => {
         if (!id) return;
 
-        setDownloadable(false);
+        editFile(id, outputMetadata)
+            .then(() => {
 
-        const edited = await editFile(id, outputMetadata, setError);
+                processFile(id)
+                    .catch((err: Error) => setError(`Failed to process file: ${err.message}`));
 
-        if (!edited) {
-            return;
-        }
+            })
+            .catch((err: Error) => setError(`Failed to edit file: ${err.message}`));
 
-        const processed = await processFile(id, setError);
+        const interval = setInterval(async() => await pollProgress(id, interval), 500);
+    }
 
-        if (!processed) {
-            return;
-        }
+    const pollProgress = async (id: string, intervalId: number) => {
+        getProgress(id)
+            .then((progress) => {
+                setProgress(progress);
 
-        const interval = setInterval(async () => {
-           const progress = await getProgress(id);
-           setProgress(progress);
-
-           if (progress >= 1) {
-               clearInterval(interval);
-               setDownloadable(true);
-               console.log("Downloadable");
-           }
-        }, 500);
+                if (progress >= 1) {
+                    clearInterval(intervalId);
+                    setDownloadable(true);
+                }
+        })
+            .catch((err: Error) => {
+                setError(`Failed to fetch progress: ${err.message}`);
+                clearInterval(intervalId);
+            });
     }
 
     const handleDownload = async () => {
@@ -98,7 +103,10 @@ const ClipEdit = () => {
 
 
             <Box className={"w-4/5 h-full m-auto"}>
-                <ClipConfig
+                <MetadataBox
+                    setMetadata={setOutputMetadata}
+                />
+                <ConfigBox
                     setMetadata={setOutputMetadata}
                 />
             </Box>

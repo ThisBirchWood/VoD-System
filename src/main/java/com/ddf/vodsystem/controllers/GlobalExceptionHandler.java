@@ -4,6 +4,7 @@ import com.ddf.vodsystem.entities.APIResponse;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
+import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -22,50 +23,57 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({ MultipartException.class })
     public ResponseEntity<APIResponse<Void>> handleMultipartException(MultipartException ex) {
-        logger.error("MultipartException: {}", ex.getMessage(), ex);
+        logger.error("MultipartException: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, "Multipart request error: " + ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler({ MissingServletRequestPartException.class })
     public ResponseEntity<APIResponse<Void>> handleMissingPart(MissingServletRequestPartException ex) {
-        logger.error("MissingServletRequestPartException: {}", ex.getMessage(), ex);
+        logger.error("MissingServletRequestPartException: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, "Required file part is missing.", null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler({ HttpMediaTypeNotSupportedException.class })
     public ResponseEntity<APIResponse<Void>> handleUnsupportedMediaType(HttpMediaTypeNotSupportedException ex) {
-        logger.error("HttpMediaTypeNotSupportedException: {}", ex.getMessage(), ex);
+        logger.error("HttpMediaTypeNotSupportedException: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, "Unsupported media type: expected multipart/form-data.", null);
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(response);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<APIResponse<Void>> handleIllegalArgument(IllegalArgumentException ex) {
-        logger.error("IllegalArgumentException: {}", ex.getMessage(), ex);
+        logger.error("IllegalArgumentException: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(JobNotFound.class)
     public ResponseEntity<APIResponse<Void>> handleFileNotFound(JobNotFound ex) {
-        logger.error("JobNotFound: {}", ex.getMessage(), ex);
+        logger.error("JobNotFound: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(JobNotFinished.class)
     public ResponseEntity<APIResponse<Void>> handleJobNotFinished(JobNotFinished ex) {
-        logger.error("JobNotFinished: {}", ex.getMessage(), ex);
+        logger.error("JobNotFinished: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
     @ExceptionHandler(FFMPEGException.class)
     public ResponseEntity<APIResponse<Void>> handleFFMPEGException(FFMPEGException ex) {
-        logger.error("FFMPEGException: {}", ex.getMessage(), ex);
+        logger.error("FFMPEGException: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, "FFMPEG Error: Please upload a valid file", null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler(NotAuthenticated.class)
+    public ResponseEntity<APIResponse<Void>> handleNotAuthenticated(NotAuthenticated ex) {
+        logger.error("NotAuthenticated: {}", ex.getMessage());
+        APIResponse<Void> response = new APIResponse<>(ERROR, "User is not authenticated", null);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }
