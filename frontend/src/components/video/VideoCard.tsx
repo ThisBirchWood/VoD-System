@@ -24,17 +24,34 @@ const VideoCard = ({
                    }: VideoCardProps) => {
 
     const [timeAgo, setTimeAgo] = useState(dateToTimeAgo(stringToDate(createdAt)));
+    const [thumbnailAvailable, setThumbnailAvailable] = useState(true);
 
     setTimeout(() => {
         setTimeAgo(dateToTimeAgo(stringToDate(createdAt)))
     }, 1000);
+
+    useEffect(() => {
+        // Check if thumbnail is available
+        const checkThumbnail = async () => {
+            try {
+                const response = await fetch(`/api/v1/download/thumbnail/${id}`);
+                if (!response.ok) {
+                    throw new Error("Thumbnail not found");
+                }
+            } catch (error) {
+                setThumbnailAvailable(false);
+            }
+        };
+
+        checkThumbnail();
+    }, []);
 
     return (
         <Link to={"/video/" + id}>
             <div className={clsx("flex flex-col", className)}>
                 <div className={"relative inline-block"}>
                     <img
-                        src={`/api/v1/download/thumbnail/${id}`}
+                        src={thumbnailAvailable ? `/api/v1/download/thumbnail/${id}` : fallbackThumbnail}
                         alt="Video Thumbnail"
                     />
 
