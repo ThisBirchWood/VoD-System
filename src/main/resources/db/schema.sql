@@ -1,5 +1,5 @@
--- DROP TABLE IF EXISTS clips;
--- DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS clips;
+DROP TABLE IF EXISTS users;
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
@@ -23,5 +23,6 @@ CREATE TABLE IF NOT EXISTS clips (
     duration FLOAT NOT NULL,
     file_size FLOAT NOT NULL,
     video_path VARCHAR(255) NOT NULL,
+    thumbnail_path VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
