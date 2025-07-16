@@ -131,7 +131,7 @@ public class FfmpegService {
         command.add("-y");
 
         Float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
-        command.addAll(buildInputs(inputFile, length, length));
+        command.addAll(buildInputs(inputFile, videoMetadata.getStartPoint(), length));
 
         if (videoMetadata.getFps() != null || videoMetadata.getWidth() != null || videoMetadata.getHeight() != null) {
             command.addAll(buildFilters(videoMetadata.getFps(), videoMetadata.getWidth(), videoMetadata.getHeight()));
