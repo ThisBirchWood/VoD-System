@@ -48,6 +48,36 @@ public class FfmpegService {
         runWithProgress(inputFile, outputFile, videoMetadata, new AtomicReference<>(0f));
     }
 
+    public File generateThumbnail(File inputFile, File outputFile, Float time) throws IOException, InterruptedException {
+        logger.info("Generating thumbnail at {} seconds", time);
+
+        List<String> command = new ArrayList<>();
+        command.add("ffmpeg");
+        command.add("-ss");
+        command.add(time.toString());
+        command.add("-i");
+        command.add(inputFile.getAbsolutePath());
+        command.add("-frames:v");
+        command.add("1");
+        command.add(outputFile.getAbsolutePath());
+
+        String strCommand = String.join(" ", command);
+        logger.info("FFMPEG thumbnail command: {}", strCommand);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+
+        if (process.waitFor() != 0) {
+            logger.error("FFMPEG process failed to generate thumbnail");
+            throw new IOException("FFMPEG process failed to generate thumbnail");
+        }
+
+        logger.info("Thumbnail generated successfully at {}", outputFile.getAbsolutePath());
+        return outputFile;
+    }
+
     private void updateJobProgress(Process process, AtomicReference<Float> progress, Float length) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 

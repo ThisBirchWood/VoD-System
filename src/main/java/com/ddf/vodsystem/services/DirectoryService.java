@@ -61,6 +61,32 @@ public class DirectoryService {
         return new File(dir);
     }
 
+    public File getUserClipsDir(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+
+        String dir = outputDir + File.separator + userId + File.separator + "clips";
+        return new File(dir);
+    }
+
+    public File getUserThumbnailsDir(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+
+        String dir = outputDir + File.separator + userId + File.separator + "thumbnails";
+        File thumbnailDir = new File(dir);
+
+        try {
+            createDirectory(thumbnailDir.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("Error creating thumbnails directory: {}", e.getMessage());
+        }
+
+        return thumbnailDir;
+    }
+
     public void saveAtDir(File file, MultipartFile multipartFile) {
         try {
             createDirectory(file.getAbsolutePath());
@@ -118,7 +144,6 @@ public class DirectoryService {
                 Files.delete(f.toPath());
             }
         }
-
     }
 
     @PostConstruct

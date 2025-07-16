@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { formatTime, stringToDate, dateToTimeAgo } from "../../utils/utils.ts";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 
 type VideoCardProps = {
     id: number,
@@ -19,13 +19,10 @@ const VideoCard = ({
                        id,
                        title,
                        duration,
-                       thumbnailPath,
                        createdAt,
                        className
                    }: VideoCardProps) => {
 
-    const initialSrc = thumbnailPath && thumbnailPath.trim() !== "" ? thumbnailPath : fallbackThumbnail;
-    const [imgSrc, setImgSrc] = useState(initialSrc);
     const [timeAgo, setTimeAgo] = useState(dateToTimeAgo(stringToDate(createdAt)));
 
     setTimeout(() => {
@@ -37,13 +34,8 @@ const VideoCard = ({
             <div className={clsx("flex flex-col", className)}>
                 <div className={"relative inline-block"}>
                     <img
-                        src={imgSrc}
+                        src={`/api/v1/download/thumbnail/${id}`}
                         alt="Video Thumbnail"
-                        onError={() => {
-                            if (imgSrc !== fallbackThumbnail) {
-                                setImgSrc(fallbackThumbnail);
-                            }
-                        }}
                     />
 
                     <p className="

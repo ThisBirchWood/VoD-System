@@ -83,8 +83,20 @@ public class ClipService {
     private void persistClip(VideoMetadata videoMetadata, User user, Job job) {
         // Move clip from temp to output directory
         String fileExtension = directoryService.getFileExtension(job.getOutputFile().getAbsolutePath());
-        File outputFile = directoryService.getOutputFile(job.getUuid(), fileExtension);
-        directoryService.copyFile(job.getOutputFile(), outputFile);
+
+        File clipOutputDir = directoryService.getUserClipsDir(user.getId());
+        File clipOutputFile = new File(clipOutputDir, job.getUuid() + "." + fileExtension);
+        directoryService.copyFile(job.getOutputFile(), clipOutputFile);
+
+        File thumbnailOutputDir = directoryService.getUserThumbnailsDir(user.getId());
+        File thumbnailOutputFile = new File(thumbnailOutputDir, job.getUuid() + ".png");
+
+        try {
+            ffmpegService.generateThumbnail(clipOutputFile, thumbnailOutputFile, 0.0f);
+        } catch (IOException | InterruptedException e) {
+            logger.error("Error generating thumbnail for clip: {}", e.getMessage());
+            Thread.currentThread().interrupt();
+        }
 
         // Save clip to database
         Clip clip = new Clip();
@@ -97,7 +109,8 @@ public class ClipService {
         clip.setFps(videoMetadata.getFps());
         clip.setDuration(videoMetadata.getEndPoint() - videoMetadata.getStartPoint());
         clip.setFileSize(videoMetadata.getFileSize());
-        clip.setVideoPath(outputFile.getPath());
+        clip.setVideoPath(clipOutputFile.getPath());
+        clip.setThumbnailPath(thumbnailOutputFile.getPath());
         clipRepository.save(clip);
     }
 

@@ -65,4 +65,18 @@ public class DownloadController {
                 .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
                 .body(resource);
     }
+
+    @GetMapping("/thumbnail/{id}")
+    public ResponseEntity<Resource> downloadThumbnail(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
+        Resource resource = downloadService.downloadThumbnail(id);
+
+        if (resource == null || !resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                .body(resource);
+    }
 }
