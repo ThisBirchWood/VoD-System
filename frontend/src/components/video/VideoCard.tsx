@@ -7,8 +7,6 @@ type VideoCardProps = {
     id: number,
     title: string,
     duration: number,
-    thumbnailPath: string | null,
-    videoPath: string,
     createdAt: string,
     className?: string
 }
