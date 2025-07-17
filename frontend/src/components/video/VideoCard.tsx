@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { formatTime, stringToDate, dateToTimeAgo } from "../../utils/utils.ts";
 import { Link } from "react-router-dom";
 import {useEffect, useState} from "react";
+import { isThumbnailAvailable } from "../../utils/endpoints.ts";
 
 type VideoCardProps = {
     id: number,
@@ -29,20 +30,15 @@ const VideoCard = ({
     }, 1000);
 
     useEffect(() => {
-        // Check if thumbnail is available
-        const checkThumbnail = async () => {
-            try {
-                const response = await fetch(`/api/v1/download/thumbnail/${id}`);
-                if (!response.ok) {
-                    throw new Error("Thumbnail not found");
-                }
-            } catch (error) {
+        isThumbnailAvailable(id)
+            .then((available) => {
+                setThumbnailAvailable(available);
+            })
+            .catch(() => {
                 setThumbnailAvailable(false);
-            }
-        };
+            });
+    });
 
-        checkThumbnail();
-    }, []);
 
     return (
         <Link to={"/video/" + id}>
