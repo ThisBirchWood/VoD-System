@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services;
 
+import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.entities.*;
 import org.springframework.stereotype.Service;
 

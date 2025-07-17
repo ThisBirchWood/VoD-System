@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.VideoMetadata;
+import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

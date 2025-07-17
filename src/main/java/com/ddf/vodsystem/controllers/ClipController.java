@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.entities.APIResponse;
+import com.ddf.vodsystem.dto.ClipDTO;
+import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.entities.Clip;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.ClipService;
@@ -24,19 +25,23 @@ public class ClipController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<APIResponse<List<Clip>>> getClips(@AuthenticationPrincipal OAuth2User principal) {
+    public ResponseEntity<APIResponse<List<ClipDTO>>> getClips(@AuthenticationPrincipal OAuth2User principal) {
         if (principal == null) {
             throw new NotAuthenticated("User is not authenticated");
         }
 
         List<Clip> clips = clipService.getClipsByUser();
+        List<ClipDTO> clipDTOs = clips.stream()
+                .map(this::convertToDTO)
+                .toList();
+
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Clips retrieved successfully", clips)
+                new APIResponse<>("success", "Clips retrieved successfully", clipDTOs)
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<APIResponse<Clip>> getClipById(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
+    public ResponseEntity<APIResponse<ClipDTO>> getClipById(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
         if (principal == null) {
             throw new NotAuthenticated("User is not authenticated");
         }
@@ -46,8 +51,21 @@ public class ClipController {
             return ResponseEntity.notFound().build();
         }
 
+        ClipDTO clipDTO = convertToDTO(clip);
+
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Clip retrieved successfully", clip)
+                new APIResponse<>("success", "Clip retrieved successfully", clipDTO)
         );
+    }
+
+    private ClipDTO convertToDTO(Clip clip) {
+        ClipDTO dto = new ClipDTO();
+        dto.setId(clip.getId());
+        dto.setUserId(clip.getUser().getId());
+        dto.setTitle(clip.getTitle());
+        dto.setDescription(clip.getDescription());
+        dto.setDuration(clip.getDuration());
+        dto.setCreatedAt(clip.getCreatedAt());
+        return dto;
     }
 }

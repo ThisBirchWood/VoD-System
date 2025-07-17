@@ -1,14 +1,13 @@
 import clsx from "clsx";
 import { formatTime, stringToDate, dateToTimeAgo } from "../../utils/utils.ts";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import {useEffect, useState} from "react";
+import { isThumbnailAvailable } from "../../utils/endpoints.ts";
 
 type VideoCardProps = {
     id: number,
     title: string,
     duration: number,
-    thumbnailPath: string | null,
-    videoPath: string,
     createdAt: string,
     className?: string
 }
@@ -19,31 +18,35 @@ const VideoCard = ({
                        id,
                        title,
                        duration,
-                       thumbnailPath,
                        createdAt,
                        className
                    }: VideoCardProps) => {
 
-    const initialSrc = thumbnailPath && thumbnailPath.trim() !== "" ? thumbnailPath : fallbackThumbnail;
-    const [imgSrc, setImgSrc] = useState(initialSrc);
     const [timeAgo, setTimeAgo] = useState(dateToTimeAgo(stringToDate(createdAt)));
+    const [thumbnailAvailable, setThumbnailAvailable] = useState(true);
 
     setTimeout(() => {
         setTimeAgo(dateToTimeAgo(stringToDate(createdAt)))
     }, 1000);
+
+    useEffect(() => {
+        isThumbnailAvailable(id)
+            .then((available) => {
+                setThumbnailAvailable(available);
+            })
+            .catch(() => {
+                setThumbnailAvailable(false);
+            });
+    });
+
 
     return (
         <Link to={"/video/" + id}>
             <div className={clsx("flex flex-col", className)}>
                 <div className={"relative inline-block"}>
                     <img
-                        src={imgSrc}
+                        src={thumbnailAvailable ? `/api/v1/download/thumbnail/${id}` : fallbackThumbnail}
                         alt="Video Thumbnail"
-                        onError={() => {
-                            if (imgSrc !== fallbackThumbnail) {
-                                setImgSrc(fallbackThumbnail);
-                            }
-                        }}
                     />
 
                     <p className="

@@ -18,11 +18,8 @@ const MyClips = () => {
             {clips.map((clip) => (
                 <VideoCard
                     id={clip.id}
-                    key={clip.videoPath}
                     title={clip.title}
                     duration={clip.duration}
-                    thumbnailPath={clip.thumbnailPath}
-                    videoPath={clip.videoPath}
                     createdAt={clip.createdAt}
                     className={"w-40 m-5"}
                 />

@@ -47,4 +47,7 @@ public class Clip {
 
     @Column(name = "video_path", nullable = false, length = 255)
     private String videoPath;
+
+    @Column(name = "thumbnail_path", nullable = false, length = 255)
+    private String thumbnailPath;
 }

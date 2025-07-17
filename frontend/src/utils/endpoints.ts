@@ -176,6 +176,15 @@ const getClipById = async (id: string): Promise<Clip | null> => {
     }
 };
 
+const isThumbnailAvailable = async (id: number): Promise<boolean> => {
+    const response = await fetch(`/api/v1/download/thumbnail/${id}`);
+    if (!response.ok) {
+        return false;
+    }
+
+    return true;
+}
+
 export {
     uploadFile,
     editFile,
@@ -184,5 +193,6 @@ export {
     getMetadata,
     getUser,
     getClips,
-    getClipById
+    getClipById,
+    isThumbnailAvailable
 };

@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.entities.VideoMetadata;
+import com.ddf.vodsystem.dto.VideoMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -46,6 +46,35 @@ public class FfmpegService {
 
     public void run(File inputFile, File outputFile, VideoMetadata videoMetadata) throws IOException, InterruptedException {
         runWithProgress(inputFile, outputFile, videoMetadata, new AtomicReference<>(0f));
+    }
+
+    public void generateThumbnail(File inputFile, File outputFile, Float time) throws IOException, InterruptedException {
+        logger.info("Generating thumbnail at {} seconds", time);
+
+        List<String> command = new ArrayList<>();
+        command.add("ffmpeg");
+        command.add("-ss");
+        command.add(time.toString());
+        command.add("-i");
+        command.add(inputFile.getAbsolutePath());
+        command.add("-frames:v");
+        command.add("1");
+        command.add(outputFile.getAbsolutePath());
+
+        String strCommand = String.join(" ", command);
+        logger.info("FFMPEG thumbnail command: {}", strCommand);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+
+        if (process.waitFor() != 0) {
+            logger.error("FFMPEG process failed to generate thumbnail");
+            throw new IOException("FFMPEG process failed to generate thumbnail");
+        }
+
+        logger.info("Thumbnail generated successfully at {}", outputFile.getAbsolutePath());
     }
 
     private void updateJobProgress(Process process, AtomicReference<Float> progress, Float length) throws IOException {

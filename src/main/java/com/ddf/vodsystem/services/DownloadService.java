@@ -65,4 +65,19 @@ public class DownloadService {
         Clip clip = clipRepository.findById(id).orElseThrow(() -> new JobNotFound("Clip not found with id: " + id));
         return downloadClip(clip);
     }
+
+    public Resource downloadThumbnail(Clip clip) {
+        String path = clip.getThumbnailPath();
+        File file = new File(path);
+        if (!file.exists()) {
+            throw new JobNotFound("Thumbnail file not found");
+        }
+
+        return new FileSystemResource(file);
+    }
+
+    public Resource downloadThumbnail(Long id) {
+        Clip clip = clipRepository.findById(id).orElseThrow(() -> new JobNotFound("Clip not found with id: " + id));
+        return downloadThumbnail(clip);
+    }
 }

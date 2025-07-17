@@ -23,5 +23,6 @@ CREATE TABLE IF NOT EXISTS clips (
     duration FLOAT NOT NULL,
     file_size FLOAT NOT NULL,
     video_path VARCHAR(255) NOT NULL,
+    thumbnail_path VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

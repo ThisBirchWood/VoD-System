@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.entities.APIResponse;
+import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
