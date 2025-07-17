@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.entities.APIResponse;
+import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;

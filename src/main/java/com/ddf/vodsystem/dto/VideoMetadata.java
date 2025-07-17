@@ -1,4 +1,4 @@
-package com.ddf.vodsystem.entities;
+package com.ddf.vodsystem.dto;
 
 import lombok.Data;
 

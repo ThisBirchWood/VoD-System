@@ -3,6 +3,7 @@ package com.ddf.vodsystem.entities;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.ddf.vodsystem.dto.VideoMetadata;
 import org.springframework.security.core.context.SecurityContext;
 
 import lombok.Data;

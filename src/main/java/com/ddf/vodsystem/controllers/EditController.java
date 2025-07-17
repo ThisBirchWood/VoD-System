@@ -1,12 +1,11 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.entities.VideoMetadata;
+import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.services.EditService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import com.ddf.vodsystem.entities.APIResponse;
+import com.ddf.vodsystem.dto.APIResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 
