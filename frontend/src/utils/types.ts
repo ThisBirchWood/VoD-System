@@ -23,14 +23,10 @@ type User = {
 
 type Clip = {
     id: number,
+    userId: number,
     title: string,
     description: string,
     duration: number,
-    thumbnailPath: string,
-    videoPath: string,
-    fps: number,
-    width: number,
-    height: number,
     createdAt: string,
 }
 

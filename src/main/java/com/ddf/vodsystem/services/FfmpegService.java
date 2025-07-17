@@ -48,7 +48,7 @@ public class FfmpegService {
         runWithProgress(inputFile, outputFile, videoMetadata, new AtomicReference<>(0f));
     }
 
-    public File generateThumbnail(File inputFile, File outputFile, Float time) throws IOException, InterruptedException {
+    public void generateThumbnail(File inputFile, File outputFile, Float time) throws IOException, InterruptedException {
         logger.info("Generating thumbnail at {} seconds", time);
 
         List<String> command = new ArrayList<>();
@@ -75,7 +75,6 @@ public class FfmpegService {
         }
 
         logger.info("Thumbnail generated successfully at {}", outputFile.getAbsolutePath());
-        return outputFile;
     }
 
     private void updateJobProgress(Process process, AtomicReference<Float> progress, Float length) throws IOException {
