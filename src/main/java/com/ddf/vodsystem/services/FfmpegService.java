@@ -48,13 +48,13 @@ public class FfmpegService {
         runWithProgress(inputFile, outputFile, videoMetadata, new AtomicReference<>(0f));
     }
 
-    public void generateThumbnail(File inputFile, File outputFile, Float time) throws IOException, InterruptedException {
-        logger.info("Generating thumbnail at {} seconds", time);
+    public void generateThumbnail(File inputFile, File outputFile, Float timeInVideo) throws IOException, InterruptedException {
+        logger.info("Generating thumbnail at {} seconds", timeInVideo);
 
         List<String> command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-ss");
-        command.add(time.toString());
+        command.add(timeInVideo.toString());
         command.add("-i");
         command.add(inputFile.getAbsolutePath());
         command.add("-frames:v");

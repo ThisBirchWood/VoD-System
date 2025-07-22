@@ -5,6 +5,7 @@ import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
 import com.ddf.vodsystem.entities.Job;
+import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -18,11 +19,15 @@ public class DownloadService {
 
     private final JobService jobService;
     private final ClipRepository clipRepository;
+    private final ClipService clipService;
 
     @Autowired
-    public DownloadService(JobService jobService, ClipRepository clipRepository) {
+    public DownloadService(JobService jobService,
+                           ClipRepository clipRepository,
+                           ClipService clipService) {
         this.jobService = jobService;
         this.clipRepository = clipRepository;
+        this.clipService = clipService;
     }
 
     public Resource downloadInput(String uuid) {
@@ -52,8 +57,13 @@ public class DownloadService {
     }
 
     public Resource downloadClip(Clip clip) {
+        if (!clipService.isAuthenticatedForClip(clip)) {
+            throw new NotAuthenticated("Not authenticated for this clip");
+        }
+
         String path = clip.getVideoPath();
         File file = new File(path);
+
         if (!file.exists()) {
             throw new JobNotFound("Clip file not found");
         }
@@ -67,6 +77,10 @@ public class DownloadService {
     }
 
     public Resource downloadThumbnail(Clip clip) {
+        if (!clipService.isAuthenticatedForClip(clip)) {
+            throw new NotAuthenticated("Not authenticated for this clip thumbnail");
+        }
+
         String path = clip.getThumbnailPath();
         File file = new File(path);
         if (!file.exists()) {

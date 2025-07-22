@@ -8,12 +8,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
-import com.ddf.vodsystem.security.CustomOAuth2User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,15 +22,18 @@ public class ClipService {
     private final MetadataService metadataService;
     private final DirectoryService directoryService;
     private final FfmpegService ffmpegService;
+    private final UserService userService;
 
     public ClipService(ClipRepository clipRepository,
                        MetadataService metadataService,
                        DirectoryService directoryService,
-                       FfmpegService ffmpegService) {
+                       FfmpegService ffmpegService,
+                       UserService userService) {
         this.clipRepository = clipRepository;
         this.metadataService = metadataService;
         this.directoryService = directoryService;
         this.ffmpegService = ffmpegService;
+        this.userService = userService;
     }
 
     /**
@@ -53,7 +54,7 @@ public class ClipService {
         Float fileSize = metadataService.getFileSize(job.getOutputFile());
         job.getOutputVideoMetadata().setFileSize(fileSize);
 
-        User user = getUser();
+        User user = userService.getUser();
         if (user != null) {
             persistClip(job.getOutputVideoMetadata(), user, job);
         }
@@ -63,7 +64,7 @@ public class ClipService {
     }
 
     public List<Clip> getClipsByUser() {
-        User user = getUser();
+        User user = userService.getUser();
 
         if (user == null) {
             logger.warn("No authenticated user found");
@@ -73,13 +74,30 @@ public class ClipService {
         return clipRepository.findByUser(user);
     }
 
-    private User getUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomOAuth2User oAuth2user) {
-            return oAuth2user.getUser();
+    public Clip getClipById(Long id) {
+        Clip clip = clipRepository.findById(id).orElse(null);
+
+        if (clip == null) {
+            logger.warn("Clip with ID {} not found", id);
+            return null;
         }
-        return null;
+
+        if (!isAuthenticatedForClip(clip)) {
+            logger.warn("User is not authorized to access clip with ID {}", id);
+            throw new NotAuthenticated("You are not authorized to access this clip");
+        }
+
+        return clip;
     }
+
+    public boolean isAuthenticatedForClip(Clip clip) {
+        User user = userService.getUser();
+        if (user == null || clip == null) {
+            return false;
+        }
+        return user.getId().equals(clip.getUser().getId());
+    }
+
 
     private void persistClip(VideoMetadata videoMetadata, User user, Job job) {
         // Move clip from temp to output directory
@@ -113,9 +131,5 @@ public class ClipService {
         clip.setVideoPath(clipOutputFile.getPath());
         clip.setThumbnailPath(thumbnailOutputFile.getPath());
         clipRepository.save(clip);
-    }
-
-    public Clip getClipById(Long id) {
-        return clipRepository.findById(id).orElse(null);
     }
 }

@@ -42,25 +42,6 @@ public class DirectoryService {
         return new File(dir);
     }
 
-    public File getOutputFile(String id, String extension) {
-        if (id == null || id.length() < 2) {
-            throw new IllegalArgumentException("ID must be at least 2 characters long");
-        }
-
-        // Create subdirectories from first 2 characters of the ID
-        String shard1 = id.substring(0, 2);
-        String shard2 = id.substring(2);
-
-        String dir = outputDir +
-                File.separator +
-                shard1 +
-                File.separator +
-                shard2 +
-                (extension.isEmpty() ? "" : "." + extension);
-
-        return new File(dir);
-    }
-
     public File getUserClipsDir(Long userId) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID cannot be null");
