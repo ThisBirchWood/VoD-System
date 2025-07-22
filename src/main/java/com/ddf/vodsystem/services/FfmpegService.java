@@ -22,6 +22,7 @@ public class FfmpegService {
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
+    private static final String FFMPEG_COMMAND = "ffmpeg";
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     public void runWithProgress(File inputFile, File outputFile, VideoMetadata videoMetadata, AtomicReference<Float> progress) throws IOException, InterruptedException {
@@ -52,7 +53,7 @@ public class FfmpegService {
         logger.info("Generating thumbnail at {} seconds", time);
 
         List<String> command = new ArrayList<>();
-        command.add("ffmpeg");
+        command.add(FFMPEG_COMMAND);
         command.add("-ss");
         command.add(time.toString());
         command.add("-i");
@@ -75,6 +76,37 @@ public class FfmpegService {
         }
 
         logger.info("Thumbnail generated successfully at {}", outputFile.getAbsolutePath());
+    }
+
+    public void remux(File inputFile, File outputFile) throws IOException, InterruptedException {
+        logger.info("Remuxing file {} to {}", inputFile.getName(), outputFile.getAbsolutePath());
+
+        List<String> command = new ArrayList<>();
+        command.add(FFMPEG_COMMAND);
+        command.add("-fflags");
+        command.add("+genpts");
+        command.add("-i");
+        command.add(inputFile.getAbsolutePath());
+        command.add("-c:v");
+        command.add("h264");
+        command.add("-c:a");
+        command.add("aac");
+        command.add(outputFile.getAbsolutePath());
+
+        String strCommand = String.join(" ", command);
+        logger.info("FFMPEG remux command: {}", strCommand);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+
+        if (process.waitFor() != 0) {
+            logger.error("FFMPEG remux process failed");
+            throw new IOException("FFMPEG remux process failed");
+        }
+
+        logger.info("Remuxing completed successfully");
     }
 
     private void updateJobProgress(Process process, AtomicReference<Float> progress, Float length) throws IOException {
@@ -154,7 +186,7 @@ public class FfmpegService {
 
     private List<String> buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
         List<String> command = new ArrayList<>();
-        command.add("ffmpeg");
+        command.add(FFMPEG_COMMAND);
         command.add("-progress");
         command.add("pipe:1");
         command.add("-y");
