@@ -32,14 +32,12 @@ public class DirectoryService {
     private static final long TEMP_DIR_TIMELIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
     private static final long TEMP_DIR_CLEANUP_RATE = 30 * 60 * (long) 1000; // 30 minutes
 
-    public File getTempInputFile(String id, String extension) {
-        String dir = tempInputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
-        return new File(dir);
+    public File getTempInputFile(String filename) {
+        return new File(tempInputsDir + File.separator + filename);
     }
 
-    public File getTempOutputFile(String id, String extension) {
-        String dir = tempOutputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
-        return new File(dir);
+    public File getTempOutputFile(String filename) {
+        return new File(tempOutputsDir + File.separator + filename);
     }
 
     public File getUserClipsDir(Long userId) {
@@ -68,7 +66,7 @@ public class DirectoryService {
         return thumbnailDir;
     }
 
-    public void saveAtDir(File file, MultipartFile multipartFile) {
+    public void saveMultipartFile(File file, MultipartFile multipartFile) {
         try {
             createDirectory(file.getAbsolutePath());
             Path filePath = Paths.get(file.getAbsolutePath());
