@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services;
 
+import com.ddf.vodsystem.dto.ProgressTracker;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +25,7 @@ public class FfmpegService {
     private static final String FFMPEG_COMMAND = "ffmpeg";
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
-    public void runWithProgress(File inputFile, File outputFile, VideoMetadata videoMetadata, AtomicReference<Float> progress) throws IOException, InterruptedException {
+    public void runWithProgress(File inputFile, File outputFile, VideoMetadata videoMetadata, ProgressTracker progress) throws IOException, InterruptedException {
         logger.info("Starting FFMPEG process");
 
         List<String> command = buildCommand(inputFile, outputFile, videoMetadata);
@@ -46,16 +46,16 @@ public class FfmpegService {
     }
 
     public void run(File inputFile, File outputFile, VideoMetadata videoMetadata) throws IOException, InterruptedException {
-        runWithProgress(inputFile, outputFile, videoMetadata, new AtomicReference<>(0f));
+        runWithProgress(inputFile, outputFile, videoMetadata, new ProgressTracker(0.0f));
     }
 
-    public void generateThumbnail(File inputFile, File outputFile, Float time) throws IOException, InterruptedException {
-        logger.info("Generating thumbnail at {} seconds", time);
+    public void generateThumbnail(File inputFile, File outputFile, Float timeInVideo) throws IOException, InterruptedException {
+        logger.info("Generating thumbnail at {} seconds", timeInVideo);
 
         List<String> command = new ArrayList<>();
         command.add(FFMPEG_COMMAND);
         command.add("-ss");
-        command.add(time.toString());
+        command.add(timeInVideo.toString());
         command.add("-i");
         command.add(inputFile.getAbsolutePath());
         command.add("-frames:v");
@@ -109,7 +109,7 @@ public class FfmpegService {
         logger.info("Remuxing completed successfully");
     }
 
-    private void updateJobProgress(Process process, AtomicReference<Float> progress, Float length) throws IOException {
+    private void updateJobProgress(Process process, ProgressTracker progress, Float length) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
         String line;
@@ -119,7 +119,7 @@ public class FfmpegService {
 
             if (matcher.find()) {
                 Float timeInMs = Float.parseFloat(matcher.group(1)) / 1000000f;
-                progress.set(timeInMs/length);
+                progress.setProgress(timeInMs/length);
             }
         }
     }

@@ -30,7 +30,7 @@ public class EditService {
             return 1f;
         }
 
-        return job.getProgress().get();
+        return job.getProgress().getProgress();
     }
 
     private void validateClipConfig(VideoMetadata videoMetadata) {

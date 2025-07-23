@@ -1,8 +1,8 @@
 package com.ddf.vodsystem.entities;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicReference;
 
+import com.ddf.vodsystem.dto.ProgressTracker;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import org.springframework.security.core.context.SecurityContext;
 
@@ -23,7 +23,7 @@ public class Job {
 
     // job status
     private JobStatus status = JobStatus.NOT_READY;
-    private AtomicReference<Float> progress = new AtomicReference<>(0f);
+    private ProgressTracker progress = new ProgressTracker(0.0f);
 
     public Job(String uuid, File inputFile, File outputFile, VideoMetadata inputVideoMetadata) {
         this.uuid = uuid;
