@@ -32,40 +32,14 @@ public class DirectoryService {
     private static final long TEMP_DIR_TIMELIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
     private static final long TEMP_DIR_CLEANUP_RATE = 30 * 60 * (long) 1000; // 30 minutes
 
-    public File getTempInputFile(String id, String extension) {
-        String dir = tempInputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
+    public File getTempInputFile(String filename) {
+        String dir = tempInputsDir + File.separator + filename;
         return new File(dir);
     }
 
-    public File getTempOutputFile(String id, String extension) {
-        String dir = tempOutputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
+    public File getTempOutputFile(String filename) {
+        String dir = tempOutputsDir + File.separator + filename;
         return new File(dir);
-    }
-
-    public File getUserClipsDir(Long userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
-
-        String dir = outputDir + File.separator + userId + File.separator + "clips";
-        return new File(dir);
-    }
-
-    public File getUserThumbnailsDir(Long userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
-
-        String dir = outputDir + File.separator + userId + File.separator + "thumbnails";
-        File thumbnailDir = new File(dir);
-
-        try {
-            createDirectory(thumbnailDir.getAbsolutePath());
-        } catch (IOException e) {
-            logger.error("Error creating thumbnails directory: {}", e.getMessage());
-        }
-
-        return thumbnailDir;
     }
 
     public File getUserClipsFile(Long userId, String fileName) {

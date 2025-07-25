@@ -36,8 +36,8 @@ public class UploadService {
         String uuid = generateShortUUID();
         String extension = directoryService.getFileExtension(file.getOriginalFilename());
 
-        File inputFile = directoryService.getTempInputFile(uuid, extension);
-        File outputFile = directoryService.getTempOutputFile(uuid, extension);
+        File inputFile = directoryService.getTempInputFile(uuid + "." + extension);
+        File outputFile = directoryService.getTempOutputFile(uuid + "." + extension);
         directoryService.saveAtDir(inputFile, file);
 
         // add job
