@@ -37,7 +37,7 @@ const VideoCard = ({
             .catch(() => {
                 setThumbnailAvailable(false);
             });
-    });
+    }, []);
 
 
     return (
