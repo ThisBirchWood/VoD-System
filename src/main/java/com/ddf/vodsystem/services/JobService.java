@@ -87,7 +87,15 @@ public class JobService {
                 SecurityContextHolder.setContext(job.getSecurityContext());
             }
 
-            clipService.run(job);
+            clipService.run(
+                    job.getInputVideoMetadata(),
+                    job.getOutputVideoMetadata(),
+                    job.getInputFile(),
+                    job.getOutputFile(),
+                    job.getProgress()
+            );
+
+            job.setStatus(JobStatus.FINISHED);
 
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
