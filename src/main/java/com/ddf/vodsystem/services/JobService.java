@@ -87,7 +87,7 @@ public class JobService {
                 SecurityContextHolder.setContext(job.getSecurityContext());
             }
 
-            clipService.run(
+            clipService.create(
                     job.getInputVideoMetadata(),
                     job.getOutputVideoMetadata(),
                     job.getInputFile(),
