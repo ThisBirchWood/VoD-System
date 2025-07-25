@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services;
 
+import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,10 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.List;
 
 @Service
 public class MetadataService {
@@ -20,26 +20,30 @@ public class MetadataService {
     public VideoMetadata getVideoMetadata(File file) {
         logger.info("Getting metadata for file {}", file.getAbsolutePath());
 
-        ProcessBuilder pb = new ProcessBuilder("ffprobe",
+        List<String> command = List.of(
+                "ffprobe",
                 "-v", "quiet",
                 "-print_format", "json",
                 "-show_format", "-select_streams",
                 "v:0", "-show_entries", "stream=duration,width,height,r_frame_rate:format=size,duration",
-                "-i", file.getAbsolutePath());
+                "-i", file.getAbsolutePath()
+        );
 
-        Process process;
+        ObjectMapper mapper = new ObjectMapper();
+        StringBuilder outputBuilder = new StringBuilder();
 
         try {
-           process = pb.start();
-           handleFfprobeError(process);
-           VideoMetadata metadata = parseVideoMetadata(readStandardOutput(process));
-           logger.info("Metadata for file {} finished with exit code {}", file.getAbsolutePath(), process.exitValue());
-           return metadata;
-        } catch (InterruptedException e) {
+            CommandOutput output = CommandRunner.run(command);
+
+            for (String line : output.getOutput()) {
+                outputBuilder.append(line);
+            }
+
+            JsonNode node = mapper.readTree(outputBuilder.toString());
+            return parseVideoMetadata(node);
+        } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new FFMPEGException(e.getMessage());
-        } catch (IOException e) {
-            throw new FFMPEGException(e.getMessage());
+            throw new FFMPEGException("Error while getting video metadata: " + e);
         }
     }
 
@@ -54,15 +58,6 @@ public class MetadataService {
         return metadata.getFileSize();
     }
 
-    public Float getVideoDuration(File file) {
-        logger.info("Getting video duration for {}", file.getAbsolutePath());
-        VideoMetadata metadata = getVideoMetadata(file);
-        if (metadata.getEndPoint() == null) {
-            throw new FFMPEGException("Video duration not found");
-        }
-        return metadata.getEndPoint();
-    }
-
     public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
         if (outputFileMetadata.getStartPoint() == null) {
             outputFileMetadata.setStartPoint(0f);
@@ -70,34 +65,6 @@ public class MetadataService {
 
         if (outputFileMetadata.getEndPoint() == null) {
             outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
-        }
-    }
-
-    private JsonNode readStandardOutput(Process process) throws IOException{
-        // Read the standard output (JSON metadata)
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        StringBuilder jsonOutput = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            jsonOutput.append(line);
-        }
-
-        // Parse the JSON output
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(jsonOutput.toString());
-    }
-
-    private void handleFfprobeError(Process process) throws IOException, InterruptedException {
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            StringBuilder errorOutput = new StringBuilder();
-            String line;
-            while ((line = errorReader.readLine()) != null) {
-                errorOutput.append(line).append("\n");
-            }
-
-            throw new FFMPEGException("ffprobe exited with code " + exitCode + ". Error: " + errorOutput);
         }
     }
 
