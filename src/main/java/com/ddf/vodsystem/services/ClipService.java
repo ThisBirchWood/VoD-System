@@ -21,18 +21,18 @@ public class ClipService {
     private final ClipRepository clipRepository;
     private final MetadataService metadataService;
     private final DirectoryService directoryService;
-    private final FfmpegService ffmpegService;
+    private final MediaService mediaService;
     private final UserService userService;
 
     public ClipService(ClipRepository clipRepository,
                        MetadataService metadataService,
                        DirectoryService directoryService,
-                       FfmpegService ffmpegService,
+                       MediaService mediaService,
                        UserService userService) {
         this.clipRepository = clipRepository;
         this.metadataService = metadataService;
         this.directoryService = directoryService;
-        this.ffmpegService = ffmpegService;
+        this.mediaService = mediaService;
         this.userService = userService;
     }
 
@@ -49,7 +49,7 @@ public class ClipService {
      */
     public void run(Job job) throws IOException, InterruptedException {
         metadataService.normalizeVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
-        ffmpegService.runWithProgress(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata(), job.getProgress());
+        mediaService.compress(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata(), job.getProgress());
 
         Float fileSize = metadataService.getFileSize(job.getOutputFile());
         job.getOutputVideoMetadata().setFileSize(fileSize);
@@ -98,7 +98,6 @@ public class ClipService {
         return user.getId().equals(clip.getUser().getId());
     }
 
-
     private void persistClip(VideoMetadata videoMetadata, User user, Job job) {
         // Move clip from temp to output directory
         String fileExtension = directoryService.getFileExtension(job.getOutputFile().getAbsolutePath());
@@ -111,7 +110,7 @@ public class ClipService {
         File thumbnailOutputFile = new File(thumbnailOutputDir, job.getUuid() + ".png");
 
         try {
-            ffmpegService.generateThumbnail(clipOutputFile, thumbnailOutputFile, 0.0f);
+            mediaService.createThumbnail(clipOutputFile, thumbnailOutputFile, 0.0f);
         } catch (IOException | InterruptedException e) {
             logger.error("Error generating thumbnail for clip: {}", e.getMessage());
             Thread.currentThread().interrupt();
