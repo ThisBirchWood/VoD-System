@@ -21,18 +21,15 @@ public class ClipService {
     private static final Logger logger = LoggerFactory.getLogger(ClipService.class);
 
     private final ClipRepository clipRepository;
-    private final MetadataService metadataService;
     private final DirectoryService directoryService;
     private final MediaService mediaService;
     private final UserService userService;
 
     public ClipService(ClipRepository clipRepository,
-                       MetadataService metadataService,
                        DirectoryService directoryService,
                        MediaService mediaService,
                        UserService userService) {
         this.clipRepository = clipRepository;
-        this.metadataService = metadataService;
         this.directoryService = directoryService;
         this.mediaService = mediaService;
         this.userService = userService;
@@ -58,18 +55,19 @@ public class ClipService {
                                  File inputFile,
                                  File outputFile,
                                  ProgressTracker progress) throws IOException, InterruptedException {
-        metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
+        normalizeVideoMetadata(inputMetadata, outputMetadata);
         mediaService.compress(inputFile, outputFile, outputMetadata, progress);
 
-        Float fileSize = metadataService.getFileSize(outputFile);
+        Float fileSize = mediaService.getVideoMetadata(outputFile).getFileSize();
         outputMetadata.setFileSize(fileSize);
 
         User user = userService.getUser();
-        if (user != null) {
-            return Optional.of(persistClip(outputMetadata, user, outputFile, inputFile.getName()));
+
+        if (user == null) {
+            return Optional.empty();
         }
 
-        return Optional.empty();
+        return Optional.of(persistClip(outputMetadata, user, outputFile, inputFile.getName()));
     }
 
     public List<Clip> getClipsByUser() {
@@ -158,5 +156,15 @@ public class ClipService {
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
         return clipRepository.save(clip);
+    }
+
+    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
+        if (outputFileMetadata.getStartPoint() == null) {
+            outputFileMetadata.setStartPoint(0f);
+        }
+
+        if (outputFileMetadata.getEndPoint() == null) {
+            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
+        }
     }
 }

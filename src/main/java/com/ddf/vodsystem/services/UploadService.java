@@ -19,15 +19,15 @@ public class UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
 
     private final JobService jobService;
-    private final MetadataService metadataService;
+    private final MediaService mediaService;
     private final DirectoryService directoryService;
 
     @Autowired
     public UploadService(JobService jobService,
-                         MetadataService metadataService,
+                         MediaService mediaService,
                          DirectoryService directoryService) {
         this.jobService = jobService;
-        this.metadataService = metadataService;
+        this.mediaService = mediaService;
         this.directoryService = directoryService;
     }
 
@@ -42,7 +42,7 @@ public class UploadService {
 
         // add job
         logger.info("Uploaded file and creating job with UUID: {}", uuid);
-        VideoMetadata videoMetadata = metadataService.getVideoMetadata(inputFile);
+        VideoMetadata videoMetadata = mediaService.getVideoMetadata(inputFile);
         Job job = new Job(uuid, inputFile, outputFile, videoMetadata);
         jobService.add(job);
 
