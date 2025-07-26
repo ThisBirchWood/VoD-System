@@ -32,40 +32,48 @@ public class DirectoryService {
     private static final long TEMP_DIR_TIMELIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
     private static final long TEMP_DIR_CLEANUP_RATE = 30 * 60 * (long) 1000; // 30 minutes
 
-    public File getTempInputFile(String id, String extension) {
-        String dir = tempInputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
+    public File getTempInputFile(String filename) {
+        String dir = tempInputsDir + File.separator + filename;
         return new File(dir);
     }
 
-    public File getTempOutputFile(String id, String extension) {
-        String dir = tempOutputsDir + File.separator + id + (extension.isEmpty() ? "" : "." + extension);
+    public File getTempOutputFile(String filename) {
+        String dir = tempOutputsDir + File.separator + filename;
         return new File(dir);
     }
 
-    public File getUserClipsDir(Long userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+    public File getUserClipsFile(Long userId, String fileName) {
+        if (userId == null || fileName == null || fileName.isEmpty()) {
+            throw new IllegalArgumentException("User ID and file name cannot be null or empty");
         }
 
-        String dir = outputDir + File.separator + userId + File.separator + "clips";
-        return new File(dir);
-    }
-
-    public File getUserThumbnailsDir(Long userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
-
-        String dir = outputDir + File.separator + userId + File.separator + "thumbnails";
-        File thumbnailDir = new File(dir);
+        String dir = outputDir + File.separator + userId + File.separator + "clips" + File.separator + fileName;
+        File file = new File(dir);
 
         try {
-            createDirectory(thumbnailDir.getAbsolutePath());
+            createDirectory(file.getParent());
+        } catch (IOException e) {
+            logger.error("Error creating clips directory: {}", e.getMessage());
+        }
+
+        return file;
+    }
+
+    public File getUserThumbnailsFile(Long userId, String fileName) {
+        if (userId == null || fileName == null || fileName.isEmpty()) {
+            throw new IllegalArgumentException("User ID and file name cannot be null or empty");
+        }
+
+        String dir = outputDir + File.separator + userId + File.separator + "thumbnails" + File.separator + fileName;
+        File file = new File(dir);
+
+        try {
+            createDirectory(file.getParent());
         } catch (IOException e) {
             logger.error("Error creating thumbnails directory: {}", e.getMessage());
         }
 
-        return thumbnailDir;
+        return file;
     }
 
     public void saveAtDir(File file, MultipartFile multipartFile) {
@@ -88,6 +96,33 @@ public class DirectoryService {
             logger.info("Copied file from {} to {}", sourcePath, destPath);
         } catch (IOException e) {
             logger.error(e.getMessage());
+        }
+    }
+
+    public void cutFile(File source, File target) {
+        copyFile(source, target);
+
+        try {
+            Files.deleteIfExists(source.toPath());
+            logger.info("Deleted source file: {}", source.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("Error deleting source file: {}", e.getMessage());
+        }
+    }
+
+    public boolean deleteFile(File file) {
+        if (file == null || !file.exists()) {
+            logger.warn("File does not exist: {}", file);
+            return false;
+        }
+
+        try {
+            Files.delete(file.toPath());
+            logger.info("Deleted file: {}", file.getAbsolutePath());
+            return true;
+        } catch (IOException e) {
+            logger.error("Error deleting file: {}", e.getMessage());
+            return false;
         }
     }
 

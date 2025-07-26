@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services;
 
+import com.ddf.vodsystem.dto.ProgressTracker;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.entities.*;
 
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
@@ -19,48 +21,53 @@ public class ClipService {
     private static final Logger logger = LoggerFactory.getLogger(ClipService.class);
 
     private final ClipRepository clipRepository;
-    private final MetadataService metadataService;
     private final DirectoryService directoryService;
-    private final FfmpegService ffmpegService;
+    private final MediaService mediaService;
     private final UserService userService;
 
     public ClipService(ClipRepository clipRepository,
-                       MetadataService metadataService,
                        DirectoryService directoryService,
-                       FfmpegService ffmpegService,
+                       MediaService mediaService,
                        UserService userService) {
         this.clipRepository = clipRepository;
-        this.metadataService = metadataService;
         this.directoryService = directoryService;
-        this.ffmpegService = ffmpegService;
+        this.mediaService = mediaService;
         this.userService = userService;
     }
 
     /**
-     * Runs the FFMPEG command to create a video clip based on the provided job.
-     * Updates the job status and progress as the command executes.
-     * This method validates the input and output video metadata,
-     * Updates the job VideoMetadata with the output file size,
+     * Run the clip creation process.
+     * This method normalizes the input metadata, compresses the video file,
+     * updates the output metadata with the file size, and saves the clip
+     * to the database if the user is authenticated.
      *
-     * @param job the job containing input and output video metadata
-     * @throws IOException if an I/O error occurs during command execution
-     * @throws InterruptedException if the thread is interrupted while waiting for the process to finish
-     *
+     * @param inputMetadata The metadata of the input video file.
+     * @param outputMetadata The metadata for the output video file.
+     * @param inputFile The input video file to be processed.
+     * @param outputFile The output file where the processed video will be saved.
+     * @param progress A tracker to monitor the progress of the video processing.
+     * @throws IOException if an I/O error occurs during file processing.
+     * @throws InterruptedException if the thread is interrupted during processing.
+     * @return An Optional containing the created Clip if the user is authenticated, otherwise an empty Optional.
      */
-    public void run(Job job) throws IOException, InterruptedException {
-        metadataService.normalizeVideoMetadata(job.getInputVideoMetadata(), job.getOutputVideoMetadata());
-        ffmpegService.runWithProgress(job.getInputFile(), job.getOutputFile(), job.getOutputVideoMetadata(), job.getProgress());
+    public Optional<Clip> create(VideoMetadata inputMetadata,
+                                 VideoMetadata outputMetadata,
+                                 File inputFile,
+                                 File outputFile,
+                                 ProgressTracker progress) throws IOException, InterruptedException {
+        normalizeVideoMetadata(inputMetadata, outputMetadata);
+        mediaService.compress(inputFile, outputFile, outputMetadata, progress);
 
-        Float fileSize = metadataService.getFileSize(job.getOutputFile());
-        job.getOutputVideoMetadata().setFileSize(fileSize);
+        Float fileSize = mediaService.getVideoMetadata(outputFile).getFileSize();
+        outputMetadata.setFileSize(fileSize);
 
         User user = userService.getUser();
-        if (user != null) {
-            persistClip(job.getOutputVideoMetadata(), user, job);
+
+        if (user == null) {
+            return Optional.empty();
         }
 
-        job.setStatus(JobStatus.FINISHED);
-        logger.info("FFMPEG finished successfully for job: {}", job.getUuid());
+        return Optional.of(persistClip(outputMetadata, user, outputFile, inputFile.getName()));
     }
 
     public List<Clip> getClipsByUser() {
@@ -90,6 +97,26 @@ public class ClipService {
         return clip;
     }
 
+    public void deleteClip(Long id) {
+        Clip clip = getClipById(id);
+        if (clip == null) {
+            logger.warn("Clip with ID {} not found for deletion", id);
+            return;
+        }
+
+        if (!isAuthenticatedForClip(clip)) {
+            logger.warn("User is not authorized to delete clip with ID {}", id);
+            throw new NotAuthenticated("You are not authorized to delete this clip");
+        }
+
+        File clipFile = new File(clip.getVideoPath());
+        File thumbnailFile = new File(clip.getThumbnailPath());
+        directoryService.deleteFile(clipFile);
+        directoryService.deleteFile(thumbnailFile);
+
+        clipRepository.delete(clip);
+    }
+
     public boolean isAuthenticatedForClip(Clip clip) {
         User user = userService.getUser();
         if (user == null || clip == null) {
@@ -98,20 +125,18 @@ public class ClipService {
         return user.getId().equals(clip.getUser().getId());
     }
 
-
-    private void persistClip(VideoMetadata videoMetadata, User user, Job job) {
+    private Clip persistClip(VideoMetadata videoMetadata,
+                             User user,
+                             File tempFile,
+                             String fileName) {
         // Move clip from temp to output directory
-        String fileExtension = directoryService.getFileExtension(job.getOutputFile().getAbsolutePath());
+        File clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
+        File thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
+        directoryService.cutFile(tempFile, clipFile);
 
-        File clipOutputDir = directoryService.getUserClipsDir(user.getId());
-        File clipOutputFile = new File(clipOutputDir, job.getUuid() + "." + fileExtension);
-        directoryService.copyFile(job.getOutputFile(), clipOutputFile);
-
-        File thumbnailOutputDir = directoryService.getUserThumbnailsDir(user.getId());
-        File thumbnailOutputFile = new File(thumbnailOutputDir, job.getUuid() + ".png");
 
         try {
-            ffmpegService.generateThumbnail(clipOutputFile, thumbnailOutputFile, 0.0f);
+            mediaService.createThumbnail(clipFile, thumbnailFile, 0.0f);
         } catch (IOException | InterruptedException e) {
             logger.error("Error generating thumbnail for clip: {}", e.getMessage());
             Thread.currentThread().interrupt();
@@ -128,8 +153,18 @@ public class ClipService {
         clip.setFps(videoMetadata.getFps());
         clip.setDuration(videoMetadata.getEndPoint() - videoMetadata.getStartPoint());
         clip.setFileSize(videoMetadata.getFileSize());
-        clip.setVideoPath(clipOutputFile.getPath());
-        clip.setThumbnailPath(thumbnailOutputFile.getPath());
-        clipRepository.save(clip);
+        clip.setVideoPath(clipFile.getPath());
+        clip.setThumbnailPath(thumbnailFile.getPath());
+        return clipRepository.save(clip);
+    }
+
+    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
+        if (outputFileMetadata.getStartPoint() == null) {
+            outputFileMetadata.setStartPoint(0f);
+        }
+
+        if (outputFileMetadata.getEndPoint() == null) {
+            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
+        }
     }
 }
