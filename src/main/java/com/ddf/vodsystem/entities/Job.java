@@ -24,6 +24,7 @@ public class Job {
     // job status
     private JobStatus status = JobStatus.NOT_READY;
     private ProgressTracker progress = new ProgressTracker(0.0f);
+    private ProgressTracker mp4ConversionProgress = new ProgressTracker(0.0f);
 
     public Job(String uuid, File inputFile, File outputFile, VideoMetadata inputVideoMetadata) {
         this.uuid = uuid;

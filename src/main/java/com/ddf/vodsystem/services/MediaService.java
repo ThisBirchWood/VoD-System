@@ -16,14 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.tika.Tika;
 
 @Service
 public class MediaService {
     private static final Logger logger = LoggerFactory.getLogger(MediaService.class);
+    private final Tika tika = new Tika();
 
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
+    private static final String FFMPEG_PATH = "ffmpeg";
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     public void compress(File inputFile, File outputFile, VideoMetadata videoMetadata, ProgressTracker progress) throws IOException, InterruptedException {
@@ -38,7 +41,7 @@ public class MediaService {
         logger.info("Creating thumbnail at {} seconds", timeInVideo);
 
         List<String> command = List.of(
-                "ffmpeg",
+                FFMPEG_PATH,
                 "-ss", timeInVideo.toString(),
                 "-i", inputFile.getAbsolutePath(),
                 "-frames:v", "1",
@@ -76,6 +79,32 @@ public class MediaService {
             Thread.currentThread().interrupt();
             throw new FFMPEGException("Error while getting video metadata: " + e);
         }
+    }
+
+    public boolean isMp4File(File file) {
+        try {
+            String detectedType = tika.detect(file);
+            return detectedType.equals("video/mp4");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void remuxToMp4(File inputFile, File outputFile, ProgressTracker progress, float length) throws IOException, InterruptedException {
+        logger.info("Remuxing file {} to {}", inputFile.getAbsolutePath(), outputFile.getAbsolutePath());
+
+        List<String> command = List.of(
+                FFMPEG_PATH,
+                "-progress", "pipe:1",
+                "-i", inputFile.getAbsolutePath(),
+                "-c:v", "h264",
+                "-c:a", "aac",
+                "-f", "mp4",
+                outputFile.getAbsolutePath()
+        );
+
+        CommandRunner.run(command, line -> setProgress(line, progress, length));
+
     }
 
     private VideoMetadata parseVideoMetadata(JsonNode node) {
@@ -202,7 +231,7 @@ public class MediaService {
 
     private List<String> buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
         List<String> command = new ArrayList<>();
-        command.add("ffmpeg");
+        command.add(FFMPEG_PATH);
         command.add("-progress");
         command.add("pipe:1");
         command.add("-y");
