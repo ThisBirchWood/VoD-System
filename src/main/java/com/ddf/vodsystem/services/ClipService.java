@@ -64,7 +64,7 @@ public class ClipService {
                                  File inputFile,
                                  File outputFile,
                                  ProgressTracker progress) throws IOException, InterruptedException {
-        normalizeVideoMetadata(inputMetadata, outputMetadata);
+        metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
         compressionService.compress(inputFile, outputFile, outputMetadata, progress);
 
         Float fileSize = metadataService.getVideoMetadata(outputFile).getFileSize();
@@ -106,11 +106,11 @@ public class ClipService {
         return clip;
     }
 
-    public void deleteClip(Long id) {
+    public boolean deleteClip(Long id) {
         Clip clip = getClipById(id);
         if (clip == null) {
             logger.warn("Clip with ID {} not found for deletion", id);
-            return;
+            return false;
         }
 
         if (!isAuthenticatedForClip(clip)) {
@@ -124,6 +124,8 @@ public class ClipService {
         directoryService.deleteFile(thumbnailFile);
 
         clipRepository.delete(clip);
+        logger.info("Clip with ID {} deleted successfully", id);
+        return true;
     }
 
     public boolean isAuthenticatedForClip(Clip clip) {
@@ -165,15 +167,5 @@ public class ClipService {
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
         return clipRepository.save(clip);
-    }
-
-    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
-        if (outputFileMetadata.getStartPoint() == null) {
-            outputFileMetadata.setStartPoint(0f);
-        }
-
-        if (outputFileMetadata.getEndPoint() == null) {
-            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
-        }
     }
 }

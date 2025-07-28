@@ -47,6 +47,16 @@ public class MetadataService {
         }
     }
 
+    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
+        if (outputFileMetadata.getStartPoint() == null) {
+            outputFileMetadata.setStartPoint(0f);
+        }
+
+        if (outputFileMetadata.getEndPoint() == null) {
+            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
+        }
+    }
+
     private VideoMetadata parseVideoMetadata(JsonNode node) {
         VideoMetadata metadata = new VideoMetadata();
         metadata.setStartPoint(0f);
