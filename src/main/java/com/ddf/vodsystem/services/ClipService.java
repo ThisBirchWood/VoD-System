@@ -12,6 +12,9 @@ import java.util.Optional;
 
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
+import com.ddf.vodsystem.services.media.CompressionService;
+import com.ddf.vodsystem.services.media.MetadataService;
+import com.ddf.vodsystem.services.media.ThumbnailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,16 +25,22 @@ public class ClipService {
 
     private final ClipRepository clipRepository;
     private final DirectoryService directoryService;
-    private final MediaService mediaService;
+    private final CompressionService compressionService;
+    private final MetadataService metadataService;
+    private final ThumbnailService thumbnailService;
     private final UserService userService;
 
     public ClipService(ClipRepository clipRepository,
                        DirectoryService directoryService,
-                       MediaService mediaService,
+                       CompressionService compressionService,
+                       MetadataService metadataService,
+                       ThumbnailService thumbnailService,
                        UserService userService) {
         this.clipRepository = clipRepository;
         this.directoryService = directoryService;
-        this.mediaService = mediaService;
+        this.compressionService = compressionService;
+        this.metadataService = metadataService;
+        this.thumbnailService = thumbnailService;
         this.userService = userService;
     }
 
@@ -56,9 +65,9 @@ public class ClipService {
                                  File outputFile,
                                  ProgressTracker progress) throws IOException, InterruptedException {
         normalizeVideoMetadata(inputMetadata, outputMetadata);
-        mediaService.compress(inputFile, outputFile, outputMetadata, progress);
+        compressionService.compress(inputFile, outputFile, outputMetadata, progress);
 
-        Float fileSize = mediaService.getVideoMetadata(outputFile).getFileSize();
+        Float fileSize = metadataService.getVideoMetadata(outputFile).getFileSize();
         outputMetadata.setFileSize(fileSize);
 
         User user = userService.getUser();
@@ -136,7 +145,7 @@ public class ClipService {
 
 
         try {
-            mediaService.createThumbnail(clipFile, thumbnailFile, 0.0f);
+            thumbnailService.createThumbnail(clipFile, thumbnailFile, 0.0f);
         } catch (IOException | InterruptedException e) {
             logger.error("Error generating thumbnail for clip: {}", e.getMessage());
             Thread.currentThread().interrupt();
