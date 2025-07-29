@@ -24,8 +24,11 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
+
     private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
     private final BlockingQueue<Job> jobQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Job> conversionQueue = new LinkedBlockingQueue<>();
+
     private final ClipService clipService;
 
     /**
@@ -43,6 +46,7 @@ public class JobService {
     public void add(Job job) {
         logger.info("Added job: {}", job.getUuid());
         jobs.put(job.getUuid(), job);
+        conversionQueue.add(job);
     }
 
     /**
@@ -107,6 +111,7 @@ public class JobService {
         }
     }
 
+
     /**
      * Starts the background processing loop in a daemon thread.
      * The loop blocks until a job is available and then processes it.
@@ -125,6 +130,29 @@ public class JobService {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     logger.error("Processing loop interrupted", e);
+                    break;
+                }
+            }
+        });
+
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    @PostConstruct
+    private void startConversionLoop() {
+        Thread thread = new Thread(() -> {
+            logger.info("Starting conversion loop");
+            while (true) {
+                try {
+                    Job job = conversionQueue.take(); // Blocks until a job is available
+
+                    logger.info("Starting conversion for job {}", job.getUuid());
+                    job.setStatus(JobStatus.CONVERTING);
+//                    clipService.convert(job);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.error("Conversion loop interrupted", e);
                     break;
                 }
             }
