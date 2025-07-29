@@ -12,6 +12,9 @@ import java.util.Optional;
 
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
+import com.ddf.vodsystem.services.media.CompressionService;
+import com.ddf.vodsystem.services.media.MetadataService;
+import com.ddf.vodsystem.services.media.ThumbnailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,16 +25,22 @@ public class ClipService {
 
     private final ClipRepository clipRepository;
     private final DirectoryService directoryService;
-    private final MediaService mediaService;
+    private final CompressionService compressionService;
+    private final MetadataService metadataService;
+    private final ThumbnailService thumbnailService;
     private final UserService userService;
 
     public ClipService(ClipRepository clipRepository,
                        DirectoryService directoryService,
-                       MediaService mediaService,
+                       CompressionService compressionService,
+                       MetadataService metadataService,
+                       ThumbnailService thumbnailService,
                        UserService userService) {
         this.clipRepository = clipRepository;
         this.directoryService = directoryService;
-        this.mediaService = mediaService;
+        this.compressionService = compressionService;
+        this.metadataService = metadataService;
+        this.thumbnailService = thumbnailService;
         this.userService = userService;
     }
 
@@ -55,10 +64,10 @@ public class ClipService {
                                  File inputFile,
                                  File outputFile,
                                  ProgressTracker progress) throws IOException, InterruptedException {
-        normalizeVideoMetadata(inputMetadata, outputMetadata);
-        mediaService.compress(inputFile, outputFile, outputMetadata, progress);
+        metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
+        compressionService.compress(inputFile, outputFile, outputMetadata, progress);
 
-        Float fileSize = mediaService.getVideoMetadata(outputFile).getFileSize();
+        Float fileSize = metadataService.getVideoMetadata(outputFile).getFileSize();
         outputMetadata.setFileSize(fileSize);
 
         User user = userService.getUser();
@@ -97,11 +106,11 @@ public class ClipService {
         return clip;
     }
 
-    public void deleteClip(Long id) {
+    public boolean deleteClip(Long id) {
         Clip clip = getClipById(id);
         if (clip == null) {
             logger.warn("Clip with ID {} not found for deletion", id);
-            return;
+            return false;
         }
 
         if (!isAuthenticatedForClip(clip)) {
@@ -115,6 +124,8 @@ public class ClipService {
         directoryService.deleteFile(thumbnailFile);
 
         clipRepository.delete(clip);
+        logger.info("Clip with ID {} deleted successfully", id);
+        return true;
     }
 
     public boolean isAuthenticatedForClip(Clip clip) {
@@ -136,7 +147,7 @@ public class ClipService {
 
 
         try {
-            mediaService.createThumbnail(clipFile, thumbnailFile, 0.0f);
+            thumbnailService.createThumbnail(clipFile, thumbnailFile, 0.0f);
         } catch (IOException | InterruptedException e) {
             logger.error("Error generating thumbnail for clip: {}", e.getMessage());
             Thread.currentThread().interrupt();
@@ -156,15 +167,5 @@ public class ClipService {
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
         return clipRepository.save(clip);
-    }
-
-    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
-        if (outputFileMetadata.getStartPoint() == null) {
-            outputFileMetadata.setStartPoint(0f);
-        }
-
-        if (outputFileMetadata.getEndPoint() == null) {
-            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
-        }
     }
 }

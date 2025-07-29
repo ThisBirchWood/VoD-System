@@ -1,4 +1,4 @@
-package com.ddf.vodsystem.services;
+package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
 

@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Job;
 import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.services.media.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,15 +20,15 @@ public class UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
 
     private final JobService jobService;
-    private final MediaService mediaService;
+    private final MetadataService metadataService;
     private final DirectoryService directoryService;
 
     @Autowired
     public UploadService(JobService jobService,
-                         MediaService mediaService,
+                         MetadataService metadataService,
                          DirectoryService directoryService) {
         this.jobService = jobService;
-        this.mediaService = mediaService;
+        this.metadataService = metadataService;
         this.directoryService = directoryService;
     }
 
@@ -42,7 +43,7 @@ public class UploadService {
 
         // add job
         logger.info("Uploaded file and creating job with UUID: {}", uuid);
-        VideoMetadata videoMetadata = mediaService.getVideoMetadata(inputFile);
+        VideoMetadata videoMetadata = metadataService.getVideoMetadata(inputFile);
         Job job = new Job(uuid, inputFile, outputFile, videoMetadata);
         jobService.add(job);
 

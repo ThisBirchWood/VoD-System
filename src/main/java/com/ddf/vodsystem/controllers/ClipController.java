@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +56,23 @@ public class ClipController {
 
         return ResponseEntity.ok(
                 new APIResponse<>("success", "Clip retrieved successfully", clipDTO)
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<APIResponse<String>> deleteClip(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
+        if (principal == null) {
+            throw new NotAuthenticated("User is not authenticated");
+        }
+
+        boolean deleted = clipService.deleteClip(id);
+
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(
+                new APIResponse<>("success", "Clip deleted successfully", "Clip with ID " + id + " has been deleted")
         );
     }
 
