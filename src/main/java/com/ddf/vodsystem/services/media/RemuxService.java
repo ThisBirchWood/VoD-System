@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services.media;
 
+import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,10 +17,10 @@ public class RemuxService {
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     @Async("ffmpegTaskExecutor")
-    public void remux(File inputFile,
-                               File outputFile,
-                               ProgressTracker remuxProgress,
-                               float length
+    public CompletableFuture<CommandOutput> remux(File inputFile,
+                                                  File outputFile,
+                                                  ProgressTracker remuxProgress,
+                                                  float length
     ) throws IOException, InterruptedException {
         List<String> command = List.of(
                 "ffmpeg",
@@ -31,7 +33,7 @@ public class RemuxService {
                 outputFile.getAbsolutePath()
         );
 
-        CommandRunner.run(command, line -> setProgress(line, remuxProgress, length));
+        return CompletableFuture.completedFuture(CommandRunner.run(command, line -> setProgress(line, remuxProgress, length)));
     }
 
     private void setProgress(String line, ProgressTracker progress, float length) {

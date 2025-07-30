@@ -45,7 +45,7 @@ public class DownloadService {
             throw new JobNotFound("Job doesn't exist");
         }
 
-        if (!job.getStatus().getProcessTracker().isComplete()) {
+        if (!job.getStatus().getProcess().isComplete()) {
             throw new JobNotFinished("Job is not finished");
         }
 

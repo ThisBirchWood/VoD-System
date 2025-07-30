@@ -69,8 +69,9 @@ public class JobService {
             remuxService.remux(
                     tempFile,
                     job.getInputFile(),
-                    job.getStatus().getRemuxTracker(),
-                    job.getInputVideoMetadata().getEndPoint());
+                    job.getStatus().getConversion(),
+                    job.getInputVideoMetadata().getEndPoint())
+                    .thenRun(() -> job.getStatus().getConversion().markComplete());
         } catch (IOException | InterruptedException e) {
             logger.error("Error converting job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
@@ -91,7 +92,7 @@ public class JobService {
                     job.getOutputVideoMetadata(),
                     job.getInputFile(),
                     job.getOutputFile(),
-                    job.getStatus().getProcessTracker()
+                    job.getStatus().getProcess()
             );
         } catch (IOException | InterruptedException e) {
             logger.error("Error processing job {}: {}", job.getUuid(), e.getMessage());
