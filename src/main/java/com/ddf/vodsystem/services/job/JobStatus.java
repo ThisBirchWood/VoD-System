@@ -1,7 +1,6 @@
-package com.ddf.vodsystem.entities;
+package com.ddf.vodsystem.services.job;
 
 public enum JobStatus {
-    CONVERTING,
     NOT_READY,
     PENDING,
     RUNNING,

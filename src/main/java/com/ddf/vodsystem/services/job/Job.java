@@ -4,7 +4,6 @@ import java.io.File;
 
 import com.ddf.vodsystem.dto.ProgressTracker;
 import com.ddf.vodsystem.dto.VideoMetadata;
-import com.ddf.vodsystem.entities.JobStatus;
 import org.springframework.security.core.context.SecurityContext;
 
 import lombok.Data;
