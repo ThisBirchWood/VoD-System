@@ -2,7 +2,6 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.dto.Job;
-import com.ddf.vodsystem.entities.JobStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,11 +26,11 @@ public class EditService {
     public float getProgress(String uuid) {
         Job job = jobService.getJob(uuid);
 
-        if (job.getStatus() == JobStatus.FINISHED) {
+        if (job.getStatus().getProcessTracker().isComplete()) {
             return 1f;
         }
 
-        return job.getProgress().getProgress();
+        return job.getStatus().getProcessTracker().getProgress();
     }
 
     private void validateClipConfig(VideoMetadata videoMetadata) {

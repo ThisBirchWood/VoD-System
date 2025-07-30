@@ -1,10 +1,15 @@
 package com.ddf.vodsystem.dto;
 
 public class ProgressTracker {
-    private float progress;
+    private float progress = 0.0f;
+    private boolean isComplete = false;
 
-    public ProgressTracker(float initialProgress) {
-        this.progress = initialProgress;
+    public synchronized float getProgress() {
+        return progress;
+    }
+
+    public synchronized boolean isComplete() {
+        return isComplete;
     }
 
     public synchronized void setProgress(float newProgress) {
@@ -14,7 +19,7 @@ public class ProgressTracker {
         this.progress = newProgress;
     }
 
-    public synchronized float getProgress() {
-        return progress;
+    public synchronized void markComplete() {
+        this.isComplete = true;
     }
 }

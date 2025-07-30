@@ -21,8 +21,7 @@ public class Job {
     private SecurityContext securityContext;
 
     // job status
-    private JobStatus status = JobStatus.NOT_READY;
-    private ProgressTracker progress = new ProgressTracker(0.0f);
+    private JobStatus status = new JobStatus();
 
     public Job(String uuid, File inputFile, File outputFile, VideoMetadata inputVideoMetadata) {
         this.uuid = uuid;

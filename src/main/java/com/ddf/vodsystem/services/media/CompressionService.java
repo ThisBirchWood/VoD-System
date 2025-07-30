@@ -30,6 +30,8 @@ public class CompressionService {
         float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
         List<String> command = buildCommand(inputFile, outputFile, videoMetadata);
         CommandRunner.run(command, line -> setProgress(line, progress, length));
+
+        progress.markComplete();
     }
 
     private void setProgress(String line, ProgressTracker progress, float length) {

@@ -1,13 +1,11 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Clip;
-import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
 import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,6 @@ public class DownloadService {
     private final ClipRepository clipRepository;
     private final ClipService clipService;
 
-    @Autowired
     public DownloadService(JobService jobService,
                            ClipRepository clipRepository,
                            ClipService clipService) {
@@ -48,7 +45,7 @@ public class DownloadService {
             throw new JobNotFound("Job doesn't exist");
         }
 
-        if (job.getStatus() != JobStatus.FINISHED) {
+        if (!job.getStatus().getProcessTracker().isComplete()) {
             throw new JobNotFinished("Job is not finished");
         }
 

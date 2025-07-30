@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.ddf.vodsystem.dto.Job;
-import com.ddf.vodsystem.entities.JobStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContext;
@@ -20,9 +19,7 @@ import com.ddf.vodsystem.exceptions.JobNotFound;
 @Service
 public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
-
     private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
-
     private final ClipService clipService;
 
     /**
@@ -69,7 +66,6 @@ public class JobService {
         job.setSecurityContext(context);
 
         logger.info("Job ready: {}", job.getUuid());
-        job.setStatus(JobStatus.PENDING);
 
         try {
             clipService.create(
@@ -77,12 +73,11 @@ public class JobService {
                     job.getOutputVideoMetadata(),
                     job.getInputFile(),
                     job.getOutputFile(),
-                    job.getProgress()
+                    job.getStatus().getProcessTracker()
             );
         } catch (IOException | InterruptedException e) {
             logger.error("Error processing job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
-            job.setStatus(JobStatus.FAILED);
         }
     }
 }

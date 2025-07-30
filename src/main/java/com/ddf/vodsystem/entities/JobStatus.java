@@ -1,11 +1,12 @@
 package com.ddf.vodsystem.entities;
 
-public enum JobStatus {
-    NOT_READY,
-    PENDING,
-    RUNNING,
-    FINISHED,
-    FAILED
+import com.ddf.vodsystem.dto.ProgressTracker;
+import lombok.Data;
+
+@Data
+public class JobStatus {
+    private ProgressTracker processTracker = new ProgressTracker();
+    private ProgressTracker remuxTracker = new ProgressTracker();
 }
 
 
