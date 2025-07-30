@@ -1,4 +1,4 @@
-package com.ddf.vodsystem.services.job;
+package com.ddf.vodsystem.entities;
 
 public enum JobStatus {
     NOT_READY,

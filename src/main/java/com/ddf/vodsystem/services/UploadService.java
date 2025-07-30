@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.services.media.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,9 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +47,14 @@ public class UploadService {
 
         // add job
         logger.info("Uploaded file and creating job with UUID: {}", uuid);
-        VideoMetadata videoMetadata = metadataService.getVideoMetadata(inputFile);
+
+        VideoMetadata videoMetadata;
+        try {
+            videoMetadata = metadataService.getVideoMetadata(inputFile).get(5, TimeUnit.SECONDS);
+        } catch (ExecutionException | TimeoutException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new FFMPEGException(e.getMessage());
+        }
         Job job = new Job(uuid, inputFile, outputFile, videoMetadata);
         jobService.add(job);
 

@@ -67,9 +67,6 @@ public class ClipService {
         metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
         compressionService.compress(inputFile, outputFile, outputMetadata, progress);
 
-        Float fileSize = metadataService.getVideoMetadata(outputFile).getFileSize();
-        outputMetadata.setFileSize(fileSize);
-
         User user = userService.getUser();
 
         if (user == null) {

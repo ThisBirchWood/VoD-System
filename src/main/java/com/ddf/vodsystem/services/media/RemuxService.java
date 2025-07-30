@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services.media;
 
-import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
 public class RemuxService {
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
-    public CommandOutput remux(File inputFile,
+    @Async("ffmpegTaskExecutor")
+    public void remux(File inputFile,
                                File outputFile,
                                ProgressTracker remuxProgress,
                                float length
@@ -28,7 +29,7 @@ public class RemuxService {
                 outputFile.getAbsolutePath()
         );
 
-        return CommandRunner.run(command, line -> setProgress(line, remuxProgress, length));
+        CommandRunner.run(command, line -> setProgress(line, remuxProgress, length));
     }
 
     private void setProgress(String line, ProgressTracker progress, float length) {

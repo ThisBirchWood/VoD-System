@@ -1,11 +1,10 @@
 package com.ddf.vodsystem.services;
 
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import com.ddf.vodsystem.dto.Job;
+import com.ddf.vodsystem.entities.JobStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContext;
@@ -13,8 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ddf.vodsystem.exceptions.JobNotFound;
-
-import jakarta.annotation.PostConstruct;
 
 /**
  * Service for managing and processing jobs in a background thread.
@@ -25,7 +22,6 @@ public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
     private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
-    private final BlockingQueue<Job> jobQueue = new LinkedBlockingQueue<>();
 
     private final ClipService clipService;
 
@@ -74,20 +70,8 @@ public class JobService {
 
         logger.info("Job ready: {}", job.getUuid());
         job.setStatus(JobStatus.PENDING);
-        jobQueue.add(job);
-    }
 
-    /**
-     * Processes a job by running the compression service.
-     * @param job the job to process
-     */
-    private void processJob(Job job) {
-        SecurityContext previousContext = SecurityContextHolder.getContext(); // optional, for restoring later
         try {
-            if (job.getSecurityContext() != null) {
-                SecurityContextHolder.setContext(job.getSecurityContext());
-            }
-
             clipService.create(
                     job.getInputVideoMetadata(),
                     job.getOutputVideoMetadata(),
@@ -95,44 +79,10 @@ public class JobService {
                     job.getOutputFile(),
                     job.getProgress()
             );
-
-            job.setStatus(JobStatus.FINISHED);
-
         } catch (IOException | InterruptedException e) {
+            logger.error("Error processing job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
-            logger.error("Error while running job {}", job.getUuid(), e);
-
-        } finally {
-            // 🔄 Restore previous context to avoid leaking across jobs
-            SecurityContextHolder.setContext(previousContext);
+            job.setStatus(JobStatus.FAILED);
         }
-    }
-
-
-    /**
-     * Starts the background processing loop in a daemon thread.
-     * The loop blocks until a job is available and then processes it.
-     */
-    @PostConstruct
-    private void startProcessingLoop() {
-        Thread thread = new Thread(() -> {
-            logger.info("Starting processing loop");
-            while (true) {
-                try {
-                    Job job = jobQueue.take(); // Blocks until a job is available
-
-                    logger.info("Starting job {}", job.getUuid());
-                    job.setStatus(JobStatus.RUNNING);
-                    processJob(job);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.error("Processing loop interrupted", e);
-                    break;
-                }
-            }
-        });
-
-        thread.setDaemon(true);
-        thread.start();
     }
 }

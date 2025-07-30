@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.entities.Clip;
-import com.ddf.vodsystem.services.job.JobStatus;
+import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
 import com.ddf.vodsystem.dto.Job;

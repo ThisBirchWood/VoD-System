@@ -4,6 +4,7 @@ import com.ddf.vodsystem.dto.ProgressTracker;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -22,6 +23,7 @@ public class CompressionService {
     private static final float BITRATE_MULTIPLIER = 0.9f;
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
+    @Async("ffmpegTaskExecutor")
     public void compress(File inputFile, File outputFile, VideoMetadata videoMetadata, ProgressTracker progress) throws IOException, InterruptedException {
         logger.info("Compressing video from {} to {}", inputFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
