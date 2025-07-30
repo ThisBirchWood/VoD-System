@@ -55,10 +55,9 @@ public class JobService {
 
     /**
      * Marks a job as ready and adds it to the processing queue.
-     * @param uuid the UUID of the job to mark as ready
+     * @param job The job to process
      */
-    public void jobReady(String uuid) {
-        Job job = getJob(uuid);
+    public void processJob(Job job) {
         logger.info("Job ready: {}", job.getUuid());
 
         try {

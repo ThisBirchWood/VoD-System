@@ -20,7 +20,8 @@ public class EditService {
     }
 
     public void process(String uuid) {
-        jobService.jobReady(uuid);
+        Job job = jobService.getJob(uuid);
+        jobService.processJob(job);
     }
 
     public float getProgress(String uuid) {
