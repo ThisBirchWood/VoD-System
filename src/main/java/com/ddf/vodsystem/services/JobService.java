@@ -1,11 +1,11 @@
-package com.ddf.vodsystem.services.job;
+package com.ddf.vodsystem.services;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.ddf.vodsystem.services.ClipService;
+import com.ddf.vodsystem.dto.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContext;

@@ -2,7 +2,7 @@ package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.services.job.JobService;
+import com.ddf.vodsystem.services.JobService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

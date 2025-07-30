@@ -1,8 +1,7 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.services.job.Job;
+import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.dto.VideoMetadata;
-import com.ddf.vodsystem.services.job.JobService;
 import com.ddf.vodsystem.services.media.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
