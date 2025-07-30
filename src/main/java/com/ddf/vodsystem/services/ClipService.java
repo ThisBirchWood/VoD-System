@@ -57,8 +57,6 @@ public class ClipService {
      * @throws IOException if an I/O error occurs during file processing.
      * @throws InterruptedException if the thread is interrupted during processing.
      */
-
-
     public void create(VideoMetadata inputMetadata,
                                  VideoMetadata outputMetadata,
                                  File inputFile,
@@ -133,7 +131,7 @@ public class ClipService {
         return user.getId().equals(clip.getUser().getId());
     }
 
-    private Clip persistClip(VideoMetadata videoMetadata,
+    private void persistClip(VideoMetadata videoMetadata,
                              User user,
                              File tempFile,
                              String fileName) {
@@ -163,6 +161,6 @@ public class ClipService {
         clip.setFileSize(videoMetadata.getFileSize());
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
-        return clipRepository.save(clip);
+        clipRepository.save(clip);
     }
 }

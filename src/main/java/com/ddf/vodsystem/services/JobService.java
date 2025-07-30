@@ -1,9 +1,11 @@
 package com.ddf.vodsystem.services;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.ddf.vodsystem.dto.Job;
+import com.ddf.vodsystem.services.media.RemuxService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,13 +21,18 @@ public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
     private final ClipService clipService;
+    private final RemuxService remuxService;
+    private final DirectoryService directoryService;
 
     /**
      * Constructs a JobService with the given CompressionService.
      * @param clipService the compression service to use for processing jobs
      */
-    public JobService(ClipService clipService) {
+    public JobService(ClipService clipService,
+                      RemuxService remuxService, DirectoryService directoryService) {
         this.clipService = clipService;
+        this.remuxService = remuxService;
+        this.directoryService = directoryService;
     }
 
     /**
@@ -51,6 +58,24 @@ public class JobService {
         }
 
         return job;
+    }
+
+    public void convertJob(Job job) {
+        logger.info("Converting job: {}", job.getUuid());
+        File tempFile = new File(job.getInputFile().getAbsolutePath() + ".temp");
+        directoryService.copyFile(job.getInputFile(), tempFile);
+
+        try {
+            remuxService.remux(
+                    tempFile,
+                    job.getInputFile(),
+                    job.getStatus().getRemuxTracker(),
+                    job.getInputVideoMetadata().getEndPoint());
+        } catch (IOException | InterruptedException e) {
+            logger.error("Error converting job {}: {}", job.getUuid(), e.getMessage());
+            Thread.currentThread().interrupt();
+        }
+
     }
 
     /**

@@ -22,6 +22,8 @@ public class RemuxService {
     ) throws IOException, InterruptedException {
         List<String> command = List.of(
                 "ffmpeg",
+                "-progress", "pipe:1",
+                "-y",
                 "-i", inputFile.getAbsolutePath(),
                 "-c:v", "h264",
                 "-c:a", "aac",
