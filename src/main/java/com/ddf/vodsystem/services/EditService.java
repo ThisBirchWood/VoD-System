@@ -24,6 +24,11 @@ public class EditService {
         jobService.processJob(job);
     }
 
+    public void convert(String uuid) {
+        Job job = jobService.getJob(uuid);
+        jobService.convertJob(job);
+    }
+
     public float getProgress(String uuid) {
         Job job = jobService.getJob(uuid);
 

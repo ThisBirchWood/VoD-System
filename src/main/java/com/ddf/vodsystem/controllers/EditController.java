@@ -26,9 +26,15 @@ public class EditController {
     }
 
     @GetMapping("/process/{uuid}")
-    public ResponseEntity<APIResponse<Void>> convert(@PathVariable("uuid") String uuid) {
+    public ResponseEntity<APIResponse<Void>> process(@PathVariable("uuid") String uuid) {
         editService.process(uuid);
         return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Processing started for UUID: " + uuid, null));
+    }
+
+    @GetMapping("/convert/{uuid}")
+    public ResponseEntity<APIResponse<Void>> convert(@PathVariable("uuid") String uuid) {
+        editService.convert(uuid);
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Conversion started for UUID: " + uuid, null));
     }
 
     @GetMapping("/progress/{uuid}")
