@@ -12,7 +12,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.ddf.vodsystem.entities.JobStatus;
 import com.ddf.vodsystem.exceptions.JobNotFound;
 
 import jakarta.annotation.PostConstruct;
