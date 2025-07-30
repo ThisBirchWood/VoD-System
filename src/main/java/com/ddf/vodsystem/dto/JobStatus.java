@@ -1,6 +1,5 @@
-package com.ddf.vodsystem.entities;
+package com.ddf.vodsystem.dto;
 
-import com.ddf.vodsystem.dto.ProgressTracker;
 import lombok.Data;
 
 @Data

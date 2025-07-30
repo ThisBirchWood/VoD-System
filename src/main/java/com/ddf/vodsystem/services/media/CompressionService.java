@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services.media;
 
+import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,14 +26,16 @@ public class CompressionService {
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     @Async("ffmpegTaskExecutor")
-    public void compress(File inputFile, File outputFile, VideoMetadata videoMetadata, ProgressTracker progress) throws IOException, InterruptedException {
+    public CompletableFuture<CommandOutput> compress(File inputFile, File outputFile, VideoMetadata videoMetadata, ProgressTracker progress) throws IOException, InterruptedException {
         logger.info("Compressing video from {} to {}", inputFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
         float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
         List<String> command = buildCommand(inputFile, outputFile, videoMetadata);
-        CommandRunner.run(command, line -> setProgress(line, progress, length));
 
+        CommandOutput result = CommandRunner.run(command, line -> setProgress(line, progress, length));
         progress.markComplete();
+
+        return CompletableFuture.completedFuture(result);
     }
 
     private void setProgress(String line, ProgressTracker progress, float length) {

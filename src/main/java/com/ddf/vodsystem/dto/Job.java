@@ -2,7 +2,6 @@ package com.ddf.vodsystem.dto;
 
 import java.io.File;
 
-import com.ddf.vodsystem.entities.JobStatus;
 import org.springframework.security.core.context.SecurityContext;
 
 import lombok.Data;

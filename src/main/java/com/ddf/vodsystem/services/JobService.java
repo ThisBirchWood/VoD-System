@@ -6,8 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.ddf.vodsystem.dto.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ddf.vodsystem.exceptions.JobNotFound;
@@ -61,10 +59,6 @@ public class JobService {
      */
     public void jobReady(String uuid) {
         Job job = getJob(uuid);
-
-        SecurityContext context = SecurityContextHolder.getContext();
-        job.setSecurityContext(context);
-
         logger.info("Job ready: {}", job.getUuid());
 
         try {
