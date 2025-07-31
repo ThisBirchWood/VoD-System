@@ -49,9 +49,9 @@ const ClipEdit = () => {
     const pollProgress = async (id: string, intervalId: number) => {
         getProgress(id)
             .then((progress) => {
-                setProgress(progress);
+                setProgress(progress.process.progress);
 
-                if (progress >= 1) {
+                if (progress.process.complete) {
                     clearInterval(intervalId);
                     setDownloadable(true);
                 }
