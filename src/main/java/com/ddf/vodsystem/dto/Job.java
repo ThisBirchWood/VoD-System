@@ -1,9 +1,7 @@
-package com.ddf.vodsystem.entities;
+package com.ddf.vodsystem.dto;
 
 import java.io.File;
 
-import com.ddf.vodsystem.dto.ProgressTracker;
-import com.ddf.vodsystem.dto.VideoMetadata;
 import org.springframework.security.core.context.SecurityContext;
 
 import lombok.Data;
@@ -22,8 +20,7 @@ public class Job {
     private SecurityContext securityContext;
 
     // job status
-    private JobStatus status = JobStatus.NOT_READY;
-    private ProgressTracker progress = new ProgressTracker(0.0f);
+    private JobStatus status = new JobStatus();
 
     public Job(String uuid, File inputFile, File outputFile, VideoMetadata inputVideoMetadata) {
         this.uuid = uuid;

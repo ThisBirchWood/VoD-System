@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/download/clip/**").authenticated()
                         .requestMatchers("/api/v1/auth/login", "/api/v1/auth/user").permitAll()
                         .requestMatchers("/api/v1/upload", "/api/v1/download/**").permitAll()
-                        .requestMatchers("/api/v1/edit/**", "/api/v1/process/**", "/api/v1/progress/**").permitAll()
+                        .requestMatchers("/api/v1/edit/**", "/api/v1/process/**", "/api/v1/progress/**", "/api/v1/convert/**").permitAll()
                         .requestMatchers("/api/v1/metadata/**").permitAll()
                         .anyRequest().authenticated()
                 )

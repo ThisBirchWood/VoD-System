@@ -1,4 +1,4 @@
-import type {VideoMetadata, APIResponse, User, Clip} from "./types.ts";
+import type {VideoMetadata, APIResponse, User, Clip, ProgressResult } from "./types.ts";
 
 /**
  * Uploads a file to the backend.
@@ -74,11 +74,25 @@ const processFile = async (uuid: string) => {
     }
 };
 
+const convertFile = async (uuid: string) => {
+    const response = await fetch(`/api/v1/convert/${uuid}`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to convert file: ${response.status}`);
+    }
+
+    const result: APIResponse = await response.json();
+
+    if (result.status === "error") {
+        throw new Error("Failed to convert file: " + result.message);
+    }
+};
+
 /**
  * Fetches the processing progress percentage.
  * @param uuid - The UUID of the video file.
  */
-const getProgress = async (uuid: string): Promise<number> => {
+const getProgress = async (uuid: string): Promise<ProgressResult> => {
     const response = await fetch(`/api/v1/progress/${uuid}`);
 
     if (!response.ok) {
@@ -91,11 +105,11 @@ const getProgress = async (uuid: string): Promise<number> => {
         throw new Error(`Failed to fetch progress: ${result.message}`);
     }
 
-    if (!result.data || typeof result.data.progress !== 'number') {
+    if (!result.data) {
         throw new Error('Invalid progress data received');
     }
 
-    return result.data.progress;
+    return result.data;
 };
 
 /**
@@ -189,6 +203,7 @@ export {
     uploadFile,
     editFile,
     processFile,
+    convertFile,
     getProgress,
     getMetadata,
     getUser,

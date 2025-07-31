@@ -9,7 +9,7 @@ type prop = {
 
 export default function ConfigBox({setMetadata, className}: prop) {
     const updateRes = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        var vals = e.target.value.split(",");
+        const vals = e.target.value.split(",");
         setMetadata((prevState: VideoMetadata) => ({
             ...prevState,
             width: parseInt(vals[0]),
@@ -33,14 +33,14 @@ export default function ConfigBox({setMetadata, className}: prop) {
 
     return (
         <div className={clsx("flex flex-col gap-2 p-10", className)}>
-            <h2 className={"text-3xl font-bold mb-4"}>Export Settings</h2>
+            <h2 className={"text-xl font-bold"}>Export</h2>
 
             <Selector label={"Resolution"}>
                 <select id="resolution"
                         name="resolution"
                         defaultValue="1280,720"
                         onChange={updateRes}
-                        className={"border-black bg-gray-200 rounded-md w-full"}>
+                        className={"border-black bg-gray-200 rounded-md w-full p-2"}>
                     <option value="3840,2160">2160p</option>
                     <option value="2560,1440">1440p</option>
                     <option value="1920,1080">1080p</option>
@@ -55,7 +55,7 @@ export default function ConfigBox({setMetadata, className}: prop) {
                         name="fps"
                         defaultValue="30"
                         onChange={updateFps}
-                        className={"border-black bg-gray-200 rounded-md w-full"}>
+                        className={"border-black bg-gray-200 rounded-md w-full p-2"}>
                     <option value="60">60</option>
                     <option value="30">30</option>
                     <option value="15">15</option>
@@ -67,7 +67,7 @@ export default function ConfigBox({setMetadata, className}: prop) {
                        min="1"
                        defaultValue="10"
                        onChange={updateFileSize}
-                       className={"border-black bg-gray-200 rounded-md w-full"}
+                       className={"border-black bg-gray-200 rounded-md w-full p-2"}
                 />
             </Selector>
 

@@ -7,17 +7,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @Service
 public class MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
-    public VideoMetadata getVideoMetadata(File file) {
+    @Async("ffmpegTaskExecutor")
+    public Future<VideoMetadata> getVideoMetadata(File file) {
         logger.info("Getting metadata for file {}", file.getAbsolutePath());
 
         List<String> command = List.of(
@@ -40,7 +44,7 @@ public class MetadataService {
             }
 
             JsonNode node = mapper.readTree(outputBuilder.toString());
-            return parseVideoMetadata(node);
+            return CompletableFuture.completedFuture(parseVideoMetadata(node));
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new FFMPEGException("Error while getting video metadata: " + e);

@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
@@ -57,26 +56,22 @@ public class ClipService {
      * @param progress A tracker to monitor the progress of the video processing.
      * @throws IOException if an I/O error occurs during file processing.
      * @throws InterruptedException if the thread is interrupted during processing.
-     * @return An Optional containing the created Clip if the user is authenticated, otherwise an empty Optional.
      */
-    public Optional<Clip> create(VideoMetadata inputMetadata,
+    public void create(VideoMetadata inputMetadata,
                                  VideoMetadata outputMetadata,
                                  File inputFile,
                                  File outputFile,
-                                 ProgressTracker progress) throws IOException, InterruptedException {
-        metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
-        compressionService.compress(inputFile, outputFile, outputMetadata, progress);
-
-        Float fileSize = metadataService.getVideoMetadata(outputFile).getFileSize();
-        outputMetadata.setFileSize(fileSize);
+                                 ProgressTracker progress)
+            throws IOException, InterruptedException {
 
         User user = userService.getUser();
-
-        if (user == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(persistClip(outputMetadata, user, outputFile, inputFile.getName()));
+        metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
+        compressionService.compress(inputFile, outputFile, outputMetadata, progress)
+                .thenRun(() -> {
+                    if (user != null) {
+                        persistClip(outputMetadata, user, outputFile, inputFile.getName());
+                    }
+                });
     }
 
     public List<Clip> getClipsByUser() {
@@ -136,7 +131,7 @@ public class ClipService {
         return user.getId().equals(clip.getUser().getId());
     }
 
-    private Clip persistClip(VideoMetadata videoMetadata,
+    private void persistClip(VideoMetadata videoMetadata,
                              User user,
                              File tempFile,
                              String fileName) {
@@ -166,6 +161,6 @@ public class ClipService {
         clip.setFileSize(videoMetadata.getFileSize());
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
-        return clipRepository.save(clip);
+        clipRepository.save(clip);
     }
 }

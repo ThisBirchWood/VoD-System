@@ -1,19 +1,30 @@
 package com.ddf.vodsystem.dto;
 
-import lombok.Getter;
-
-@Getter
 public class ProgressTracker {
-    private float progress;
+    private float progress = 0.0f;
+    private boolean isComplete = false;
 
-    public ProgressTracker(float initialProgress) {
-        this.progress = initialProgress;
+    public synchronized float getProgress() {
+        return progress;
     }
 
-    public void setProgress(float newProgress) {
+    public synchronized boolean isComplete() {
+        return isComplete;
+    }
+
+    public synchronized void setProgress(float newProgress) {
         if (newProgress < 0 || newProgress > 1) {
             throw new IllegalArgumentException("Progress must be between 0 and 1");
         }
         this.progress = newProgress;
+    }
+
+    public synchronized void markComplete() {
+        this.isComplete = true;
+    }
+
+    public synchronized void reset() {
+        this.progress = 0.0f;
+        this.isComplete = false;
     }
 }

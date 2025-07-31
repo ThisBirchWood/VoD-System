@@ -1,9 +1,8 @@
 package com.ddf.vodsystem.controllers;
 
+import com.ddf.vodsystem.dto.JobStatus;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.services.EditService;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import com.ddf.vodsystem.dto.APIResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,22 +25,20 @@ public class EditController {
     }
 
     @GetMapping("/process/{uuid}")
-    public ResponseEntity<APIResponse<Void>> convert(@PathVariable("uuid") String uuid) {
+    public ResponseEntity<APIResponse<Void>> process(@PathVariable("uuid") String uuid) {
         editService.process(uuid);
         return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Processing started for UUID: " + uuid, null));
     }
 
-    @GetMapping("/progress/{uuid}")
-    public ResponseEntity<APIResponse<ProgressResponse>> getProgress(@PathVariable("uuid") String uuid) {
-        float progress = editService.getProgress(uuid);
-
-        ProgressResponse progressResponse = new ProgressResponse(progress);
-        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Progress for UUID: " + uuid, progressResponse));
+    @GetMapping("/convert/{uuid}")
+    public ResponseEntity<APIResponse<Void>> convert(@PathVariable("uuid") String uuid) {
+        editService.convert(uuid);
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Conversion started for UUID: " + uuid, null));
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class ProgressResponse {
-        private float progress;
+    @GetMapping("/progress/{uuid}")
+    public ResponseEntity<APIResponse<JobStatus>> getProgress(@PathVariable("uuid") String uuid) {
+        JobStatus status = editService.getProgress(uuid);
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Progress for UUID: " + uuid, status));
     }
 }

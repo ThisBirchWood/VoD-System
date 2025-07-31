@@ -30,9 +30,21 @@ type Clip = {
     createdAt: string,
 }
 
+type ProgressResult = {
+    process: {
+        progress: number,
+        complete: boolean
+    };
+    conversion: {
+        progress: number,
+        complete: boolean
+    };
+};
+
 export type {
     APIResponse,
     VideoMetadata,
     User,
-    Clip
+    Clip,
+    ProgressResult
 }
