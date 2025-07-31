@@ -74,6 +74,20 @@ const processFile = async (uuid: string) => {
     }
 };
 
+const convertFile = async (uuid: string) => {
+    const response = await fetch(`/api/v1/convert/${uuid}`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to convert file: ${response.status}`);
+    }
+
+    const result: APIResponse = await response.json();
+
+    if (result.status === "error") {
+        throw new Error("Failed to convert file: " + result.message);
+    }
+};
+
 /**
  * Fetches the processing progress percentage.
  * @param uuid - The UUID of the video file.
@@ -189,6 +203,7 @@ export {
     uploadFile,
     editFile,
     processFile,
+    convertFile,
     getProgress,
     getMetadata,
     getUser,
