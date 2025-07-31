@@ -54,6 +54,8 @@ const ClipEdit = () => {
                 if (progress.process.complete) {
                     clearInterval(intervalId);
                     setDownloadable(true);
+                } else {
+                    setDownloadable(false)
                 }
         })
             .catch((err: Error) => {
