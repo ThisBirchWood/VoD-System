@@ -42,7 +42,7 @@ public class UploadService {
         String extension = directoryService.getFileExtension(file.getOriginalFilename());
 
         File inputFile = directoryService.getTempInputFile(uuid + "." + extension);
-        File outputFile = directoryService.getTempOutputFile(uuid + "." + extension);
+        File outputFile = directoryService.getTempOutputFile(uuid + ".mp4");
         directoryService.saveAtDir(inputFile, file);
 
         // add job

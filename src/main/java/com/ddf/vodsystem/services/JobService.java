@@ -73,7 +73,10 @@ public class JobService {
                     job.getInputFile(),
                     job.getStatus().getConversion(),
                     job.getInputVideoMetadata().getEndPoint())
-                    .thenRun(() -> job.getStatus().getConversion().markComplete());
+                    .thenRun(() -> {
+                        job.getStatus().getConversion().markComplete();
+                        directoryService.deleteFile(tempFile);
+                    });
         } catch (IOException | InterruptedException e) {
             logger.error("Error converting job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
