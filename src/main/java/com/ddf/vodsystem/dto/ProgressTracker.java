@@ -22,4 +22,9 @@ public class ProgressTracker {
     public synchronized void markComplete() {
         this.isComplete = true;
     }
+
+    public synchronized void reset() {
+        this.progress = 0.0f;
+        this.isComplete = false;
+    }
 }

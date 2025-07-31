@@ -65,6 +65,8 @@ public class JobService {
         File tempFile = new File(job.getInputFile().getAbsolutePath() + ".temp");
         directoryService.copyFile(job.getInputFile(), tempFile);
 
+        job.getStatus().getConversion().reset();
+
         try {
             remuxService.remux(
                     tempFile,
@@ -85,6 +87,7 @@ public class JobService {
      */
     public void processJob(Job job) {
         logger.info("Job ready: {}", job.getUuid());
+        job.getStatus().getProcess().reset();
 
         try {
             clipService.create(
