@@ -26,7 +26,11 @@ public class CompressionService {
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     @Async("ffmpegTaskExecutor")
-    public CompletableFuture<CommandOutput> compress(File inputFile, File outputFile, VideoMetadata videoMetadata, ProgressTracker progress) throws IOException, InterruptedException {
+    public CompletableFuture<CommandOutput> compress(File inputFile,
+                                                     File outputFile,
+                                                     VideoMetadata videoMetadata,
+                                                     ProgressTracker progress
+    ) throws IOException, InterruptedException {
         logger.info("Compressing video from {} to {}", inputFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
         float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
