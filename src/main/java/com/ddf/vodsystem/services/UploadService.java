@@ -4,7 +4,6 @@ import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.dto.VideoMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.services.media.MetadataService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,6 @@ public class UploadService {
     private final MetadataService metadataService;
     private final DirectoryService directoryService;
 
-    @Autowired
     public UploadService(JobService jobService,
                          MetadataService metadataService,
                          DirectoryService directoryService) {
