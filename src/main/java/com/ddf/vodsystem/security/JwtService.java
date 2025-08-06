@@ -6,18 +6,22 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+@Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final long jwtExpiration;
+    private final Algorithm algorithm; // Algorithm is now initialized after secret key is available
 
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
-
-    private final Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
     private static final String USER_ID_CLAIM = "userId";
     private static final String ISSUER = "vodsystem";
+
+    public JwtService(@Value("${jwt.secret.key}") String jwtSecretKey,
+                      @Value("${jwt.expiration}") long jwtExpiration) {
+        this.jwtExpiration = jwtExpiration;
+        this.algorithm = Algorithm.HMAC256(jwtSecretKey);
+    }
 
     public String generateToken(Long userId) {
         return JWT.create()
