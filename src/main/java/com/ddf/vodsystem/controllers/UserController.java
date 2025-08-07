@@ -19,7 +19,7 @@ public class UserController {
 
     @GetMapping("/user")
     public ResponseEntity<APIResponse<User>> user() {
-        User user = userService.getCurrentUser();
+        User user = userService.getLoggedInUser();
 
         if (user == null) {
             throw new NotAuthenticated("User not authenticated");

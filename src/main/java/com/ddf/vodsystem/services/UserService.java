@@ -14,6 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -43,52 +46,54 @@ public class UserService {
                 .orElseThrow(() -> new NotAuthenticated("User not found"));
     }
 
-    public User getCurrentUser() {
+    public User getLoggedInUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof Long) {
-            return getUserById((long) auth.getPrincipal());
+            return getUserById((Long) auth.getPrincipal());
         }
         return null;
     }
 
     public String login(String idToken) {
-        User user = parseIdToken(idToken);
+        GoogleIdToken googleIdToken = getGoogleIdToken(idToken);
+        String googleId = googleIdToken.getPayload().getSubject();
 
-        if (user == null) {
+        if (googleId == null) {
             throw new NotAuthenticated("Invalid ID token");
         }
-        Optional<User> existingUser = userRepository.findByGoogleId(user.getGoogleId());
+
+        Optional<User> existingUser = userRepository.findByGoogleId(googleId);
 
         if (existingUser.isEmpty()) {
+            User user = createUserFromIdToken(googleIdToken);
             userRepository.saveAndFlush(user);
+            return jwtService.generateToken(user.getId());
         }
 
-        return jwtService.generateToken(user.getId());
+        return jwtService.generateToken(existingUser.get().getId());
     }
 
-    private User parseIdToken(String idToken) {
+    private User createUserFromIdToken(GoogleIdToken idToken) {
+        String googleId = idToken.getPayload().getSubject();
+        String email = idToken.getPayload().getEmail();
+        String name = (String) idToken.getPayload().get("name");
+
+        User user = new User();
+        user.setGoogleId(googleId);
+        user.setEmail(email);
+        user.setName(name);
+        user.setUsername(email);
+        user.setRole(0);
+        user.setCreatedAt(LocalDateTime.now());
+
+        return user;
+    }
+
+    private GoogleIdToken getGoogleIdToken(String idToken) {
         try {
-            GoogleIdToken idTokenObject = verifier.verify(idToken);
-
-            if (idTokenObject == null) {
-                return null;
-            }
-
-            GoogleIdToken.Payload payload = idTokenObject.getPayload();
-            String name = (String) payload.get("name");
-            String email = payload.getEmail();
-            String googleId = payload.getSubject();
-
-            User user = new User();
-            user.setEmail(email);
-            user.setName(name);
-            user.setGoogleId(googleId);
-            user.setUsername(email);
-            user.setRole(0); // Default role for new users
-            user.setCreatedAt(java.time.LocalDateTime.now());
-            return user;
-        } catch (Exception e) {
-            return null;
+            return verifier.verify(idToken);
+        } catch (GeneralSecurityException | IOException e) {
+            throw new NotAuthenticated("Invalid ID token: " + e.getMessage());
         }
     }
 }
