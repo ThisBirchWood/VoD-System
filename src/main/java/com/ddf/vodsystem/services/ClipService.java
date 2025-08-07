@@ -161,6 +161,8 @@ public class ClipService {
         clip.setFileSize(videoMetadata.getFileSize());
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
-        clipRepository.saveAndFlush(clip);
+        clipRepository.save(clip);
+
+        logger.info("Clip created successfully with ID: {}", clip.getId());
     }
 }

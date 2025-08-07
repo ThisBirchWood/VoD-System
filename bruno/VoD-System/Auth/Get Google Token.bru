@@ -1,0 +1,30 @@
+meta {
+  name: Get Google Token
+  type: http
+  seq: 3
+}
+
+get {
+  url: 
+  body: none
+  auth: oauth2
+}
+
+auth:oauth2 {
+  grant_type: authorization_code
+  callback_url: http://localhost:8080/oauth2/authorization/google
+  authorization_url: https://accounts.google.com/o/oauth2/v2/auth
+  access_token_url: https://oauth2.googleapis.com/token
+  refresh_token_url: 
+  client_id: {{google_client_id}}
+  client_secret: {{google_secret}}
+  scope: profile email
+  state: 
+  pkce: true
+  credentials_placement: body
+  credentials_id: credentials
+  token_placement: header
+  token_header_prefix: Bearer
+  auto_fetch_token: true
+  auto_refresh_token: true
+}
