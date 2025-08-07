@@ -3,7 +3,6 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.UserRepository;
-import com.ddf.vodsystem.security.CustomOAuth2User;
 import com.ddf.vodsystem.security.JwtService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -39,10 +38,15 @@ public class UserService {
         this.jwtService = jwtService;
     }
 
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotAuthenticated("User not found"));
+    }
+
     public User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof CustomOAuth2User oAuth2user) {
-            return oAuth2user.getUser();
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof Long) {
+            return getUserById((long) auth.getPrincipal());
         }
         return null;
     }

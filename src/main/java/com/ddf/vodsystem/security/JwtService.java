@@ -6,6 +6,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,17 +34,22 @@ public class JwtService {
                 .sign(algorithm);
     }
 
-    public boolean validateTokenForId(String token, Long userId) {
+    public Authentication validateTokenAndGetAuthentication(String token) {
         try {
             JWTVerifier verifier = JWT.require(algorithm)
-                    .withClaim(USER_ID_CLAIM, userId)
+                    .withClaimPresence(USER_ID_CLAIM)
                     .withIssuer(ISSUER)
                     .build();
 
             DecodedJWT jwt = verifier.verify(token);
-            return jwt.getClaim(USER_ID_CLAIM).asLong().equals(userId) && !jwt.getExpiresAt().before(new Date());
-        } catch (Exception e) {
-            return false;
+
+            if (jwt.getExpiresAt() == null || jwt.getExpiresAt().before(new Date())) {
+                return null;
+            }
+
+            return new UsernamePasswordAuthenticationToken(jwt.getClaim(USER_ID_CLAIM).asLong(), token, null);
+        } catch (JwtException | IllegalArgumentException ignored) {
+            return null;
         }
     }
 }
