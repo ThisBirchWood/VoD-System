@@ -1,8 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.dto.IdTokenDTO;
-import com.ddf.vodsystem.dto.JwtDTO;
+import com.ddf.vodsystem.dto.TokenDTO;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
 import org.springframework.http.HttpStatus;
@@ -51,11 +50,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<APIResponse<JwtDTO>> login(@RequestBody IdTokenDTO idTokenDTO) {
-        String jwt = userService.login(idTokenDTO.getIdToken());
+    public ResponseEntity<APIResponse<TokenDTO>> login(@RequestBody TokenDTO tokenDTO) {
+        String jwt = userService.login(tokenDTO.getIdToken());
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Logged in successfully", new JwtDTO(jwt))
+                new APIResponse<>("success", "Logged in successfully", new TokenDTO(jwt))
         );
     }
 }

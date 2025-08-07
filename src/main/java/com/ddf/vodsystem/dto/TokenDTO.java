@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class JwtDTO {
-    private String token;
+public class TokenDTO {
+    private String idToken;
 }
