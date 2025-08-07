@@ -1,7 +1,5 @@
 package com.ddf.vodsystem.configuration;
 
-import com.ddf.vodsystem.security.CustomAuthenticationSuccessHandler;
-import com.ddf.vodsystem.security.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,17 +15,8 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
-
     @Value("${frontend.url}")
     private String frontendUrl;
-
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
-                          CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,11 +31,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                        .successHandler(customAuthenticationSuccessHandler))
                 .logout(logout -> logout
                         .logoutUrl("/api/v1/auth/logout")
                         .logoutSuccessHandler(logoutSuccessHandler())

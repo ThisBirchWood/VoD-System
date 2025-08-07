@@ -64,7 +64,7 @@ public class ClipService {
                                  ProgressTracker progress)
             throws IOException, InterruptedException {
 
-        User user = userService.getUser();
+        User user = userService.getCurrentUser();
         metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
         compressionService.compress(inputFile, outputFile, outputMetadata, progress)
                 .thenRun(() -> {
@@ -75,7 +75,7 @@ public class ClipService {
     }
 
     public List<Clip> getClipsByUser() {
-        User user = userService.getUser();
+        User user = userService.getCurrentUser();
 
         if (user == null) {
             logger.warn("No authenticated user found");
@@ -124,7 +124,7 @@ public class ClipService {
     }
 
     public boolean isAuthenticatedForClip(Clip clip) {
-        User user = userService.getUser();
+        User user = userService.getCurrentUser();
         if (user == null || clip == null) {
             return false;
         }
