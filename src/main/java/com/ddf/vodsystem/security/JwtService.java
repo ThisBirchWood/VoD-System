@@ -6,8 +6,6 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +32,7 @@ public class JwtService {
                 .sign(algorithm);
     }
 
-    public Authentication validateTokenAndGetAuthentication(String token) {
+    public Long validateTokenAndGetUserId(String token) {
         try {
             JWTVerifier verifier = JWT.require(algorithm)
                     .withClaimPresence(USER_ID_CLAIM)
@@ -47,7 +45,7 @@ public class JwtService {
                 return null;
             }
 
-            return new UsernamePasswordAuthenticationToken(jwt.getClaim(USER_ID_CLAIM).asLong(), token, null);
+            return jwt.getClaim(USER_ID_CLAIM).asLong();
         } catch (JwtException | IllegalArgumentException ignored) {
             return null;
         }

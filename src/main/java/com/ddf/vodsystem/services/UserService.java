@@ -48,8 +48,8 @@ public class UserService {
 
     public User getLoggedInUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof Long) {
-            return getUserById((Long) auth.getPrincipal());
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof User) {
+            return (User) auth.getPrincipal();
         }
         return null;
     }

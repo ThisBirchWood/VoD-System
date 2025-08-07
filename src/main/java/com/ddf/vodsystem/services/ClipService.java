@@ -132,9 +132,9 @@ public class ClipService {
     }
 
     private void persistClip(VideoMetadata videoMetadata,
-                             User user,
-                             File tempFile,
-                             String fileName) {
+                               User user,
+                               File tempFile,
+                               String fileName) {
         // Move clip from temp to output directory
         File clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
         File thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
@@ -161,6 +161,6 @@ public class ClipService {
         clip.setFileSize(videoMetadata.getFileSize());
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
-        clipRepository.save(clip);
+        clipRepository.saveAndFlush(clip);
     }
 }
