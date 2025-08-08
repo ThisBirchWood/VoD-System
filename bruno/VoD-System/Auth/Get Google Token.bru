@@ -12,7 +12,7 @@ get {
 
 auth:oauth2 {
   grant_type: authorization_code
-  callback_url: http://localhost:8080/oauth2/authorization/google
+  callback_url: http://localhost:8080/login/oauth2/code/google
   authorization_url: https://accounts.google.com/o/oauth2/v2/auth
   access_token_url: https://oauth2.googleapis.com/token
   refresh_token_url: 
@@ -20,11 +20,11 @@ auth:oauth2 {
   client_secret: {{google_secret}}
   scope: profile email
   state: 
-  pkce: true
+  pkce: false
   credentials_placement: body
   credentials_id: credentials
   token_placement: header
   token_header_prefix: Bearer
   auto_fetch_token: true
-  auto_refresh_token: true
+  auto_refresh_token: false
 }
