@@ -5,6 +5,8 @@ import com.ddf.vodsystem.dto.TokenDTO;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +33,18 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<APIResponse<TokenDTO>> login(@RequestBody TokenDTO tokenDTO) {
+    public ResponseEntity<APIResponse<TokenDTO>> login(@RequestBody TokenDTO tokenDTO,
+                                                       HttpServletResponse response) {
         String jwt = userService.login(tokenDTO.getToken());
+
+        ResponseCookie cookie = ResponseCookie.from("token", jwt)
+                .httpOnly(true)
+                .maxAge(60 * 60 * 24)
+                .sameSite("None")
+                .path("/")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.ok(
                 new APIResponse<>("success", "Logged in successfully", new TokenDTO(jwt))

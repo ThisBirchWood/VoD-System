@@ -1,5 +1,36 @@
 import type {VideoMetadata, APIResponse, User, Clip, ProgressResult } from "./types.ts";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+/**
+ * Login function
+ * @param GoogleToken - The Google token received from the frontend.
+ * @return A promise that resolves to a JWT
+ */
+const login = async (GoogleToken: string): Promise<string> => {
+    const response = await fetch(API_URL + '/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: GoogleToken }),
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Login failed: ${response.status}`);
+    }
+
+    console.log(response);
+    const result: APIResponse = await response.json();
+
+    if (result.status === "error") {
+        throw new Error(`Login failed: ${result.message}`);
+    }
+
+    return result.data.token;
+}
+
 /**
  * Uploads a file to the backend.
  * @param file - The file to upload.
@@ -8,7 +39,7 @@ const uploadFile = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/v1/upload', {
+    const response = await fetch(API_URL + '/api/v1/upload', {
         method: 'POST',
         body: formData,
     });
@@ -36,7 +67,7 @@ const editFile = async (uuid: string, videoMetadata: VideoMetadata) => {
         }
     }
 
-    const response = await fetch(`/api/v1/edit/${uuid}`, {
+    const response = await fetch(API_URL + `/api/v1/edit/${uuid}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -61,7 +92,7 @@ const editFile = async (uuid: string, videoMetadata: VideoMetadata) => {
  * @param uuid - The UUID of the video file to process.
  */
 const processFile = async (uuid: string) => {
-    const response = await fetch(`/api/v1/process/${uuid}`);
+    const response = await fetch(API_URL + `/api/v1/process/${uuid}`, {credentials: "include"});
 
     if (!response.ok) {
         throw new Error(`Failed to process file: ${response.status}`);
@@ -75,7 +106,7 @@ const processFile = async (uuid: string) => {
 };
 
 const convertFile = async (uuid: string) => {
-    const response = await fetch(`/api/v1/convert/${uuid}`);
+    const response = await fetch(API_URL + `/api/v1/convert/${uuid}`);
 
     if (!response.ok) {
         throw new Error(`Failed to convert file: ${response.status}`);
@@ -93,7 +124,7 @@ const convertFile = async (uuid: string) => {
  * @param uuid - The UUID of the video file.
  */
 const getProgress = async (uuid: string): Promise<ProgressResult> => {
-    const response = await fetch(`/api/v1/progress/${uuid}`);
+    const response = await fetch(API_URL + `/api/v1/progress/${uuid}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch progress: ${response.status}`);
@@ -117,7 +148,7 @@ const getProgress = async (uuid: string): Promise<ProgressResult> => {
  * @param uuid - The UUID of the video file.
  */
 const getMetadata = async (uuid: string): Promise<VideoMetadata> => {
-    const response = await fetch(`/api/v1/metadata/original/${uuid}`);
+    const response = await fetch(API_URL + `/api/v1/metadata/original/${uuid}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch metadata: ${response.status}`);
@@ -136,7 +167,7 @@ const getMetadata = async (uuid: string): Promise<VideoMetadata> => {
  * Fetches the current user information. Returns null if not authenticated.
  */
 const getUser = async (): Promise<null | User > => {
-    const response = await fetch('/api/v1/auth/user', {credentials: "include",});
+    const response = await fetch(API_URL + '/api/v1/auth/user', {credentials: "include"});
 
     if (!response.ok) {
         return null;
@@ -155,7 +186,7 @@ const getUser = async (): Promise<null | User > => {
  * Fetches all clips for the current user.
  */
 const getClips = async (): Promise<Clip[]> => {
-    const response = await fetch('/api/v1/clips/', { credentials: 'include' });
+    const response = await fetch(API_URL + '/api/v1/clips', { credentials: 'include'});
 
     if (!response.ok) {
         const errorResult: APIResponse = await response.json();
@@ -175,7 +206,7 @@ const getClips = async (): Promise<Clip[]> => {
  * @param id
  */
 const getClipById = async (id: string): Promise<Clip | null> => {
-    const response = await fetch(`/api/v1/clips/${id}`, {credentials: "include",});
+    const response = await fetch(API_URL + `/api/v1/clips/${id}`, {credentials: "include",});
 
     if (!response.ok) {
         throw new Error(`Failed to fetch clip: ${response.status}`);
@@ -191,7 +222,7 @@ const getClipById = async (id: string): Promise<Clip | null> => {
 };
 
 const isThumbnailAvailable = async (id: number): Promise<boolean> => {
-    const response = await fetch(`/api/v1/download/thumbnail/${id}`);
+    const response = await fetch(API_URL + `/api/v1/download/thumbnail/${id}`);
     if (!response.ok) {
         return false;
     }
@@ -200,6 +231,7 @@ const isThumbnailAvailable = async (id: number): Promise<boolean> => {
 }
 
 export {
+    login,
     uploadFile,
     editFile,
     processFile,

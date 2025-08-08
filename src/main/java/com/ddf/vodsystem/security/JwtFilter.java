@@ -65,7 +65,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        logger.info("JWT found in request");
+        logger.info("JWT found in request, {}", jwt);
         Long userId = jwtService.validateTokenAndGetUserId(jwt);
         User user;
         try {

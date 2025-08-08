@@ -21,7 +21,7 @@ public class ClipController {
         this.clipService = clipService;
     }
 
-    @GetMapping()
+    @GetMapping("")
     public ResponseEntity<APIResponse<List<ClipDTO>>> getClips() {
         List<Clip> clips = clipService.getClipsByUser();
         List<ClipDTO> clipDTOs = clips.stream()
