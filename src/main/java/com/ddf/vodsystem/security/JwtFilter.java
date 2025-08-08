@@ -5,8 +5,11 @@ import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,12 +18,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
     public JwtFilter(JwtService jwtService,
                      UserService userService) {
@@ -32,16 +37,36 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String authorizationHeader = request.getHeader("Authorization");
+        String jwt = null;
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        // 1. Try to get the JWT from the Authorization header
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            logger.info("JWT found in Authorization header");
+            jwt = authorizationHeader.substring(7);
+        }
+
+        // 2. If no JWT was found in the header, try to get it from a cookie
+        if (jwt == null) {
+            logger.info("JWT not found in Authorization header, checking cookies");
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                jwt = Arrays.stream(cookies)
+                        .filter(cookie -> "token".equals(cookie.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
+        }
+
+        if (jwt == null) {
+            logger.info("No JWT found in request");
             filterChain.doFilter(request, response);
             return;
         }
 
-        String jwt = authorizationHeader.substring(7);
+        logger.info("JWT found in request");
         Long userId = jwtService.validateTokenAndGetUserId(jwt);
-
         User user;
         try {
             user = userService.getUserById(userId);
