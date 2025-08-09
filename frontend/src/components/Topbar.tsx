@@ -29,7 +29,7 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                 <div>
                     <img
                         className={"w-8 h-8 rounded-full inline-block"}
-                        src={user.profilePicture}
+                        src={user.profilePictureUrl}
                         referrerPolicy="no-referrer"
                     />
 

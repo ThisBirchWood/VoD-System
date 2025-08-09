@@ -179,6 +179,8 @@ const getUser = async (): Promise<null | User > => {
         return null;
     }
 
+    console.log(result.data);
+
     return result.data;
 }
 

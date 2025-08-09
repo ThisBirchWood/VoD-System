@@ -62,29 +62,43 @@ public class UserService {
             throw new NotAuthenticated("Invalid ID token");
         }
 
-        Optional<User> existingUser = userRepository.findByGoogleId(googleId);
+        User googleUser = getGoogleUser(googleIdToken);
+        User user = createOrUpdateUser(googleUser);
 
-        if (existingUser.isEmpty()) {
-            User user = createUserFromIdToken(googleIdToken);
-            userRepository.saveAndFlush(user);
-            return jwtService.generateToken(user.getId());
-        }
-
-        return jwtService.generateToken(existingUser.get().getId());
+        return jwtService.generateToken(user.getId());
     }
 
-    private User createUserFromIdToken(GoogleIdToken idToken) {
+    private User createOrUpdateUser(User user) {
+        Optional<User> existingUser = userRepository.findByGoogleId(user.getGoogleId());
+
+        if (existingUser.isEmpty()) {
+            user.setRole(0);
+            user.setCreatedAt(LocalDateTime.now());
+            userRepository.saveAndFlush(user);
+            return user;
+        }
+
+        User existing = existingUser.get();
+        existing.setEmail(user.getEmail());
+        existing.setName(user.getName());
+        existing.setProfilePictureUrl(user.getProfilePictureUrl());
+        existing.setUsername(user.getUsername());
+        userRepository.saveAndFlush(existing);
+        return existing;
+    }
+
+    private User getGoogleUser(GoogleIdToken idToken) {
         String googleId = idToken.getPayload().getSubject();
         String email = idToken.getPayload().getEmail();
         String name = (String) idToken.getPayload().get("name");
+        String profilePictureUrl = (String) idToken.getPayload().get("picture");
 
         User user = new User();
         user.setGoogleId(googleId);
         user.setEmail(email);
         user.setName(name);
         user.setUsername(email);
-        user.setRole(0);
-        user.setCreatedAt(LocalDateTime.now());
+        user.setProfilePictureUrl(profilePictureUrl);
 
         return user;
     }
