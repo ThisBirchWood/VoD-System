@@ -74,8 +74,7 @@ public class UserService {
         if (existingUser.isEmpty()) {
             user.setRole(0);
             user.setCreatedAt(LocalDateTime.now());
-            userRepository.saveAndFlush(user);
-            return user;
+            return userRepository.saveAndFlush(user);
         }
 
         User existing = existingUser.get();
@@ -83,8 +82,7 @@ public class UserService {
         existing.setName(user.getName());
         existing.setProfilePictureUrl(user.getProfilePictureUrl());
         existing.setUsername(user.getUsername());
-        userRepository.saveAndFlush(existing);
-        return existing;
+        return userRepository.saveAndFlush(existing);
     }
 
     private User getGoogleUser(GoogleIdToken idToken) {

@@ -13,15 +13,13 @@ const login = async (GoogleToken: string): Promise<string> => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token: GoogleToken }),
-        credentials: 'include'
+        body: JSON.stringify({ token: GoogleToken })
     });
 
     if (!response.ok) {
         throw new Error(`Login failed: ${response.status}`);
     }
 
-    console.log(response);
     const result: APIResponse = await response.json();
 
     if (result.status === "error") {

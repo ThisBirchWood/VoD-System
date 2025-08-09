@@ -49,9 +49,7 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                                 console.error("No credential received from Google Login");
                                 return;
                             }
-                            console.log(login(credentialResponse.credential));
-                            // go to home page react router
-                            navigate("/");
+                            login(credentialResponse.credential).then(() => {navigate(0)});
 
                         }}
                     />
