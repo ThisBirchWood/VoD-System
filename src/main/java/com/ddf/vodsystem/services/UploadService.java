@@ -46,13 +46,7 @@ public class UploadService {
         // add job
         logger.info("Uploaded file and creating job with UUID: {}", uuid);
 
-        VideoMetadata videoMetadata;
-        try {
-            videoMetadata = metadataService.getVideoMetadata(inputFile).get(5, TimeUnit.SECONDS);
-        } catch (ExecutionException | TimeoutException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new FFMPEGException(e.getMessage());
-        }
+        VideoMetadata videoMetadata = getMetadataWithTimeout(inputFile);
         Job job = new Job(uuid, inputFile, outputFile, videoMetadata);
         jobService.add(job);
 
@@ -65,6 +59,15 @@ public class UploadService {
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bb.array());
+    }
+
+    private VideoMetadata getMetadataWithTimeout(File file) {
+        try {
+            return metadataService.getVideoMetadata(file).get(5, TimeUnit.SECONDS);
+        } catch (ExecutionException | TimeoutException | InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new FFMPEGException(e.getMessage());
+        }
     }
 
 }

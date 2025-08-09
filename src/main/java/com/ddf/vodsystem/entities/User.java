@@ -26,6 +26,9 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     @Column(name = "role", nullable = false)
     private Integer role; // 0: user, 1: admin
 

@@ -2,7 +2,10 @@ import { Menu, X } from 'lucide-react';
 import MenuButton from "./buttons/MenuButton.tsx";
 import clsx from "clsx";
 import type {User} from "../utils/types.ts";
+import { login } from "../utils/endpoints.ts";
 import { Dropdown, DropdownItem } from "./Dropdown.tsx";
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import {useNavigate} from "react-router-dom";
 
 type props = {
     sidebarToggled: boolean;
@@ -13,8 +16,8 @@ type props = {
 
 const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => {
     const apiUrl = import.meta.env.VITE_API_URL;
-    const loginUrl = `${apiUrl}/oauth2/authorization/google`;
     const logoutUrl = `${apiUrl}/api/v1/auth/logout`;
+    const navigate = useNavigate();
 
     return (
         <div className={clsx(className, "flex justify-between")}>
@@ -26,7 +29,7 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                 <div>
                     <img
                         className={"w-8 h-8 rounded-full inline-block"}
-                        src={user.profilePicture}
+                        src={user.profilePictureUrl}
                         referrerPolicy="no-referrer"
                     />
 
@@ -38,10 +41,19 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                 </div>
             ) :
             (
-                <MenuButton className={"w-20 text-gray-600"}
-                    onClick={() => globalThis.location.href = loginUrl}>
-                    Login
-                </MenuButton>
+                <GoogleOAuthProvider
+                    clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+                    <GoogleLogin
+                        onSuccess={(credentialResponse) => {
+                            if (!credentialResponse.credential) {
+                                console.error("No credential received from Google Login");
+                                return;
+                            }
+                            login(credentialResponse.credential).then(() => {navigate(0)});
+
+                        }}
+                    />
+                </GoogleOAuthProvider>
             )}
 
         </div>
