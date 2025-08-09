@@ -67,6 +67,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         logger.info("JWT found in request, {}", jwt);
         Long userId = jwtService.validateTokenAndGetUserId(jwt);
+
+        if (userId == null) {
+            logger.warn("Invalid JWT: {}", jwt);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         User user;
         try {
             user = userService.getUserById(userId);
