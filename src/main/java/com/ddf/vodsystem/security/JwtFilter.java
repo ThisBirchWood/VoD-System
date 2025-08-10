@@ -42,13 +42,13 @@ public class JwtFilter extends OncePerRequestFilter {
         // 1. Try to get the JWT from the Authorization header
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            logger.info("JWT found in Authorization header");
+            logger.debug("JWT found in Authorization header");
             jwt = authorizationHeader.substring(7);
         }
 
         // 2. If no JWT was found in the header, try to get it from a cookie
         if (jwt == null) {
-            logger.info("JWT not found in Authorization header, checking cookies");
+            logger.debug("JWT not found in Authorization header, checking cookies");
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 jwt = Arrays.stream(cookies)
@@ -60,12 +60,12 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (jwt == null) {
-            logger.info("No JWT found in request");
+            logger.debug("No JWT found in request");
             filterChain.doFilter(request, response);
             return;
         }
 
-        logger.info("JWT found in request, {}", jwt);
+        logger.debug("JWT found in request");
         Long userId = jwtService.validateTokenAndGetUserId(jwt);
 
         if (userId == null) {
