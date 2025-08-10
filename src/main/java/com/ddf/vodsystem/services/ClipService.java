@@ -167,7 +167,7 @@ public class ClipService {
         clip.setWidth(clipMetadata.getWidth());
         clip.setHeight(clipMetadata.getHeight());
         clip.setFps(clipMetadata.getFps());
-        clip.setDuration(clipMetadata.getEndPoint());
+        clip.setDuration(clipMetadata.getEndPoint() - clipMetadata.getStartPoint());
         clip.setFileSize(clipMetadata.getFileSize());
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
