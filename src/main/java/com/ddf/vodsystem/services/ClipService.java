@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
 import com.ddf.vodsystem.services.media.CompressionService;
@@ -64,7 +66,7 @@ public class ClipService {
                                  ProgressTracker progress)
             throws IOException, InterruptedException {
 
-        User user = userService.getUser();
+        User user = userService.getLoggedInUser();
         metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
         compressionService.compress(inputFile, outputFile, outputMetadata, progress)
                 .thenRun(() -> {
@@ -75,7 +77,7 @@ public class ClipService {
     }
 
     public List<Clip> getClipsByUser() {
-        User user = userService.getUser();
+        User user = userService.getLoggedInUser();
 
         if (user == null) {
             logger.warn("No authenticated user found");
@@ -124,7 +126,7 @@ public class ClipService {
     }
 
     public boolean isAuthenticatedForClip(Clip clip) {
-        User user = userService.getUser();
+        User user = userService.getLoggedInUser();
         if (user == null || clip == null) {
             return false;
         }
@@ -132,13 +134,21 @@ public class ClipService {
     }
 
     private void persistClip(VideoMetadata videoMetadata,
-                             User user,
-                             File tempFile,
-                             String fileName) {
+                               User user,
+                               File tempFile,
+                               String fileName) {
         // Move clip from temp to output directory
         File clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
         File thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
         directoryService.cutFile(tempFile, clipFile);
+
+        VideoMetadata clipMetadata;
+        try {
+            clipMetadata = metadataService.getVideoMetadata(clipFile).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new FFMPEGException("Error retrieving video metadata for clip: " + e.getMessage());
+        }
 
 
         try {
@@ -152,15 +162,17 @@ public class ClipService {
         Clip clip = new Clip();
         clip.setUser(user);
         clip.setTitle(videoMetadata.getTitle() != null ? videoMetadata.getTitle() : "Untitled Clip");
-        clip.setDescription(videoMetadata.getDescription());
+        clip.setDescription(videoMetadata.getDescription() != null ? videoMetadata.getDescription() : "");
         clip.setCreatedAt(LocalDateTime.now());
-        clip.setWidth(videoMetadata.getWidth());
-        clip.setHeight(videoMetadata.getHeight());
-        clip.setFps(videoMetadata.getFps());
-        clip.setDuration(videoMetadata.getEndPoint() - videoMetadata.getStartPoint());
-        clip.setFileSize(videoMetadata.getFileSize());
+        clip.setWidth(clipMetadata.getWidth());
+        clip.setHeight(clipMetadata.getHeight());
+        clip.setFps(clipMetadata.getFps());
+        clip.setDuration(clipMetadata.getEndPoint() - clipMetadata.getStartPoint());
+        clip.setFileSize(clipMetadata.getFileSize());
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());
         clipRepository.save(clip);
+
+        logger.info("Clip created successfully with ID: {}", clip.getId());
     }
 }

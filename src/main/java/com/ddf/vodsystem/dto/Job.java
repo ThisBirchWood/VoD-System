@@ -1,9 +1,6 @@
 package com.ddf.vodsystem.dto;
 
 import java.io.File;
-
-import org.springframework.security.core.context.SecurityContext;
-
 import lombok.Data;
 
 @Data
@@ -16,13 +13,13 @@ public class Job {
     private VideoMetadata inputVideoMetadata;
     private VideoMetadata outputVideoMetadata = new VideoMetadata();
 
-    // security
-    private SecurityContext securityContext;
-
     // job status
     private JobStatus status = new JobStatus();
 
-    public Job(String uuid, File inputFile, File outputFile, VideoMetadata inputVideoMetadata) {
+    public Job(String uuid,
+               File inputFile,
+               File outputFile,
+               VideoMetadata inputVideoMetadata) {
         this.uuid = uuid;
         this.inputFile = inputFile;
         this.outputFile = outputFile;
