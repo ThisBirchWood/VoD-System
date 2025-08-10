@@ -61,7 +61,6 @@ public class MetadataService {
         }
     }
 
-
     private VideoMetadata parseVideoMetadata(JsonNode node) {
         VideoMetadata metadata = new VideoMetadata();
         metadata.setStartPoint(0f);

@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotAuthenticated.class)
     public ResponseEntity<APIResponse<Void>> handleNotAuthenticated(NotAuthenticated ex) {
         logger.error("NotAuthenticated: {}", ex.getMessage());
-        APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
+        APIResponse<Void> response = new APIResponse<>(ERROR, "User is not authenticated", null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }

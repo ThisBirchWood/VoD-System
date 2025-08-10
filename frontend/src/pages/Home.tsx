@@ -1,5 +1,4 @@
 const Home = () => {
-
     return (
         <div className={"max-h-screen flex flex-col justify-center items-center px-6 py-12 text-gray-900"}>
             {/* Logo */}
