@@ -15,9 +15,12 @@ type props = {
 }
 
 const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => {
-    const apiUrl = import.meta.env.VITE_API_URL;
-    const logoutUrl = `${apiUrl}/api/v1/auth/logout`;
     const navigate = useNavigate();
+
+    const handleLogout = () => {
+        // delete token cookie
+        document.cookie = "token=; Secure; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
 
     return (
         <div className={clsx(className, "flex justify-between")}>
@@ -35,7 +38,7 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
 
                     <Dropdown label={user.name}>
                         <DropdownItem item="Logout"
-                                      onClick={() => globalThis.location.href = logoutUrl}
+                                      onClick={() => handleLogout()}
                                       className={"text-red-500 font-medium"} />
                     </Dropdown>
                 </div>
@@ -50,7 +53,6 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                                 return;
                             }
                             login(credentialResponse.credential).then(() => {navigate(0)});
-
                         }}
                     />
                 </GoogleOAuthProvider>

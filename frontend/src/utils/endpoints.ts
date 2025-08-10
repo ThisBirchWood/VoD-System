@@ -13,7 +13,8 @@ const login = async (GoogleToken: string): Promise<string> => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token: GoogleToken })
+        body: JSON.stringify({ token: GoogleToken }),
+        credentials: 'include'
     });
 
     if (!response.ok) {
@@ -146,7 +147,7 @@ const getProgress = async (uuid: string): Promise<ProgressResult> => {
  * @param uuid - The UUID of the video file.
  */
 const getMetadata = async (uuid: string): Promise<VideoMetadata> => {
-    const response = await fetch(API_URL + `/api/v1/metadata/original/${uuid}`);
+    const response = await fetch(API_URL + `/api/v1/metadata/original/${uuid}`, {credentials: "include"});
 
     if (!response.ok) {
         throw new Error(`Failed to fetch metadata: ${response.status}`);
@@ -222,7 +223,7 @@ const getClipById = async (id: string): Promise<Clip | null> => {
 };
 
 const isThumbnailAvailable = async (id: number): Promise<boolean> => {
-    const response = await fetch(API_URL + `/api/v1/download/thumbnail/${id}`);
+    const response = await fetch(API_URL + `/api/v1/download/thumbnail/${id}`, {credentials: "include"});
     if (!response.ok) {
         return false;
     }
