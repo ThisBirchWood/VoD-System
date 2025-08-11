@@ -18,9 +18,9 @@ auth:oauth2 {
   refresh_token_url: 
   client_id: {{google_client_id}}
   client_secret: {{google_secret}}
-  scope: profile email
+  scope: profile email openid
   state: 
-  pkce: false
+  pkce: true
   credentials_placement: body
   credentials_id: credentials
   token_placement: header
