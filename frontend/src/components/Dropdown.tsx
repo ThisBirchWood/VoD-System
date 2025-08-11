@@ -52,7 +52,7 @@ const Dropdown = ({ label, children, className }: DropdownProps) => {
                 {label}
             </button>
             {isOpen && (
-                <ul className={"absolute w-48 origin-top-right rounded-md bg-white shadow-lg font-medium"}>
+                <ul className={"absolute w-30 origin-top-right rounded-md bg-white shadow-lg font-medium"}>
                     {children}
                 </ul>
             )}
