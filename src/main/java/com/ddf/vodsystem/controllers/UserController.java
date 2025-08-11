@@ -51,4 +51,21 @@ public class UserController {
                 new APIResponse<>("success", "Logged in successfully", new TokenDTO(jwt))
         );
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<APIResponse<Void>> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .maxAge(0)
+                .sameSite("None")
+                .secure(true)
+                .path("/")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        return ResponseEntity.ok(
+                new APIResponse<>("success", "Logged out successfully", null)
+        );
+    }
 }

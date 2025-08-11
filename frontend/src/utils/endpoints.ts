@@ -30,6 +30,23 @@ const login = async (GoogleToken: string): Promise<string> => {
     return result.data.token;
 }
 
+const logout = async () => {
+    const response = await fetch(API_URL + '/api/v1/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        throw new Error(`Logout failed: ${response.status}`);
+    }
+
+    const result: APIResponse = await response.json();
+
+    if (result.status === "error") {
+        throw new Error(`Logout failed: ${result.message}`);
+    }
+}
+
 /**
  * Uploads a file to the backend.
  * @param file - The file to upload.
@@ -233,6 +250,7 @@ const isThumbnailAvailable = async (id: number): Promise<boolean> => {
 
 export {
     login,
+    logout,
     uploadFile,
     editFile,
     processFile,

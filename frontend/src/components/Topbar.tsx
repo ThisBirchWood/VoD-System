@@ -1,25 +1,53 @@
 import { Menu, X } from 'lucide-react';
+import { login, logout } from "../utils/endpoints.ts";
+import { Dropdown, DropdownItem } from "./Dropdown.tsx";
+import { GoogleLogin } from '@react-oauth/google';
+
+import type { User } from "../utils/types.ts";
+import type { CredentialResponse } from '@react-oauth/google';
+
 import MenuButton from "./buttons/MenuButton.tsx";
 import clsx from "clsx";
-import type {User} from "../utils/types.ts";
-import { login } from "../utils/endpoints.ts";
-import { Dropdown, DropdownItem } from "./Dropdown.tsx";
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import {useNavigate} from "react-router-dom";
+
 
 type props = {
     sidebarToggled: boolean;
-    setSidebarToggled: Function;
+    setSidebarToggled: (toggled: boolean) => void;
     user: User | null;
+    fetchUser: () => void;
     className?: string;
 }
 
-const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => {
-    const navigate = useNavigate();
+const Topbar = ({
+                    sidebarToggled,
+                    setSidebarToggled,
+                    user,
+                    fetchUser,
+                    className}: props) => {
+
+    const handleLogin = (response: CredentialResponse) => {
+        if (!response.credential) {
+            console.error("No credential received from Google login.");
+            return;
+        }
+
+        login(response.credential)
+            .then(() => {
+                fetchUser();
+            })
+            .catch((error) => {
+                console.error("Login failed:", error);
+            });
+    }
 
     const handleLogout = () => {
-        // delete token cookie
-        document.cookie = "token=; Secure; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        logout()
+            .then(() => {
+                fetchUser();
+            })
+            .catch((error) => {
+                console.error("Logout failed:", error);
+            });
     }
 
     return (
@@ -44,20 +72,11 @@ const Topbar = ({sidebarToggled, setSidebarToggled, user, className}: props) => 
                 </div>
             ) :
             (
-                <GoogleOAuthProvider
-                    clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-                    <GoogleLogin
-                        onSuccess={(credentialResponse) => {
-                            if (!credentialResponse.credential) {
-                                console.error("No credential received from Google Login");
-                                return;
-                            }
-                            login(credentialResponse.credential).then(() => {navigate(0)});
-                        }}
-                    />
-                </GoogleOAuthProvider>
+                <GoogleLogin
+                    shape={"pill"}
+                    useOneTap={false}
+                    onSuccess={(credentialResponse) => handleLogin(credentialResponse)} />
             )}
-
         </div>
     )
 }

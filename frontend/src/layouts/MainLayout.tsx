@@ -10,16 +10,16 @@ const MainLayout = () => {
     const [sidebarToggled, setSidebarToggled] = useState(false);
     const [user, setUser] = useState<null | User>(null);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const userData = await getUser();
-                setUser(userData);
-            } catch (error) {
-                console.error('Failed to fetch user:', error);
-            }
-        };
+    const fetchUser = async () => {
+        try {
+            const userData = await getUser();
+            setUser(userData);
+        } catch (error) {
+            console.error('Failed to fetch user:', error);
+        }
+    };
 
+    useEffect(() => {
         fetchUser();
     }, []);
 
@@ -32,7 +32,8 @@ const MainLayout = () => {
                 className={"transition-all duration-300"}
                 sidebarToggled={sidebarToggled}
                 setSidebarToggled={setSidebarToggled}
-                user={user}/>
+                user={user}
+                fetchUser={fetchUser}/>
             <div className="overflow-auto">
                 <Outlet />
             </div>
