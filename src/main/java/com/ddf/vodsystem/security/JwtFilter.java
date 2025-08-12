@@ -1,7 +1,6 @@
 package com.ddf.vodsystem.security;
 
 import com.ddf.vodsystem.entities.User;
-import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -59,32 +59,34 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        if (jwt == null) {
-            logger.debug("No JWT found in request");
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        logger.debug("JWT found in request");
-        Long userId = jwtService.validateTokenAndGetUserId(jwt);
-
-        if (userId == null) {
-            logger.warn("Invalid JWT: {}", jwt);
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        User user;
-        try {
-            user = userService.getUserById(userId);
-        } catch (NotAuthenticated e) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, jwt, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        Optional<Authentication> authentication = getAuthentication(jwt);
+        authentication.ifPresent(value ->
+                SecurityContextHolder.getContext().setAuthentication(value)
+        );
         filterChain.doFilter(request, response);
+    }
+
+    private Optional<Authentication> getAuthentication(String jwt) {
+        if (jwt == null || jwt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Long userId = jwtService.validateTokenAndGetUserId(jwt);
+        if (userId == null) {
+            return Optional.empty();
+        }
+
+        Optional<User> user = userService.getUserById(userId);
+        if (user.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.get(),
+                jwt,
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        return Optional.of(authentication);
     }
 }

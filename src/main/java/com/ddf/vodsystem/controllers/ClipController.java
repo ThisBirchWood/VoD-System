@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/clips")
@@ -35,12 +36,12 @@ public class ClipController {
 
     @GetMapping("/{id}")
     public ResponseEntity<APIResponse<ClipDTO>> getClipById(@PathVariable Long id) {
-        Clip clip = clipService.getClipById(id);
-        if (clip == null) {
+        Optional<Clip> clip = clipService.getClipById(id);
+        if (clip.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        ClipDTO clipDTO = convertToDTO(clip);
+        ClipDTO clipDTO = convertToDTO(clip.get());
 
         return ResponseEntity.ok(
                 new APIResponse<>("success", "Clip retrieved successfully", clipDTO)

@@ -10,6 +10,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1/auth/")
 public class UserController {
@@ -21,14 +23,14 @@ public class UserController {
 
     @GetMapping("/user")
     public ResponseEntity<APIResponse<User>> user() {
-        User user = userService.getLoggedInUser();
+        Optional<User> user = userService.getLoggedInUser();
 
-        if (user == null) {
+        if (user.isEmpty()) {
             throw new NotAuthenticated("User not authenticated");
         }
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "User retrieved successfully", user)
+                new APIResponse<>("success", "User retrieved successfully", user.get())
         );
     }
 

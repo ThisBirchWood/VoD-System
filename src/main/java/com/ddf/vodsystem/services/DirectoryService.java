@@ -118,7 +118,7 @@ public class DirectoryService {
 
         try {
             Files.delete(file.toPath());
-            logger.info("Deleted file: {}", file.getAbsolutePath());
+            logger.debug("Deleted file: {}", file.getAbsolutePath());
             return true;
         } catch (IOException e) {
             logger.error("Error deleting file: {}", e.getMessage());

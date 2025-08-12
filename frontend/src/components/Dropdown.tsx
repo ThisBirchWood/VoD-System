@@ -9,7 +9,9 @@ type DropdownItemProps = {
 
 const DropdownItem = ({ item, onClick, className }: DropdownItemProps) => {
     return (
-        <li className={clsx(className, "cursor-pointer hover:bg-gray-100 px-4 py-2 align-middle")} onClick={() => onClick(item)}>
+        <li className={clsx(className, "cursor-pointer hover:bg-gray-100 px-4 py-2 align-middle")}
+            onClick={() => onClick(item)}
+        >
             {item}
         </li>
     );
@@ -30,7 +32,7 @@ const Dropdown = ({ label, children, className }: DropdownProps) => {
     };
 
     useEffect(() => {
-        function handleClickOutside(event: { target: any; }) {
+        function handleClickOutside(event: { target: any }) {
             if (ref.current && !ref.current.contains(event.target)) {
                 setIsOpen(false);
             }

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import com.ddf.vodsystem.exceptions.FFMPEGException;
@@ -60,42 +61,56 @@ public class ClipService {
      * @throws InterruptedException if the thread is interrupted during processing.
      */
     public void create(VideoMetadata inputMetadata,
-                                 VideoMetadata outputMetadata,
-                                 File inputFile,
-                                 File outputFile,
-                                 ProgressTracker progress)
+                       VideoMetadata outputMetadata,
+                       File inputFile,
+                       File outputFile,
+                       ProgressTracker progress)
             throws IOException, InterruptedException {
 
-        User user = userService.getLoggedInUser();
+        Optional<User> user = userService.getLoggedInUser();
         metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
         compressionService.compress(inputFile, outputFile, outputMetadata, progress)
-                .thenRun(() -> {
-                    if (user != null) {
-                        persistClip(outputMetadata, user, outputFile, inputFile.getName());
-                    }
-                });
+                .thenRun(() -> user.ifPresent(value ->
+                        persistClip(
+                                outputMetadata,
+                                value,
+                                outputFile,
+                                inputFile.getName()
+                        )));
     }
 
+    /**
+     * Retrieves all clips associated with the currently logged-in user.
+     *
+     * @return a list of clips belonging to the authenticated user.
+     * @throws NotAuthenticated if the user is not authenticated.
+     */
     public List<Clip> getClipsByUser() {
-        User user = userService.getLoggedInUser();
+        Optional<User> user = userService.getLoggedInUser();
 
-        if (user == null) {
-            logger.warn("No authenticated user found");
-            return List.of();
+        if (user.isEmpty()) {
+            throw new NotAuthenticated("User is not authenticated");
         }
 
-        return clipRepository.findByUser(user);
+        return clipRepository.findByUser(user.get());
     }
 
-    public Clip getClipById(Long id) {
-        Clip clip = clipRepository.findById(id).orElse(null);
+    /**
+     * Retrieves a clip by its ID, ensuring the user is authenticated to access it.
+     *
+     * @param id the ID of the clip to retrieve.
+     * @return an Optional containing the Clip if found and accessible, or empty if not found.
+     * @throws NotAuthenticated if the user is not authorized to access the clip.
+     */
+    public Optional<Clip> getClipById(Long id) {
+        Optional<Clip> clip = clipRepository.findById(id);
 
-        if (clip == null) {
+        if (clip.isEmpty()) {
             logger.warn("Clip with ID {} not found", id);
-            return null;
+            return clip;
         }
 
-        if (!isAuthenticatedForClip(clip)) {
+        if (!isAuthenticatedForClip(clip.get())) {
             logger.warn("User is not authorized to access clip with ID {}", id);
             throw new NotAuthenticated("You are not authorized to access this clip");
         }
@@ -103,34 +118,44 @@ public class ClipService {
         return clip;
     }
 
+    /**
+     * Deletes a clip by its ID, ensuring the user is authenticated to perform the deletion.
+     *
+     * @param id the ID of the clip to delete.
+     * @return true if the clip was successfully deleted, false if it was not found.
+     * @throws NotAuthenticated if the user is not authorized to delete the clip.
+     */
     public boolean deleteClip(Long id) {
-        Clip clip = getClipById(id);
-        if (clip == null) {
+        Optional<Clip> possibleClip = getClipById(id);
+        if (possibleClip.isEmpty()) {
             logger.warn("Clip with ID {} not found for deletion", id);
             return false;
         }
 
+        Clip clip = possibleClip.get();
         if (!isAuthenticatedForClip(clip)) {
-            logger.warn("User is not authorized to delete clip with ID {}", id);
             throw new NotAuthenticated("You are not authorized to delete this clip");
         }
 
-        File clipFile = new File(clip.getVideoPath());
-        File thumbnailFile = new File(clip.getThumbnailPath());
-        directoryService.deleteFile(clipFile);
-        directoryService.deleteFile(thumbnailFile);
-
+        deleteClipFiles(clip);
         clipRepository.delete(clip);
+
         logger.info("Clip with ID {} deleted successfully", id);
         return true;
     }
 
+    /**
+     * Checks if the currently logged-in user is authenticated to access the specified clip.
+     *
+     * @param clip the clip to check access for.
+     * @return true if the user is authenticated for the clip, false otherwise.
+     */
     public boolean isAuthenticatedForClip(Clip clip) {
-        User user = userService.getLoggedInUser();
-        if (user == null || clip == null) {
+        Optional<User> user = userService.getLoggedInUser();
+        if (user.isEmpty() || clip == null) {
             return false;
         }
-        return user.getId().equals(clip.getUser().getId());
+        return user.get().getId().equals(clip.getUser().getId());
     }
 
     private void persistClip(VideoMetadata videoMetadata,
@@ -174,5 +199,21 @@ public class ClipService {
         clipRepository.save(clip);
 
         logger.info("Clip created successfully with ID: {}", clip.getId());
+    }
+
+    private void deleteClipFiles(Clip clip) {
+        File clipFile = new File(clip.getVideoPath());
+        File thumbnailFile = new File(clip.getThumbnailPath());
+
+        boolean clipDeleted = directoryService.deleteFile(clipFile);
+        boolean thumbnailDeleted = directoryService.deleteFile(thumbnailFile);
+
+        if (!clipDeleted) {
+            throw new FFMPEGException("Failed to delete clip file: " + clipFile.getAbsolutePath());
+        }
+
+        if (!thumbnailDeleted) {
+            throw new FFMPEGException("Failed to delete thumbnail file: " + thumbnailFile.getAbsolutePath());
+        }
     }
 }

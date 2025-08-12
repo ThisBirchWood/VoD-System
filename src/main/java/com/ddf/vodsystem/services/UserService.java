@@ -41,17 +41,16 @@ public class UserService {
         this.jwtService = jwtService;
     }
 
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotAuthenticated("User not found"));
+    public Optional<User> getUserById(Long userId) {
+        return userRepository.findById(userId);
     }
 
-    public User getLoggedInUser() {
+    public Optional<User> getLoggedInUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof User) {
-            return (User) auth.getPrincipal();
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof User user) {
+            return Optional.of(user);
         }
-        return null;
+        return Optional.empty();
     }
 
     public String login(String idToken) {
