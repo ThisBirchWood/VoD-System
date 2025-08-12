@@ -8,6 +8,7 @@ import type { CredentialResponse } from '@react-oauth/google';
 
 import MenuButton from "./buttons/MenuButton.tsx";
 import clsx from "clsx";
+import {useNavigate} from "react-router-dom";
 
 
 type props = {
@@ -25,6 +26,8 @@ const Topbar = ({
                     fetchUser,
                     className}: props) => {
 
+    const navigate = useNavigate();
+
     const handleLogin = (response: CredentialResponse) => {
         if (!response.credential) {
             console.error("No credential received from Google login.");
@@ -34,6 +37,7 @@ const Topbar = ({
         login(response.credential)
             .then(() => {
                 fetchUser();
+                navigate(0);
             })
             .catch((error) => {
                 console.error("Login failed:", error);
@@ -44,6 +48,7 @@ const Topbar = ({
         logout()
             .then(() => {
                 fetchUser();
+                navigate(0);
             })
             .catch((error) => {
                 console.error("Logout failed:", error);
