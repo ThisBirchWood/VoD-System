@@ -48,7 +48,7 @@ const Topbar = ({
         logout()
             .then(() => {
                 fetchUser();
-                navigate(0);
+                navigate("/");
             })
             .catch((error) => {
                 console.error("Logout failed:", error);

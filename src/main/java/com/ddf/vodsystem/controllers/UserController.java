@@ -6,6 +6,7 @@ import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,9 @@ import java.util.Optional;
 @RequestMapping("/api/v1/auth/")
 public class UserController {
     private final UserService userService;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -41,7 +45,7 @@ public class UserController {
 
         ResponseCookie cookie = ResponseCookie.from("token", jwt)
                 .httpOnly(true)
-                .maxAge(60 * 60 * 24)
+                .maxAge(jwtExpiration / 1000)
                 .sameSite("None")
                 .secure(true)
                 .path("/")
