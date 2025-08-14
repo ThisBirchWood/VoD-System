@@ -10,8 +10,8 @@ public class Job {
     private File outputFile;
 
     // configs
-    private VideoMetadata inputVideoMetadata;
-    private VideoMetadata outputVideoMetadata = new VideoMetadata();
+    private ClipMetadata inputClipMetadata;
+    private ClipMetadata outputClipMetadata = new ClipMetadata();
 
     // job status
     private JobStatus status = new JobStatus();
@@ -19,10 +19,10 @@ public class Job {
     public Job(String uuid,
                File inputFile,
                File outputFile,
-               VideoMetadata inputVideoMetadata) {
+               ClipMetadata inputClipMetadata) {
         this.uuid = uuid;
         this.inputFile = inputFile;
         this.outputFile = outputFile;
-        this.inputVideoMetadata = inputVideoMetadata;
+        this.inputClipMetadata = inputClipMetadata;
     }
 }

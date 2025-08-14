@@ -2,7 +2,7 @@ package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -28,13 +28,13 @@ public class CompressionService {
     @Async("ffmpegTaskExecutor")
     public CompletableFuture<CommandOutput> compress(File inputFile,
                                                      File outputFile,
-                                                     VideoMetadata videoMetadata,
+                                                     ClipMetadata clipMetadata,
                                                      ProgressTracker progress
     ) throws IOException, InterruptedException {
         logger.info("Compressing video from {} to {}", inputFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
-        float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
-        List<String> command = buildCommand(inputFile, outputFile, videoMetadata);
+        float length = clipMetadata.getEndPoint() - clipMetadata.getStartPoint();
+        List<String> command = buildCommand(inputFile, outputFile, clipMetadata);
 
         CommandOutput result = CommandRunner.run(command, line -> setProgress(line, progress, length));
         progress.markComplete();
@@ -110,22 +110,22 @@ public class CompressionService {
         return command;
     }
 
-    private List<String> buildCommand(File inputFile, File outputFile, VideoMetadata videoMetadata) {
+    private List<String> buildCommand(File inputFile, File outputFile, ClipMetadata clipMetadata) {
         List<String> command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");
         command.add("pipe:1");
         command.add("-y");
 
-        Float length = videoMetadata.getEndPoint() - videoMetadata.getStartPoint();
-        command.addAll(buildInputs(inputFile, videoMetadata.getStartPoint(), length));
+        Float length = clipMetadata.getEndPoint() - clipMetadata.getStartPoint();
+        command.addAll(buildInputs(inputFile, clipMetadata.getStartPoint(), length));
 
-        if (videoMetadata.getFps() != null || videoMetadata.getWidth() != null || videoMetadata.getHeight() != null) {
-            command.addAll(buildFilters(videoMetadata.getFps(), videoMetadata.getWidth(), videoMetadata.getHeight()));
+        if (clipMetadata.getFps() != null || clipMetadata.getWidth() != null || clipMetadata.getHeight() != null) {
+            command.addAll(buildFilters(clipMetadata.getFps(), clipMetadata.getWidth(), clipMetadata.getHeight()));
         }
 
-        if (videoMetadata.getFileSize() != null) {
-            command.addAll(buildBitrate(length, videoMetadata.getFileSize()));
+        if (clipMetadata.getFileSize() != null) {
+            command.addAll(buildBitrate(length, clipMetadata.getFileSize()));
         }
 
         // Output file

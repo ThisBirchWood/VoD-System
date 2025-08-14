@@ -3,7 +3,7 @@ package com.ddf.vodsystem.dto;
 import lombok.Data;
 
 @Data
-public class VideoMetadata {
+public class ClipMetadata {
     private String title;
     private String description;
     private Float startPoint;

@@ -72,7 +72,7 @@ public class JobService {
                     tempFile,
                     job.getInputFile(),
                     job.getStatus().getConversion(),
-                    job.getInputVideoMetadata().getEndPoint())
+                    job.getInputClipMetadata().getEndPoint())
                     .thenRun(() -> {
                         job.getStatus().getConversion().markComplete();
                         directoryService.deleteFile(tempFile);
@@ -94,8 +94,8 @@ public class JobService {
 
         try {
             clipService.create(
-                    job.getInputVideoMetadata(),
-                    job.getOutputVideoMetadata(),
+                    job.getInputClipMetadata(),
+                    job.getOutputClipMetadata(),
                     job.getInputFile(),
                     job.getOutputFile(),
                     job.getStatus().getProcess()

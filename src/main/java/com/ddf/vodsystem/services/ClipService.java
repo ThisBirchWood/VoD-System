@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.ProgressTracker;
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipMetadata;
 import com.ddf.vodsystem.entities.*;
 
 import java.io.File;
@@ -60,8 +60,8 @@ public class ClipService {
      * @throws IOException if an I/O error occurs during file processing.
      * @throws InterruptedException if the thread is interrupted during processing.
      */
-    public void create(VideoMetadata inputMetadata,
-                       VideoMetadata outputMetadata,
+    public void create(ClipMetadata inputMetadata,
+                       ClipMetadata outputMetadata,
                        File inputFile,
                        File outputFile,
                        ProgressTracker progress)
@@ -158,16 +158,16 @@ public class ClipService {
         return user.get().getId().equals(clip.getUser().getId());
     }
 
-    private void persistClip(VideoMetadata videoMetadata,
-                               User user,
-                               File tempFile,
-                               String fileName) {
+    private void persistClip(ClipMetadata videoMetadata,
+                             User user,
+                             File tempFile,
+                             String fileName) {
         // Move clip from temp to output directory
         File clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
         File thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
         directoryService.cutFile(tempFile, clipFile);
 
-        VideoMetadata clipMetadata;
+        ClipMetadata clipMetadata;
         try {
             clipMetadata = metadataService.getVideoMetadata(clipFile).get();
         } catch (InterruptedException | ExecutionException e) {

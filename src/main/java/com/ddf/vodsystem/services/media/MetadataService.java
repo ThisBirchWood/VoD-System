@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipMetadata;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +21,7 @@ public class MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
     @Async("ffmpegTaskExecutor")
-    public Future<VideoMetadata> getVideoMetadata(File file) {
+    public Future<ClipMetadata> getVideoMetadata(File file) {
         logger.info("Getting metadata for file {}", file.getAbsolutePath());
 
         List<String> command = List.of(
@@ -51,7 +51,7 @@ public class MetadataService {
         }
     }
 
-    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
+    public void normalizeVideoMetadata(ClipMetadata inputFileMetadata, ClipMetadata outputFileMetadata) {
         if (outputFileMetadata.getStartPoint() == null) {
             outputFileMetadata.setStartPoint(0f);
         }
@@ -62,8 +62,8 @@ public class MetadataService {
     }
 
 
-    private VideoMetadata parseVideoMetadata(JsonNode node) {
-        VideoMetadata metadata = new VideoMetadata();
+    private ClipMetadata parseVideoMetadata(JsonNode node) {
+        ClipMetadata metadata = new ClipMetadata();
         metadata.setStartPoint(0f);
 
         JsonNode streamNode = extractStreamNode(node);
@@ -125,7 +125,7 @@ public class MetadataService {
         throw new FFMPEGException("ffprobe file size missing");
     }
 
-    private void extractEndPointFromFormat(VideoMetadata metadata, JsonNode formatNode) {
+    private void extractEndPointFromFormat(ClipMetadata metadata, JsonNode formatNode) {
         if (formatNode != null && formatNode.has("duration") && metadata.getEndPoint() == null) {
             metadata.setEndPoint(Float.parseFloat(formatNode.get("duration").asText()));
         }
