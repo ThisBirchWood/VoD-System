@@ -7,8 +7,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1/download")
 public class DownloadController {
     private final DownloadService downloadService;
+    private static final String FILENAME_HEADER = "inline; filename=\"%s\"";
 
     @Autowired
     public DownloadController(DownloadService downloadService) {
@@ -33,7 +32,7 @@ public class DownloadController {
         }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
                 .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
                 .body(resource);
     }
@@ -47,13 +46,13 @@ public class DownloadController {
         }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
                 .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
                 .body(resource);
     }
 
     @GetMapping("/clip/{id}")
-    public ResponseEntity<Resource> downloadClip(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
+    public ResponseEntity<Resource> downloadClip(@PathVariable Long id) {
         Resource resource = downloadService.downloadClip(id);
 
         if (resource == null || !resource.exists()) {
@@ -61,13 +60,13 @@ public class DownloadController {
         }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
                 .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
                 .body(resource);
     }
 
     @GetMapping("/thumbnail/{id}")
-    public ResponseEntity<Resource> downloadThumbnail(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
+    public ResponseEntity<Resource> downloadThumbnail(@PathVariable Long id) {
         Resource resource = downloadService.downloadThumbnail(id);
 
         if (resource == null || !resource.exists()) {
@@ -75,7 +74,7 @@ public class DownloadController {
         }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
                 .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
                 .body(resource);
     }

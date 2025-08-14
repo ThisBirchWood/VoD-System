@@ -3,11 +3,8 @@ package com.ddf.vodsystem.controllers;
 import com.ddf.vodsystem.dto.ClipDTO;
 import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.entities.Clip;
-import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.ClipService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +14,7 @@ import java.util.Optional;
 @RequestMapping("/api/v1/clips")
 public class ClipController {
     private final ClipService clipService;
+    private static final String SUCCESS = "success";
 
     public ClipController(ClipService clipService) {
         this.clipService = clipService;
@@ -30,7 +28,10 @@ public class ClipController {
                 .toList();
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Clips retrieved successfully", clipDTOs)
+                new APIResponse<>(SUCCESS,
+                        "Clips retrieved successfully",
+                        clipDTOs
+                )
         );
     }
 
@@ -44,24 +45,25 @@ public class ClipController {
         ClipDTO clipDTO = convertToDTO(clip.get());
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Clip retrieved successfully", clipDTO)
+                new APIResponse<>(SUCCESS,
+                        "Clip retrieved successfully",
+                        clipDTO
+                )
         );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<APIResponse<String>> deleteClip(@AuthenticationPrincipal OAuth2User principal, @PathVariable Long id) {
-        if (principal == null) {
-            throw new NotAuthenticated("User is not authenticated");
-        }
-
-        boolean deleted = clipService.deleteClip(id);
-
-        if (!deleted) {
+    public ResponseEntity<APIResponse<String>> deleteClip(@PathVariable Long id) {
+        if (!clipService.deleteClip(id)) {
             return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Clip deleted successfully", "Clip with ID " + id + " has been deleted")
+                new APIResponse<>(
+                        SUCCESS,
+                        "Clip deleted successfully",
+                        "Clip with ID " + id + " has been deleted"
+                )
         );
     }
 
