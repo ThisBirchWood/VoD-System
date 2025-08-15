@@ -100,6 +100,7 @@ const ClipEdit = () => {
                 <source src={videoUrl} type="video/mp4" />
                 <source src={videoUrl} type="video/webm" />
                 <source src={videoUrl} type="video/ogg" />
+                <source src={videoUrl} type="video/quicktime" />
                 Your browser does not support the video tag. Bzzzz.
             </video>
 

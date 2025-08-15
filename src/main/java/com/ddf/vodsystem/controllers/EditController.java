@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.JobStatus;
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipMetadata;
 import com.ddf.vodsystem.services.EditService;
 import com.ddf.vodsystem.dto.APIResponse;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +19,8 @@ public class EditController {
     }
 
     @PostMapping("edit/{uuid}")
-    public ResponseEntity<APIResponse<Void>> edit(@PathVariable("uuid") String uuid, @ModelAttribute VideoMetadata videoMetadata) {
-        editService.edit(uuid, videoMetadata);
+    public ResponseEntity<APIResponse<Void>> edit(@PathVariable("uuid") String uuid, @RequestBody ClipMetadata clipMetadata) {
+        editService.edit(uuid, clipMetadata);
         return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Editing started for UUID: " + uuid, null));
     }
 

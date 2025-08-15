@@ -6,12 +6,18 @@ meta {
 
 post {
   url: {{base_url}}/edit/{{uuid}}
-  body: formUrlEncoded
+  body: json
   auth: inherit
 }
 
+body:json {
+  {
+    "startPoint": 10,
+    "endPoint": 20
+  }
+}
+
 body:form-urlencoded {
-  startPoint: 10
-  endPoint: 40
-  title: best possible title
+  startPoint: 130
+  endPoint: 140
 }
