@@ -75,20 +75,12 @@ const uploadFile = async (file: File): Promise<string> => {
  * @param videoMetadata - The metadata to update.
  */
 const editFile = async (uuid: string, videoMetadata: VideoMetadata) => {
-    const formData = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(videoMetadata)) {
-        if (value !== undefined && value !== null) {
-            formData.append(key, value.toString());
-        }
-    }
-
     const response = await fetch(API_URL + `/api/v1/edit/${uuid}`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
         },
-        body: formData.toString(),
+        body: JSON.stringify(videoMetadata)
     });
 
     if (!response.ok) {

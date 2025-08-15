@@ -19,7 +19,7 @@ public class EditController {
     }
 
     @PostMapping("edit/{uuid}")
-    public ResponseEntity<APIResponse<Void>> edit(@PathVariable("uuid") String uuid, @ModelAttribute ClipMetadata clipMetadata) {
+    public ResponseEntity<APIResponse<Void>> edit(@PathVariable("uuid") String uuid, @RequestBody ClipMetadata clipMetadata) {
         editService.edit(uuid, clipMetadata);
         return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Editing started for UUID: " + uuid, null));
     }
