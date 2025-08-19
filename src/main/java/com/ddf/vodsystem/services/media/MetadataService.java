@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +21,7 @@ public class MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
     @Async("ffmpegTaskExecutor")
-    public Future<VideoMetadata> getVideoMetadata(File file) {
+    public Future<ClipOptions> getVideoMetadata(File file) {
         logger.info("Getting metadata for file {}", file.getAbsolutePath());
 
         List<String> command = List.of(
@@ -51,24 +51,24 @@ public class MetadataService {
         }
     }
 
-    public void normalizeVideoMetadata(VideoMetadata inputFileMetadata, VideoMetadata outputFileMetadata) {
+    public void normalizeVideoMetadata(ClipOptions inputFileMetadata, ClipOptions outputFileMetadata) {
         if (outputFileMetadata.getStartPoint() == null) {
             outputFileMetadata.setStartPoint(0f);
         }
 
-        if (outputFileMetadata.getEndPoint() == null) {
-            outputFileMetadata.setEndPoint(inputFileMetadata.getEndPoint());
+        if (outputFileMetadata.getDuration() == null) {
+            outputFileMetadata.setDuration(inputFileMetadata.getDuration());
         }
     }
 
 
-    private VideoMetadata parseVideoMetadata(JsonNode node) {
-        VideoMetadata metadata = new VideoMetadata();
+    private ClipOptions parseVideoMetadata(JsonNode node) {
+        ClipOptions metadata = new ClipOptions();
         metadata.setStartPoint(0f);
 
         JsonNode streamNode = extractStreamNode(node);
 
-        metadata.setEndPoint(extractDuration(streamNode));
+        metadata.setDuration(extractDuration(streamNode));
         metadata.setWidth(getWidth(streamNode));
         metadata.setHeight(getHeight(streamNode));
         metadata.setFps(extractFps(streamNode));
@@ -125,9 +125,9 @@ public class MetadataService {
         throw new FFMPEGException("ffprobe file size missing");
     }
 
-    private void extractEndPointFromFormat(VideoMetadata metadata, JsonNode formatNode) {
-        if (formatNode != null && formatNode.has("duration") && metadata.getEndPoint() == null) {
-            metadata.setEndPoint(Float.parseFloat(formatNode.get("duration").asText()));
+    private void extractEndPointFromFormat(ClipOptions metadata, JsonNode formatNode) {
+        if (formatNode != null && formatNode.has("duration") && metadata.getDuration() == null) {
+            metadata.setDuration(Float.parseFloat(formatNode.get("duration").asText()));
         }
     }
 

@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.services.JobService;
 import org.springframework.http.HttpStatus;
@@ -20,8 +20,8 @@ public class MetadataController {
     }
 
     @GetMapping("/original/{uuid}")
-    public ResponseEntity<APIResponse<VideoMetadata>> getMetadata(@PathVariable String uuid) {
-        VideoMetadata originalMetadata = jobService.getJob(uuid).getInputVideoMetadata();
+    public ResponseEntity<APIResponse<ClipOptions>> getMetadata(@PathVariable String uuid) {
+        ClipOptions originalMetadata = jobService.getJob(uuid).getInputClipOptions();
 
         if (originalMetadata == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -33,8 +33,8 @@ public class MetadataController {
     }
 
     @GetMapping("/converted/{uuid}")
-    public ResponseEntity<APIResponse<VideoMetadata>> getConvertedMetadata(@PathVariable String uuid) {
-        VideoMetadata convertedMetadata = jobService.getJob(uuid).getOutputVideoMetadata();
+    public ResponseEntity<APIResponse<ClipOptions>> getConvertedMetadata(@PathVariable String uuid) {
+        ClipOptions convertedMetadata = jobService.getJob(uuid).getOutputClipOptions();
 
         if (convertedMetadata == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.ProgressTracker;
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.entities.*;
 
 import java.io.File;
@@ -60,8 +60,8 @@ public class ClipService {
      * @throws IOException if an I/O error occurs during file processing.
      * @throws InterruptedException if the thread is interrupted during processing.
      */
-    public void create(VideoMetadata inputMetadata,
-                       VideoMetadata outputMetadata,
+    public void create(ClipOptions inputMetadata,
+                       ClipOptions outputMetadata,
                        File inputFile,
                        File outputFile,
                        ProgressTracker progress)
@@ -158,16 +158,16 @@ public class ClipService {
         return user.get().getId().equals(clip.getUser().getId());
     }
 
-    private void persistClip(VideoMetadata videoMetadata,
-                               User user,
-                               File tempFile,
-                               String fileName) {
+    private void persistClip(ClipOptions clipOptions,
+                             User user,
+                             File tempFile,
+                             String fileName) {
         // Move clip from temp to output directory
         File clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
         File thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
         directoryService.cutFile(tempFile, clipFile);
 
-        VideoMetadata clipMetadata;
+        ClipOptions clipMetadata;
         try {
             clipMetadata = metadataService.getVideoMetadata(clipFile).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -186,13 +186,13 @@ public class ClipService {
         // Save clip to database
         Clip clip = new Clip();
         clip.setUser(user);
-        clip.setTitle(videoMetadata.getTitle() != null ? videoMetadata.getTitle() : "Untitled Clip");
-        clip.setDescription(videoMetadata.getDescription() != null ? videoMetadata.getDescription() : "");
+        clip.setTitle(clipOptions.getTitle() != null ? clipOptions.getTitle() : "Untitled Clip");
+        clip.setDescription(clipOptions.getDescription() != null ? clipOptions.getDescription() : "");
         clip.setCreatedAt(LocalDateTime.now());
         clip.setWidth(clipMetadata.getWidth());
         clip.setHeight(clipMetadata.getHeight());
         clip.setFps(clipMetadata.getFps());
-        clip.setDuration(clipMetadata.getEndPoint() - clipMetadata.getStartPoint());
+        clip.setDuration(clipMetadata.getDuration() - clipMetadata.getStartPoint());
         clip.setFileSize(clipMetadata.getFileSize());
         clip.setVideoPath(clipFile.getPath());
         clip.setThumbnailPath(thumbnailFile.getPath());

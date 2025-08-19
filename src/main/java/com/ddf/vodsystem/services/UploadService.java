@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.Job;
-import com.ddf.vodsystem.dto.VideoMetadata;
+import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.services.media.MetadataService;
 import org.springframework.stereotype.Service;
@@ -46,8 +46,8 @@ public class UploadService {
         // add job
         logger.info("Uploaded file and creating job with UUID: {}", uuid);
 
-        VideoMetadata videoMetadata = getMetadataWithTimeout(inputFile);
-        Job job = new Job(uuid, inputFile, outputFile, videoMetadata);
+        ClipOptions clipOptions = getMetadataWithTimeout(inputFile);
+        Job job = new Job(uuid, inputFile, outputFile, clipOptions);
         jobService.add(job);
 
         return uuid;
@@ -61,7 +61,7 @@ public class UploadService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bb.array());
     }
 
-    private VideoMetadata getMetadataWithTimeout(File file) {
+    private ClipOptions getMetadataWithTimeout(File file) {
         try {
             return metadataService.getVideoMetadata(file).get(5, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
