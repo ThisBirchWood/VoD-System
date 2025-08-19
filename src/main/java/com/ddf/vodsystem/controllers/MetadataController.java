@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.dto.ClipOptions;
+import com.ddf.vodsystem.dto.options.ClipOptions;
 import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.services.JobService;
 import org.springframework.http.HttpStatus;

@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
-import com.ddf.vodsystem.dto.ClipOptions;
+import com.ddf.vodsystem.dto.options.ClipOptions;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

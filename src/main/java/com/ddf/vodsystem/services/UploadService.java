@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.Job;
-import com.ddf.vodsystem.dto.ClipOptions;
+import com.ddf.vodsystem.dto.options.ClipOptions;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.services.media.MetadataService;
 import org.springframework.stereotype.Service;

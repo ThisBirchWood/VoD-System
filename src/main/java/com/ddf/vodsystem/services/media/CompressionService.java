@@ -2,7 +2,7 @@ package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
-import com.ddf.vodsystem.dto.ClipOptions;
+import com.ddf.vodsystem.dto.options.ClipOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;

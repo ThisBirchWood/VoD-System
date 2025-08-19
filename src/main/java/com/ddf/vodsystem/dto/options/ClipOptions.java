@@ -1,6 +1,8 @@
-package com.ddf.vodsystem.dto;
+package com.ddf.vodsystem.dto.options;
 
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class ClipOptions {
@@ -12,4 +14,7 @@ public class ClipOptions {
     private Integer width;
     private Integer height;
     private Float fileSize;
+
+    private Boolean flattenAudio;
+    private List<AudioOptions> audioOptions;
 }

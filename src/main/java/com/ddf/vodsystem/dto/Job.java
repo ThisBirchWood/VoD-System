@@ -1,6 +1,8 @@
 package com.ddf.vodsystem.dto;
 
 import java.io.File;
+
+import com.ddf.vodsystem.dto.options.ClipOptions;
 import lombok.Data;
 
 @Data
