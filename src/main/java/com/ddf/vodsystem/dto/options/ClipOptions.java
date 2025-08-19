@@ -15,6 +15,7 @@ public class ClipOptions {
     private Integer height;
     private Float fileSize;
 
-    private Boolean flattenAudio;
+    // Audio options
+    private Boolean flattenAudio = false;
     private List<AudioOptions> audioOptions;
 }
