@@ -33,7 +33,7 @@ export default function ClipRangeSlider({videoRef,
         setMetadata((prevState: VideoMetadata) => ({
             ...prevState,
             startPoint: val[0],
-            endPoint: val[1]
+            duration: val[1] - val[0]
         }
         ))
         previousRangeSliderInput.current = val;
@@ -42,7 +42,7 @@ export default function ClipRangeSlider({videoRef,
     return (
         <RangeSlider
             min={0}
-            max={videoMetadata.endPoint}
+            max={videoMetadata.duration}
             step={0.1}
             onInput={handleRangeSliderInput}
             className={clsx(className)}

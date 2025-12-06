@@ -37,7 +37,7 @@ public class EditService {
 
     private void validateClipConfig(ClipOptions clipOptions) {
         Float start = clipOptions.getStartPoint();
-        Float end = clipOptions.getDuration();
+        Float duration = clipOptions.getDuration();
         Float fileSize = clipOptions.getFileSize();
         Integer width = clipOptions.getWidth();
         Integer height = clipOptions.getHeight();
@@ -47,12 +47,8 @@ public class EditService {
             throw new IllegalArgumentException("Start point cannot be negative");
         }
 
-        if (end != null && end < 0) {
-            throw new IllegalArgumentException("End point cannot be negative");
-        }
-
-        if (start != null && end != null && end <= start) {
-            throw new IllegalArgumentException("End point must be greater than start point");
+        if (duration != null && duration < 0) {
+            throw new IllegalArgumentException("Duration cannot be negative");
         }
 
         if (fileSize != null && fileSize < 100) {

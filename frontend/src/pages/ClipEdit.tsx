@@ -21,7 +21,7 @@ const ClipEdit = () => {
         title: "",
         description: "",
         startPoint: 0,
-        endPoint: 5,
+        duration: 5,
         width: 1280,
         height: 720,
         fps: 30,

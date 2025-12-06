@@ -15,6 +15,7 @@ export default function PlaybackSlider({videoRef,
                                            sliderValue,
                                            setSliderValue,
                                            className}: Props) {
+
     const updateVideo = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!videoRef) return;
 
@@ -41,7 +42,7 @@ export default function PlaybackSlider({videoRef,
         <input
             type={"range"}
             min={0}
-            max={videoMetadata.endPoint}
+            max={videoMetadata.duration}
             value={sliderValue}
             onChange={updateVideo}
             step={0.1}

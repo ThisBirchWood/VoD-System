@@ -81,11 +81,11 @@ export default function Playbar({ video, videoMetadata, className }: Props) {
             >
                 {isPlaying ? <Pause size={24} /> : <Play size={24} />}
             </button>
-            {videoMetadata.endPoint &&
-                <label>
-                    {formatTime(video?.currentTime ?? 0)} / {formatTime(videoMetadata.endPoint)}
-                </label>
-            }
+
+            <label>
+                {formatTime(video?.currentTime ?? 0)} / {formatTime(videoMetadata.duration ?? 0)}
+            </label>
+
         </div>
     );
 }
