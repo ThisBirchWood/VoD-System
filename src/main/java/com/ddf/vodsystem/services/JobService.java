@@ -2,6 +2,8 @@ package com.ddf.vodsystem.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.ddf.vodsystem.dto.Job;
@@ -75,13 +77,17 @@ public class JobService {
                     job.getInputClipOptions().getDuration())
                     .thenRun(() -> {
                         job.getStatus().getConversion().markComplete();
-                        directoryService.deleteFile(tempFile);
+
+                        try {
+                            Files.deleteIfExists(Paths.get(tempFile.getAbsolutePath()));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     });
         } catch (IOException | InterruptedException e) {
             logger.error("Error converting job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
         }
-
     }
 
     /**

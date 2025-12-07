@@ -6,6 +6,7 @@ import com.ddf.vodsystem.entities.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -175,7 +176,6 @@ public class ClipService {
             throw new FFMPEGException("Error retrieving video metadata for clip: " + e.getMessage());
         }
 
-
         try {
             thumbnailService.createThumbnail(clipFile, thumbnailFile, 0.0f);
         } catch (IOException | InterruptedException e) {
@@ -205,15 +205,11 @@ public class ClipService {
         File clipFile = new File(clip.getVideoPath());
         File thumbnailFile = new File(clip.getThumbnailPath());
 
-        boolean clipDeleted = directoryService.deleteFile(clipFile);
-        boolean thumbnailDeleted = directoryService.deleteFile(thumbnailFile);
-
-        if (!clipDeleted) {
-            throw new FFMPEGException("Failed to delete clip file: " + clipFile.getAbsolutePath());
-        }
-
-        if (!thumbnailDeleted) {
-            throw new FFMPEGException("Failed to delete thumbnail file: " + thumbnailFile.getAbsolutePath());
+        try {
+            Files.deleteIfExists(clipFile.toPath());
+            Files.deleteIfExists(thumbnailFile.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

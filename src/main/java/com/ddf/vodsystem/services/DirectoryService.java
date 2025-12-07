@@ -110,22 +110,6 @@ public class DirectoryService {
         }
     }
 
-    public boolean deleteFile(File file) {
-        if (file == null || !file.exists()) {
-            logger.warn("File does not exist: {}", file);
-            return false;
-        }
-
-        try {
-            Files.delete(file.toPath());
-            logger.debug("Deleted file: {}", file.getAbsolutePath());
-            return true;
-        } catch (IOException e) {
-            logger.error("Error deleting file: {}", e.getMessage());
-            return false;
-        }
-    }
-
     public String getFileExtension(String filePath) {
         Path path = Paths.get(filePath);
         String fileName = path.getFileName().toString();
