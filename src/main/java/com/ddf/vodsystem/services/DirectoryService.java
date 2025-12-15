@@ -29,7 +29,7 @@ public class DirectoryService {
     @Value("${storage.temp.outputs}")
     private String tempOutputsDir;
 
-    private static final long TEMP_DIR_TIMELIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
+    private static final long TEMP_DIR_TIME_LIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
     private static final long TEMP_DIR_CLEANUP_RATE = 30 * 60 * (long) 1000; // 30 minutes
 
     public File getTempInputFile(String filename) {
@@ -140,7 +140,7 @@ public class DirectoryService {
         }
 
         for (File f : files){
-            if (f.isFile() && f.lastModified() < (System.currentTimeMillis() - TEMP_DIR_TIMELIMIT)) {
+            if (f.isFile() && f.lastModified() < (System.currentTimeMillis() - TEMP_DIR_TIME_LIMIT)) {
                 Files.delete(f.toPath());
             }
         }
