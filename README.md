@@ -13,12 +13,14 @@ This VoD system began as a small project back in my 5th year of secondary school
 - JDK 21+
 - Node.js 16+
 - FFMPEG
+- Google Client keys
 ## Steps
-1. Spin up docker container with `docker compose up`
-2. Run `./mvnw clean package` to build the jar
-3. Run `./mvnw spring-boot:run` to run the backend section
-4. Run `cd frontend && npm install && npm run dev` to build and run the frontend
-5. Endpoints should be available at 8080 (backend) and 5173 (frontend)
+1. Create your own two `.env` files based off the `example.env` files in the root and in the frontend folder 
+2. Spin up docker container with `docker compose up`
+3. Run `./mvnw clean package` to build the jar
+4. Run `./mvnw spring-boot:run` to run the backend section
+5. Run `cd frontend && npm install && npm run dev` to build and run the frontend
+6. Endpoints should be available at 8080 (backend) and 5173 (frontend)
 
 # Future Plans
 
