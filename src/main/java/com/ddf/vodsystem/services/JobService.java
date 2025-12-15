@@ -119,10 +119,10 @@ public class JobService {
         try {
             Optional<User> user = userService.getLoggedInUser();
             compressionService.compress(job.getInputFile(), job.getOutputFile(), job.getOutputClipOptions(), job.getStatus().getProcess())
-                    .thenRun(() -> user.ifPresent(value ->
+                    .thenRun(() -> user.ifPresent(userVal ->
                             clipService.persistClip(
                                     job.getOutputClipOptions(),
-                                    value,
+                                    userVal,
                                     job.getOutputFile(),
                                     job.getInputFile().getName()
                             )

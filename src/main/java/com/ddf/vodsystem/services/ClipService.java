@@ -121,6 +121,33 @@ public class ClipService {
         return user.get().getId().equals(clip.getUser().getId());
     }
 
+    /**
+     * Persists a clip to the database
+     * @param options ClipOptions object of the clip metadata to save to the database. All fields required except for title, description
+     * @param user User to save the clip to
+     * @param videoPath Path of the clip
+     * @param thumbnailPath Path of the thumbnail
+     * @return Clip object saved to the database
+     */
+    public Clip saveClip(ClipOptions options,
+                         User user,
+                         String videoPath,
+                         String thumbnailPath) {
+        Clip clip = new Clip();
+        clip.setUser(user);
+        clip.setTitle(options.getTitle() != null ? options.getTitle() : "Untitled Clip");
+        clip.setDescription(options.getDescription() != null ? options.getDescription() : "");
+        clip.setCreatedAt(LocalDateTime.now());
+        clip.setWidth(options.getWidth());
+        clip.setHeight(options.getHeight());
+        clip.setFps(options.getFps());
+        clip.setDuration(options.getDuration() - options.getStartPoint());
+        clip.setFileSize(options.getFileSize());
+        clip.setVideoPath(videoPath);
+        clip.setThumbnailPath(thumbnailPath);
+        return clipRepository.save(clip);
+    }
+
     public void persistClip(ClipOptions clipOptions,
                              User user,
                              File tempFile,
@@ -141,25 +168,14 @@ public class ClipService {
         try {
             thumbnailService.createThumbnail(clipFile, thumbnailFile, 0.0f);
         } catch (IOException | InterruptedException e) {
-            logger.error("Error generating thumbnail for clip: {}", e.getMessage());
+            logger.error("Error generating thumbnail for user: {}, {}", user.getId(), e.getMessage());
             Thread.currentThread().interrupt();
         }
 
-        // Save clip to database
-        Clip clip = new Clip();
-        clip.setUser(user);
-        clip.setTitle(clipOptions.getTitle() != null ? clipOptions.getTitle() : "Untitled Clip");
-        clip.setDescription(clipOptions.getDescription() != null ? clipOptions.getDescription() : "");
-        clip.setCreatedAt(LocalDateTime.now());
-        clip.setWidth(clipMetadata.getWidth());
-        clip.setHeight(clipMetadata.getHeight());
-        clip.setFps(clipMetadata.getFps());
-        clip.setDuration(clipMetadata.getDuration() - clipMetadata.getStartPoint());
-        clip.setFileSize(clipMetadata.getFileSize());
-        clip.setVideoPath(clipFile.getPath());
-        clip.setThumbnailPath(thumbnailFile.getPath());
-        clipRepository.save(clip);
+        clipMetadata.setTitle(clipOptions.getTitle());
+        clipMetadata.setDescription(clipOptions.getDescription());
 
+        Clip clip = saveClip(clipMetadata, user, clipFile.getAbsolutePath(), thumbnailFile.getAbsolutePath());
         logger.info("Clip created successfully with ID: {}", clip.getId());
     }
 
@@ -171,7 +187,7 @@ public class ClipService {
             Files.deleteIfExists(clipFile.toPath());
             Files.deleteIfExists(thumbnailFile.toPath());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.error("Could not delete clip files for clip ID: {}", clip.getId());
         }
     }
 }
