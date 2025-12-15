@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.ddf.vodsystem.dto.Job;
-import com.ddf.vodsystem.exceptions.FFMPEGException;
+import com.ddf.vodsystem.entities.User;
+import com.ddf.vodsystem.services.media.CompressionService;
 import com.ddf.vodsystem.services.media.RemuxService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,16 +29,23 @@ public class JobService {
     private final ClipService clipService;
     private final RemuxService remuxService;
     private final DirectoryService directoryService;
+    private final CompressionService compressionService;
+    private final UserService userService;
 
     /**
      * Constructs a JobService with the given CompressionService.
      * @param clipService the compression service to use for processing jobs
      */
     public JobService(ClipService clipService,
-                      RemuxService remuxService, DirectoryService directoryService) {
+                      RemuxService remuxService,
+                      CompressionService compressionService,
+                      DirectoryService directoryService,
+                      UserService userService) {
         this.clipService = clipService;
         this.remuxService = remuxService;
         this.directoryService = directoryService;
+        this.compressionService = compressionService;
+        this.userService = userService;
     }
 
     /**
@@ -84,7 +94,14 @@ public class JobService {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                    }).whenComplete((ignored, throwable) -> {
+                        if (throwable != null) {
+                            logger.error("Remux failed for jobId={}", job.getUuid(), throwable);
+                        } else {
+                            logger.info("Remux completed for jobId={}", job.getUuid());
+                        }
                     });
+
         } catch (IOException | InterruptedException e) {
             logger.error("Error converting job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
@@ -100,18 +117,25 @@ public class JobService {
         job.getStatus().getProcess().reset();
 
         try {
-            clipService.create(
-                    job.getInputClipOptions(),
-                    job.getOutputClipOptions(),
-                    job.getInputFile(),
-                    job.getOutputFile(),
-                    job.getStatus().getProcess()
-            );
+            Optional<User> user = userService.getLoggedInUser();
+            compressionService.compress(job.getInputFile(), job.getOutputFile(), job.getOutputClipOptions(), job.getStatus().getProcess())
+                    .thenRun(() -> user.ifPresent(value ->
+                            clipService.persistClip(
+                                    job.getOutputClipOptions(),
+                                    value,
+                                    job.getOutputFile(),
+                                    job.getInputFile().getName()
+                            )
+                    )).exceptionally(
+                            ex -> {
+                                job.getStatus().setFailed(true);
+                                return null;
+                            }
+                    );
         } catch (IOException | InterruptedException e) {
+            job.getStatus().setFailed(true);
             logger.error("Error processing job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
-        } catch (FFMPEGException e) {
-            job.getStatus().setFailed(true);
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.ddf.vodsystem.services;
 
-import com.ddf.vodsystem.dto.ProgressTracker;
 import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.entities.*;
 
@@ -15,7 +14,6 @@ import java.util.concurrent.ExecutionException;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.ClipRepository;
-import com.ddf.vodsystem.services.media.CompressionService;
 import com.ddf.vodsystem.services.media.MetadataService;
 import com.ddf.vodsystem.services.media.ThumbnailService;
 import org.slf4j.Logger;
@@ -28,58 +26,20 @@ public class ClipService {
 
     private final ClipRepository clipRepository;
     private final DirectoryService directoryService;
-    private final CompressionService compressionService;
     private final MetadataService metadataService;
     private final ThumbnailService thumbnailService;
     private final UserService userService;
 
     public ClipService(ClipRepository clipRepository,
                        DirectoryService directoryService,
-                       CompressionService compressionService,
                        MetadataService metadataService,
                        ThumbnailService thumbnailService,
                        UserService userService) {
         this.clipRepository = clipRepository;
         this.directoryService = directoryService;
-        this.compressionService = compressionService;
         this.metadataService = metadataService;
         this.thumbnailService = thumbnailService;
         this.userService = userService;
-    }
-
-    /**
-     * Run the clip creation process.
-     * This method normalizes the input metadata, compresses the video file,
-     * updates the output metadata with the file size, and saves the clip
-     * to the database if the user is authenticated.
-     *
-     * @param inputMetadata The metadata of the input video file.
-     * @param outputMetadata The metadata for the output video file.
-     * @param inputFile The input video file to be processed.
-     * @param outputFile The output file where the processed video will be saved.
-     * @param progress A tracker to monitor the progress of the video processing.
-     * @throws IOException if an I/O error occurs during file processing.
-     * @throws InterruptedException if the thread is interrupted during processing.
-     */
-    public void create(ClipOptions inputMetadata,
-                       ClipOptions outputMetadata,
-                       File inputFile,
-                       File outputFile,
-                       ProgressTracker progress)
-            throws IOException, InterruptedException {
-
-        Optional<User> user = userService.getLoggedInUser();
-        metadataService.normalizeVideoMetadata(inputMetadata, outputMetadata);
-        compressionService.compress(inputFile, outputFile, outputMetadata, progress)
-                .thenRun(() -> user.ifPresent(value ->
-                        persistClip(
-                                outputMetadata,
-                                value,
-                                outputFile,
-                                inputFile.getName()
-                        ))).exceptionally(ex -> {
-                            throw new FFMPEGException("FFMPEG Compression failed: " + ex.getMessage());
-                        });
     }
 
     /**
@@ -161,7 +121,7 @@ public class ClipService {
         return user.get().getId().equals(clip.getUser().getId());
     }
 
-    private void persistClip(ClipOptions clipOptions,
+    public void persistClip(ClipOptions clipOptions,
                              User user,
                              File tempFile,
                              String fileName) {
