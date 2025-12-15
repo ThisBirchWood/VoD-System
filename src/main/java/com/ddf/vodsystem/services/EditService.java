@@ -30,7 +30,7 @@ public class EditService {
         jobService.convertJob(job);
     }
 
-    public JobStatus getProgress(String uuid) {
+    public JobStatus getStatus(String uuid) {
         Job job = jobService.getJob(uuid);
         return job.getStatus();
     }

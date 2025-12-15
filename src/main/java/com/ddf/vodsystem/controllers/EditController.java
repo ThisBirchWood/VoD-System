@@ -37,8 +37,8 @@ public class EditController {
     }
 
     @GetMapping("/progress/{uuid}")
-    public ResponseEntity<APIResponse<JobStatus>> getProgress(@PathVariable("uuid") String uuid) {
-        JobStatus status = editService.getProgress(uuid);
-        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Progress for UUID: " + uuid, status));
+    public ResponseEntity<APIResponse<JobStatus>> getStatus(@PathVariable("uuid") String uuid) {
+        JobStatus status = editService.getStatus(uuid);
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Status for UUID: " + uuid, status));
     }
 }
