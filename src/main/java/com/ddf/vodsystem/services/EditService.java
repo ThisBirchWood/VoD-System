@@ -18,16 +18,22 @@ public class EditService {
         Job job = jobService.getJob(uuid);
         validateClipConfig(clipOptions);
         job.setOutputClipOptions(clipOptions);
+
+        logger.info("Job {} - Updated clip config to {}", job.getUuid(), clipOptions);
     }
 
     public void process(String uuid) {
         Job job = jobService.getJob(uuid);
         jobService.processJob(job);
+
+        logger.info("Job {} - Started processing", uuid);
     }
 
     public void convert(String uuid) {
         Job job = jobService.getJob(uuid);
         jobService.convertJob(job);
+
+        logger.info("Job {} - Started converting", uuid);
     }
 
     public JobStatus getStatus(String uuid) {
