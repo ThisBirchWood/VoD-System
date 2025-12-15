@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.ddf.vodsystem.dto.Job;
+import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.services.media.RemuxService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +110,8 @@ public class JobService {
         } catch (IOException | InterruptedException e) {
             logger.error("Error processing job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
+        } catch (FFMPEGException e) {
+            job.getStatus().setFailed(true);
         }
     }
 }

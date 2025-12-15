@@ -77,7 +77,9 @@ public class ClipService {
                                 value,
                                 outputFile,
                                 inputFile.getName()
-                        )));
+                        ))).exceptionally(ex -> {
+                            throw new FFMPEGException("FFMPEG Compression failed: " + ex.getMessage());
+                        });
     }
 
     /**
