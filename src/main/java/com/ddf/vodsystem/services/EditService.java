@@ -3,20 +3,23 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.dto.JobStatus;
 import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.dto.Job;
+import com.ddf.vodsystem.services.media.MetadataService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EditService {
     private final JobService jobService;
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EditService.class);
+    private final MetadataService metadataService;
 
-    public EditService(JobService jobService) {
+    public EditService(JobService jobService, MetadataService metadataService) {
         this.jobService = jobService;
+        this.metadataService = metadataService;
     }
 
     public void edit(String uuid, ClipOptions clipOptions) {
         Job job = jobService.getJob(uuid);
-        validateClipConfig(clipOptions);
+        metadataService.validateMetadata(job.getInputClipOptions(), clipOptions);
         job.setOutputClipOptions(clipOptions);
 
         logger.info("Job {} - Updated clip config to {}", job.getUuid(), clipOptions);
@@ -40,38 +43,4 @@ public class EditService {
         Job job = jobService.getJob(uuid);
         return job.getStatus();
     }
-
-    private void validateClipConfig(ClipOptions clipOptions) {
-        Float start = clipOptions.getStartPoint();
-        Float duration = clipOptions.getDuration();
-        Float fileSize = clipOptions.getFileSize();
-        Integer width = clipOptions.getWidth();
-        Integer height = clipOptions.getHeight();
-        Float fps = clipOptions.getFps();
-
-        if (start != null && start < 0) {
-            throw new IllegalArgumentException("Start point cannot be negative");
-        }
-
-        if (duration != null && duration < 0) {
-            throw new IllegalArgumentException("Duration cannot be negative");
-        }
-
-        if (fileSize != null && fileSize < 100) {
-            throw new IllegalArgumentException("File size cannot be less than 100kb");
-        }
-
-        if (width != null && width < 1) {
-            throw new IllegalArgumentException("Width cannot be less than 1");
-        }
-
-        if (height != null && height < 1) {
-            throw new IllegalArgumentException("Height cannot be less than 1");
-        }
-
-        if (fps != null && fps < 1) {
-            throw new IllegalArgumentException("FPS cannot be less than 1");
-        }
-    }
-
 }

@@ -51,13 +51,44 @@ public class MetadataService {
         }
     }
 
-    public void normalizeVideoMetadata(ClipOptions inputFileMetadata, ClipOptions outputFileMetadata) {
-        if (outputFileMetadata.getStartPoint() == null) {
+    public void validateMetadata(ClipOptions inputFileMetadata, ClipOptions outputFileMetadata) {
+        Float start = outputFileMetadata.getStartPoint();
+        Float duration = outputFileMetadata.getDuration();
+        Float fileSize = outputFileMetadata.getFileSize();
+        Integer width = outputFileMetadata.getWidth();
+        Integer height = outputFileMetadata.getHeight();
+        Float fps = outputFileMetadata.getFps();
+
+        if (start == null) {
             outputFileMetadata.setStartPoint(0f);
         }
 
-        if (outputFileMetadata.getDuration() == null) {
+        if (duration == null) {
             outputFileMetadata.setDuration(inputFileMetadata.getDuration());
+        }
+
+        if (start != null && start < 0) {
+            throw new IllegalArgumentException("Start point cannot be negative");
+        }
+
+        if (duration != null && duration < 0) {
+            throw new IllegalArgumentException("Duration cannot be negative");
+        }
+
+        if (fileSize != null && fileSize < 100) {
+            throw new IllegalArgumentException("File size cannot be less than 100kb");
+        }
+
+        if (width != null && width < 1) {
+            throw new IllegalArgumentException("Width cannot be less than 1");
+        }
+
+        if (height != null && height < 1) {
+            throw new IllegalArgumentException("Height cannot be less than 1");
+        }
+
+        if (fps != null && fps < 1) {
+            throw new IllegalArgumentException("FPS cannot be less than 1");
         }
     }
 
