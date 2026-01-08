@@ -23,10 +23,6 @@ This VoD system began as a small project back in my 5th year of secondary school
 6. Endpoints should be available at 8080 (backend) and 5173 (frontend)
 
 # Future Plans
-
-- **User Management**   
-  - Database integration with authentication and login
-  - Clip saving and management for authenticated users
 - **Format Handling**
   - Backend conversion of non-MP4 files via FFMPEG for broader format support
 - **Input Sources**
