@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
+
   postgres:
     image: postgres:15
-    container_name: my_postgres
+    container_name: vod_postgres
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
@@ -13,6 +12,31 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  backend:
+    build:
+      context: .
+      dockerfile: src/main/Dockerfile
+    container_name: vod_backend
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vod_frontend
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
 
 volumes:
   postgres_data:
