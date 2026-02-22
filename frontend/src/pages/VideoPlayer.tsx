@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import type {Clip} from "../utils/types";
-import {getClipById} from "../utils/endpoints.ts";
+import {getClipById, getVideoBlob  } from "../utils/endpoints.ts";
 import Box from "../components/Box.tsx"
 import {dateToTimeAgo, stringToDate} from "../utils/utils.ts";
 
@@ -13,27 +13,17 @@ const VideoPlayer = () => {
     const [timeAgo, setTimeAgo] = useState<String>("");
 
     useEffect(() => {
-        // Fetch the video URL from the server
-        fetch(`/api/v1/download/clip/${id}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Failed to load video");
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                const url = URL.createObjectURL(blob);
-                setVideoUrl(url);
-            })
-            .catch(err => {
-                console.error("Error fetching video:", err);
-                setError("Failed to load video. Please try again later.");
-            });
-
         if (!id) {
             setError("Clip ID is required.");
             return;
         }
+
+        getVideoBlob(id)
+            .then((blob) => {
+                const url = URL.createObjectURL(blob);
+                setVideoUrl(url);
+            })
+
 
         getClipById(id)
             .then((fetchedClip) => {setClip(fetchedClip)})

@@ -239,6 +239,20 @@ const getClipById = async (id: string): Promise<Clip | null> => {
     }
 };
 
+const getVideoBlob = async(id: string): Promise<Blob> => {
+    const response = await fetch(API_URL + `/api/v1/download/clip/${id}`, {credentials: "include",});
+    
+    if (!response.ok) {
+        throw new Error(`Failed to fetch video: ${id}: ${response.status}`)
+    }
+
+    try {
+        return response.blob();
+    } catch {
+        throw new Error(`Failed to convert Clip Return Object to blob`);
+    }
+}
+
 const isThumbnailAvailable = async (id: number): Promise<boolean> => {
     const response = await fetch(API_URL + `/api/v1/download/thumbnail/${id}`, {credentials: "include"});
     if (!response.ok) {
@@ -260,5 +274,6 @@ export {
     getUser,
     getClips,
     getClipById,
+    getVideoBlob,
     isThumbnailAvailable
 };
