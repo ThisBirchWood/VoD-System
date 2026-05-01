@@ -21,8 +21,8 @@ services:
       - postgres
     env_file:
       - .env
-    ports:
-      - "8080:8080"
+    environment:
+      FRONTEND_URL: http://localhost
     restart: unless-stopped
 
   frontend:
@@ -32,10 +32,23 @@ services:
     container_name: vod_frontend
     env_file:
       - .env
+    environment:
+      VITE_API_URL: ""
     depends_on:
       - backend
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: vod_nginx
+    depends_on:
+      - backend
+      - frontend
     ports:
-      - "5173:5173"
+      - "80:80"
+      - "1935:1935"
     restart: unless-stopped
 
 volumes:
