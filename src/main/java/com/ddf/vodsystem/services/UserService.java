@@ -67,6 +67,10 @@ public class UserService {
         return jwtService.generateToken(user.getId());
     }
 
+    public Optional<User> getUserByStreamKey(String streamKey) {
+        return userRepository.findByStreamKey(streamKey);
+    }
+
     private User createOrUpdateUser(User user) {
         Optional<User> existingUser = userRepository.findByGoogleId(user.getGoogleId());
 
