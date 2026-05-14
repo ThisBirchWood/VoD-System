@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:15
     container_name: vod_postgres
@@ -9,6 +8,8 @@ services:
       POSTGRES_DB: vodSystem
     volumes:
       - ${POSTGRES_DATA}:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
   backend:
     build:
@@ -46,9 +47,6 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: vod_rtmp
-    depends_on:
-      - backend
-      - frontend
     ports:
       - "1935:1935"
     volumes:

@@ -1,0 +1,10 @@
+services:
+  rtmp:
+    extends:
+      file: docker-compose.yml
+      service: rtmp
+
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
