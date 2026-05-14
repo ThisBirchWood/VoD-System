@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS streams;
 DROP TABLE IF EXISTS clips;
 DROP TABLE IF EXISTS users;
 
@@ -10,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     profile_picture_url VARCHAR(255),
     role INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    stream_key VARCHAR(64) NOT NULL
+    stream_key VARCHAR(64)
 );
 
 CREATE TABLE IF NOT EXISTS streams (
@@ -18,11 +19,10 @@ CREATE TABLE IF NOT EXISTS streams (
     user_id BIGSERIAL,
     start_time TIMESTAMPTZ DEFAULT NOW(),
     end_time TIMESTAMPTZ DEFAULT NULL,
-    last_seen TIMESTAMPTZ DEFAULT NULL
-
+    last_seen TIMESTAMPTZ DEFAULT NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS clips (
     id BIGSERIAL PRIMARY KEY,

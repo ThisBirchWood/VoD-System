@@ -21,6 +21,8 @@ services:
       - .env
     environment:
       FRONTEND_URL: http://localhost
+    ports:
+      - "8080:8080"
     restart: unless-stopped
 
   frontend:
@@ -35,18 +37,19 @@ services:
       VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     depends_on:
       - backend
+    ports:
+      - "1935:1935"
     restart: unless-stopped
 
-  nginx:
+  rtmp:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: vod_nginx
+    container_name: vod_rtmp
     depends_on:
       - backend
       - frontend
     ports:
-      - "80:80"
       - "1935:1935"
     volumes:
       - ${STREAM_DATA}:/stream
