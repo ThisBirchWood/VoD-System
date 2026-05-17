@@ -3,9 +3,9 @@ services:
     image: postgres:15
     container_name: vod_postgres
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: vodSystem
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ${POSTGRES_DATA}:/var/lib/postgresql/data
     ports:
@@ -21,7 +21,8 @@ services:
     env_file:
       - .env
     environment:
-      FRONTEND_URL: http://localhost
+      FRONTEND_URL: http://localhost:5173
+      SPRING_PROFILES_ACTIVE: dev
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -31,15 +32,13 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: vod_frontend
-    env_file:
-      - .env
     environment:
-      VITE_API_URL: ""
+      VITE_API_URL: "http://localhost:8080"
       VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     depends_on:
       - backend
     ports:
-      - "1935:1935"
+      - "5173:5173"
     restart: unless-stopped
 
   rtmp:
