@@ -21,7 +21,6 @@ services:
     env_file:
       - .env
     environment:
-      FRONTEND_URL: http://localhost:5173
       SPRING_PROFILES_ACTIVE: dev
       MEDIA_DATA: /app/data/media
     volumes:
@@ -49,8 +48,11 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: vod_rtmp
+    environment:
+      - WEB_SERVER_URL=http://backend:8080
     ports:
       - "1935:1935"
     volumes:
       - ${STREAM_DATA}:/stream
+    pull_policy: build
     restart: unless-stopped
