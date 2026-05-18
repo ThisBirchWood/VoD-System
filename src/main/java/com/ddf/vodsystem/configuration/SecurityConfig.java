@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/upload", "/api/v1/download/**").permitAll()
                         .requestMatchers("/api/v1/edit/**", "/api/v1/process/**", "/api/v1/progress/**", "/api/v1/convert/**").permitAll()
                         .requestMatchers("/api/v1/metadata/**").permitAll()
+                        .requestMatchers("/api/v1/stream/start", "/api/v1/stream/stop", "/api/v1/stream/heartbeat").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

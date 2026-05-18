@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     profile_picture_url VARCHAR(255),
     role INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    stream_key VARCHAR(64)
+    stream_key VARCHAR(64) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS streams (

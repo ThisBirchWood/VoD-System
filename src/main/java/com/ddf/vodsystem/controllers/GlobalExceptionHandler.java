@@ -1,9 +1,11 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.APIResponse;
+import com.ddf.vodsystem.exceptions.AlreadyStreaming;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.JobNotFinished;
 import com.ddf.vodsystem.exceptions.JobNotFound;
+import com.ddf.vodsystem.exceptions.KeyNotFound;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -75,5 +77,19 @@ public class GlobalExceptionHandler {
         logger.error("NotAuthenticated: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(KeyNotFound.class)
+    public ResponseEntity<APIResponse<Void>> handleKeyNotFound(KeyNotFound ex) {
+        logger.error("KeyNotFound: {}", ex.getMessage());
+        APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(AlreadyStreaming.class)
+    public ResponseEntity<APIResponse<Void>> handleAlreadyStreaming(AlreadyStreaming ex) {
+        logger.error("AlreadyStreaming: {}", ex.getMessage());
+        APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 }

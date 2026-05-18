@@ -1,11 +1,9 @@
 FROM tiangolo/nginx-rtmp
 
 RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
+COPY default.conf.template /etc/nginx/templates/default.conf.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-COPY nginx.conf /etc/nginx/nginx.conf.template
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
-EXPOSE 1935
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
