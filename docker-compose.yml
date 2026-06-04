@@ -22,7 +22,6 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      MEDIA_DATA: /app/data/media
     volumes:
       - ${MEDIA_DATA}:/app/data/media
     ports:
@@ -56,3 +55,5 @@ services:
       - ${STREAM_DATA}:/stream
     pull_policy: build
     restart: unless-stopped
+    depends_on:
+      - backend
