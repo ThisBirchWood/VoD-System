@@ -5,6 +5,7 @@ import com.ddf.vodsystem.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,4 +13,5 @@ import java.util.Optional;
 public interface StreamRepository extends JpaRepository<Stream, Long> {
     Optional<Stream> findByUserAndEndDateIsNull(User user);
     List<Stream> findByUser(User user);
+    List<Stream> findByEndDateIsNullAndLastSeenBefore(LocalDateTime cutoff);
 }
