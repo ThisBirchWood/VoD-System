@@ -17,8 +17,11 @@ type APIResponse = {
 
 type User = {
     name: string,
+    username: string,
     email: string,
-    profilePictureUrl: string
+    profilePictureUrl: string,
+    streamKey: string,
+    createdAt: string,
 }
 
 type Clip = {

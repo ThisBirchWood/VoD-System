@@ -20,8 +20,6 @@ services:
       - postgres
     env_file:
       - .env
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
     volumes:
       - ${MEDIA_DATA}:/app/data/media
     ports:
