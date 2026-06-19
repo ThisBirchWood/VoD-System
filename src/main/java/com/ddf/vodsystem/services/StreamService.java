@@ -3,7 +3,6 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.entities.Stream;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.AlreadyStreaming;
-import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.KeyNotFound;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.StreamRepository;
@@ -32,6 +31,7 @@ public class StreamService {
 
     private static final int HEARTBEAT_TIMEOUT_SECONDS = 60;
     private static final float CLIP_MAX_LENGTH = 180;
+    private static final int HLS_SEGMENT_LENGTH = 3;
 
     private final StreamRepository streamRepository;
     private final UserService userService;
@@ -91,9 +91,20 @@ public class StreamService {
     }
 
     public List<Stream> getStreamHistory(Long userId) {
-        User user = userService.getUserById(userId)
+        User streamUser = userService.getUserById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-        return streamRepository.findByUser(user);
+
+        Optional<User> user = userService.getLoggedInUser();
+
+        if (user.isEmpty()) {
+            throw new NotAuthenticated("Log in to see user streams");
+        }
+
+        if (!user.get().equals(streamUser)) {
+            throw new NotAuthenticated("You are not authenticated to see these user streams");
+        }
+
+        return streamRepository.findByUser(streamUser);
     }
 
     /**
@@ -108,7 +119,6 @@ public class StreamService {
      * @throws IllegalArgumentException if {@code startTime} is not before {@code endTime},
      *                                  or if no stream segments exist in the given range
      * @throws NotAuthenticated         if no user is currently authenticated
-     * @throws FFMPEGException          if the underlying FFMPEG save operation fails
      * @throws IOException              if reading the stream directory or its segments fails
      * @throws InterruptedException     if the thread is interrupted while performing the save
      */
@@ -131,10 +141,7 @@ public class StreamService {
         float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
         float duration = (endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000f;
 
-        streamActionsService.saveSection(fileSegments, trimOffset, duration)
-                .exceptionally(ex -> {
-                    throw new FFMPEGException("Saving stream section failed due to FFMPEG Error");
-                });
+        streamActionsService.saveSection(fileSegments, trimOffset, duration);
     }
 
     /**
@@ -149,7 +156,6 @@ public class StreamService {
      * @throws IllegalArgumentException if {@code duration} is not in the range {@code (0, CLIP_MAX_LENGTH]},
      *                                  or if no stream segments exist in the computed window
      * @throws NotAuthenticated         if no user is currently authenticated
-     * @throws FFMPEGException          if the underlying FFMPEG save operation fails
      * @throws IOException              if reading the stream directory or its segments fails
      * @throws InterruptedException     if the thread is interrupted while performing the save
      */
@@ -196,7 +202,7 @@ public class StreamService {
         return Arrays.stream(tsFiles)
                 .filter(f -> {
                     long segMs = parseTimestampMs(f);
-                    return segMs < endMs && (segMs + 3_000) > startMs;
+                    return segMs < endMs && (segMs + HLS_SEGMENT_LENGTH * 1000) > startMs;
                 })
                 .sorted(Comparator.comparingLong(this::parseTimestampMs))
                 .collect(Collectors.toList());
