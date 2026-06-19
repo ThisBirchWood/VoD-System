@@ -196,7 +196,7 @@ public class StreamService {
         return Arrays.stream(tsFiles)
                 .filter(f -> {
                     long segMs = parseTimestampMs(f);
-                    return segMs < endMs && segMs > startMs;
+                    return segMs < endMs && (segMs + 3_000) > startMs;
                 })
                 .sorted(Comparator.comparingLong(this::parseTimestampMs))
                 .collect(Collectors.toList());
