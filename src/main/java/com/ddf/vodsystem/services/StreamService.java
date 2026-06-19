@@ -96,6 +96,22 @@ public class StreamService {
         return streamRepository.findByUser(user);
     }
 
+    /**
+     * Saves a clip of the currently authenticated user's stream between two points in time.
+     * <p>
+     * Locates the recorded {@code .ts} segments overlapping the requested window, computes the
+     * trim offset into the first (partially-overlapping) segment and the total clip duration,
+     * then delegates the actual extraction to {@link StreamActionsService#saveSection}.
+     *
+     * @param startTime the inclusive start of the section to save; must be before {@code endTime}
+     * @param endTime   the exclusive end of the section to save
+     * @throws IllegalArgumentException if {@code startTime} is not before {@code endTime},
+     *                                  or if no stream segments exist in the given range
+     * @throws NotAuthenticated         if no user is currently authenticated
+     * @throws FFMPEGException          if the underlying FFMPEG save operation fails
+     * @throws IOException              if reading the stream directory or its segments fails
+     * @throws InterruptedException     if the thread is interrupted while performing the save
+     */
     public void saveSection(Instant startTime, Instant endTime) throws IOException, InterruptedException {
         if (startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("Start time must be before end time");
@@ -121,32 +137,32 @@ public class StreamService {
                 });
     }
 
+    /**
+     * Saves a clip of the last {@code duration} seconds of the currently authenticated user's stream.
+     * <p>
+     * Computes a time window ending at the current instant and beginning {@code duration} seconds
+     * earlier (with millisecond precision), then delegates to {@link #saveSection(Instant, Instant)}.
+     *
+     * @param duration the length of the clip in seconds, measured back from now; must be greater
+     *                 than {@code 0} and no greater than {@link #CLIP_MAX_LENGTH}. Fractional values
+     *                 are supported and resolved to the millisecond.
+     * @throws IllegalArgumentException if {@code duration} is not in the range {@code (0, CLIP_MAX_LENGTH]},
+     *                                  or if no stream segments exist in the computed window
+     * @throws NotAuthenticated         if no user is currently authenticated
+     * @throws FFMPEGException          if the underlying FFMPEG save operation fails
+     * @throws IOException              if reading the stream directory or its segments fails
+     * @throws InterruptedException     if the thread is interrupted while performing the save
+     */
     public void clip(float duration) throws IOException, InterruptedException {
         if (duration <= 0 || duration > CLIP_MAX_LENGTH) {
             throw new IllegalArgumentException("Clip length must be between 0 and " + CLIP_MAX_LENGTH + " seconds");
         }
 
-        User user = userService.getLoggedInUser()
-                .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
-
-        Instant endTime = Instant.now();
         // minusSeconds() is possible, but only does integer seconds, not float
-        Instant startTime = Instant.now().minus(Duration.ofMillis((long) (duration * 1000)));
+        Instant endTime = Instant.now();
+        Instant startTime = endTime.minus(Duration.ofMillis((long) (duration * 1000)));
 
-        String streamDirectory = streamDataPath + File.separator + user.getStreamKey();
-        List<File> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
-
-        if (fileSegments.isEmpty()) {
-            throw new IllegalArgumentException("No stream segments found in the given time range");
-        }
-
-        long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
-        float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
-
-        streamActionsService.saveSection(fileSegments, trimOffset, duration)
-                .exceptionally(ex -> {
-                    throw new FFMPEGException("Saving stream section failed due to FFMPEG Error");
-                });
+        saveSection(startTime, endTime);
     }
 
     @Scheduled(fixedDelay = 30_000)
@@ -180,7 +196,7 @@ public class StreamService {
         return Arrays.stream(tsFiles)
                 .filter(f -> {
                     long segMs = parseTimestampMs(f);
-                    return segMs < endMs && segMs + 3_000 > startMs;
+                    return segMs < endMs && segMs > startMs;
                 })
                 .sorted(Comparator.comparingLong(this::parseTimestampMs))
                 .collect(Collectors.toList());
