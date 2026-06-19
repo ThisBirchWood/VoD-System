@@ -50,7 +50,7 @@ public class StreamController {
     public ResponseEntity<APIResponse<Void>> saveSection(
             @RequestBody SaveSectionRequest request) throws IOException, InterruptedException {
         streamService.saveSection(request.startTime(), request.endTime());
-        return ResponseEntity.ok(new APIResponse<>("success", "Section saved", null));
+        return ResponseEntity.accepted().body(new APIResponse<>("success", "Section saved", null));
     }
 
     @GetMapping("/history/{userId}")

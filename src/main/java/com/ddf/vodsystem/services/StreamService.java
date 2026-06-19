@@ -3,6 +3,7 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.entities.Stream;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.AlreadyStreaming;
+import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.KeyNotFound;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.repositories.StreamRepository;
@@ -18,9 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class StreamService {
@@ -91,14 +94,27 @@ public class StreamService {
     }
 
     public void saveSection(Instant startTime, Instant endTime) throws IOException, InterruptedException {
+        if (startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
         User user = userService.getLoggedInUser()
                 .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
 
         String streamDirectory = streamDataPath + File.separator + user.getStreamKey();
-        streamActionsService.saveSection(streamDirectory, startTime, endTime)
+        List<File> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
+
+        if (fileSegments.isEmpty()) {
+            throw new IllegalArgumentException("No stream segments found in the given time range");
+        }
+
+        long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
+        float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
+        float duration = (endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000f;
+
+        streamActionsService.saveSection(fileSegments, trimOffset, duration)
                 .exceptionally(ex -> {
-                    logger.error("saveSection failed for user {}: {}", user.getUsername(), ex.getMessage(), ex);
-                    return null;
+                    throw new FFMPEGException("Saving stream section failed due to FFMPEG Error");
                 });
     }
 
@@ -120,5 +136,29 @@ public class StreamService {
     private User resolveUser(String streamKey) {
         return userService.getUserByStreamKey(streamKey)
                 .orElseThrow(() -> new KeyNotFound("Stream key not found: " + streamKey));
+    }
+
+    private List<File> getSegmentsInRange(String streamDirectory, Instant startTime, Instant endTime) {
+        File dir = new File(streamDirectory);
+        File[] tsFiles = dir.listFiles((d, name) -> name.endsWith(".ts"));
+        if (tsFiles == null) return List.of();
+
+        long startMs = startTime.toEpochMilli();
+        long endMs = endTime.toEpochMilli();
+
+        return Arrays.stream(tsFiles)
+                .filter(f -> {
+                    long segMs = parseTimestampMs(f);
+                    return segMs < endMs && segMs + 3_000 > startMs;
+                })
+                .sorted(Comparator.comparingLong(this::parseTimestampMs))
+                .collect(Collectors.toList());
+    }
+
+    private long parseTimestampMs(File file) {
+        String name = file.getName().replace(".ts", "");
+        long value = Long.parseLong(name);
+        // nginx hls_fragment_naming system uses seconds; convert to ms
+        return value < 1_000_000_000_000L ? value * 1000L : value;
     }
 }
