@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -28,7 +29,9 @@ import java.util.stream.Collectors;
 @Service
 public class StreamService {
     private static final Logger logger = LoggerFactory.getLogger(StreamService.class);
+
     private static final int HEARTBEAT_TIMEOUT_SECONDS = 60;
+    private static final float CLIP_MAX_LENGTH = 180;
 
     private final StreamRepository streamRepository;
     private final UserService userService;
@@ -111,6 +114,34 @@ public class StreamService {
         long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
         float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
         float duration = (endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000f;
+
+        streamActionsService.saveSection(fileSegments, trimOffset, duration)
+                .exceptionally(ex -> {
+                    throw new FFMPEGException("Saving stream section failed due to FFMPEG Error");
+                });
+    }
+
+    public void clip(float duration) throws IOException, InterruptedException {
+        if (duration <= 0 || duration > CLIP_MAX_LENGTH) {
+            throw new IllegalArgumentException("Clip length must be between 0 and " + CLIP_MAX_LENGTH + " seconds");
+        }
+
+        User user = userService.getLoggedInUser()
+                .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
+
+        Instant endTime = Instant.now();
+        // minusSeconds() is possible, but only does integer seconds, not float
+        Instant startTime = Instant.now().minus(Duration.ofMillis((long) (duration * 1000)));
+
+        String streamDirectory = streamDataPath + File.separator + user.getStreamKey();
+        List<File> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
+
+        if (fileSegments.isEmpty()) {
+            throw new IllegalArgumentException("No stream segments found in the given time range");
+        }
+
+        long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
+        float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
 
         streamActionsService.saveSection(fileSegments, trimOffset, duration)
                 .exceptionally(ex -> {

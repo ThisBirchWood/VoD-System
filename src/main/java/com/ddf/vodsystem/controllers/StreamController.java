@@ -1,7 +1,8 @@
 package com.ddf.vodsystem.controllers;
 
+import com.ddf.vodsystem.controllers.input.ClipSectionRequest;
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.dto.SaveSectionRequest;
+import com.ddf.vodsystem.controllers.input.SaveSectionRequest;
 import com.ddf.vodsystem.entities.Stream;
 import com.ddf.vodsystem.services.StreamService;
 import org.slf4j.Logger;
@@ -51,6 +52,13 @@ public class StreamController {
             @RequestBody SaveSectionRequest request) throws IOException, InterruptedException {
         streamService.saveSection(request.startTime(), request.endTime());
         return ResponseEntity.accepted().body(new APIResponse<>("success", "Section saved", null));
+    }
+
+    @PostMapping("/clip")
+    public ResponseEntity<APIResponse<Void>> saveClip(
+            @RequestBody ClipSectionRequest request) throws IOException, InterruptedException {
+        streamService.clip(request.duration());
+        return ResponseEntity.accepted().body(new APIResponse<>("success", "Clip saved", null));
     }
 
     @GetMapping("/history/{userId}")
