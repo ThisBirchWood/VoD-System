@@ -1,0 +1,22 @@
+meta {
+  name: Save Clip
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/stream/clip
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "duration": 60
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
