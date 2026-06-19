@@ -11,12 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
     profile_picture_url VARCHAR(255),
     role INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    stream_key VARCHAR(64) NOT NULL
+    stream_key VARCHAR(64) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS streams (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGSERIAL,
+    user_id BIGINT,
     start_time TIMESTAMPTZ DEFAULT NOW(),
     end_time TIMESTAMPTZ DEFAULT NULL,
     last_seen TIMESTAMPTZ DEFAULT NULL,

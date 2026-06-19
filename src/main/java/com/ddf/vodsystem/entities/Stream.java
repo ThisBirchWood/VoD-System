@@ -20,10 +20,10 @@ public class Stream {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "start_date")
+    @Column(name = "start_time")
     private LocalDateTime startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "end_time")
     private LocalDateTime endDate;
 
     @Column(name = "last_seen")

@@ -26,7 +26,6 @@ services:
       - WEB_SERVER_URL=http://host.docker.internal:8080
     ports:
       - "1935:1935"
-      - "8088:8088"
     volumes:
       - ${STREAM_DATA}:/stream
     pull_policy: build
