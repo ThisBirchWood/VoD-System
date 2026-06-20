@@ -8,10 +8,8 @@ type MetadataBoxProps = {
 
 const MetadataBox = ({setMetadata, className}: MetadataBoxProps) => {
     return (
-        <div className={clsx("flex flex-col content-between p-10 gap-2", className)}>
-            {/*<h2 className={"text-2xl font-bold col-span-2"}>Metadata</h2>*/}
-
-            <p className={"w-full font-bold text-xl "}>Title</p>
+        <div className={clsx("flex flex-col content-between p-6 gap-2", className)}>
+            <p className="w-full font-semibold text-gray-800 text-sm">Title</p>
             <input
                 type="text"
                 placeholder="Enter title"
@@ -19,7 +17,7 @@ const MetadataBox = ({setMetadata, className}: MetadataBoxProps) => {
                     ...prevState,
                     title: e.target.value
                 }))}
-                className={"border-black bg-gray-200 rounded-md w-full p-2"}
+                className="border border-gray-300 bg-white rounded-md w-full p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
             />
         </div>
     )

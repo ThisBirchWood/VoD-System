@@ -77,7 +77,7 @@ export default function Playbar({ video, videoMetadata, className }: Props) {
             </div>
             <button
                 onClick={togglePlay}
-                className={"hover:bg-gray-300 rounded-full p-1"}
+                className={"hover:bg-gray-100 rounded-full p-1.5 transition-colors duration-150 text-gray-700"}
             >
                 {isPlaying ? <Pause size={24} /> : <Play size={24} />}
             </button>

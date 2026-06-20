@@ -56,7 +56,7 @@ const Topbar = ({
     }
 
     return (
-        <div className={clsx(className, "flex justify-between")}>
+        <div className={clsx(className, "flex justify-between items-center px-4 py-2 bg-white border-b border-gray-200")}>
             <MenuButton onClick={() => setSidebarToggled(!sidebarToggled)}>
                 {sidebarToggled ? <Menu size={24}/> :  <X size={24}/>}
             </MenuButton>

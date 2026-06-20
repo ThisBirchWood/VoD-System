@@ -34,7 +34,7 @@ const MainLayout = () => {
                 setSidebarToggled={setSidebarToggled}
                 user={user}
                 fetchUser={fetchUser}/>
-            <div className="overflow-auto">
+            <div className="overflow-auto bg-background">
                 <Outlet />
             </div>
         </div>

@@ -9,7 +9,7 @@ type DropdownItemProps = {
 
 const DropdownItem = ({ item, onClick, className }: DropdownItemProps) => {
     return (
-        <li className={clsx(className, "cursor-pointer hover:bg-gray-100 px-4 py-2 align-middle")}
+        <li className={clsx("cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm text-gray-700", className)}
             onClick={() => onClick(item)}
         >
             {item}
@@ -49,12 +49,12 @@ const Dropdown = ({ label, children, className }: DropdownProps) => {
             ref={ref}>
             <button
                 onClick={toggleDropdown}
-                className={"inline-flex justify-between w-full rounded-xl px-4 py-2 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50"}
+                className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-150"
             >
                 {label}
             </button>
             {isOpen && (
-                <ul className={"absolute w-30 origin-top-right rounded-md bg-white shadow-lg font-medium"}>
+                <ul className="absolute right-0 mt-1 w-36 origin-top-right rounded-lg bg-white border border-gray-200 shadow-md z-50 py-1 overflow-hidden">
                     {children}
                 </ul>
             )}

@@ -40,41 +40,24 @@ const VideoCard = ({
             });
     }, []);
 
-
     return (
         <Link to={"/video/" + id}>
-            <div className={clsx("flex flex-col", className)}>
-                <div className={"relative inline-block"}>
+            <div className={clsx("flex flex-col group cursor-pointer", className)}>
+                <div className="relative overflow-hidden rounded-lg">
                     <img
                         src={thumbnailAvailable ? API_URL + `/api/v1/download/thumbnail/${id}` : fallbackThumbnail}
                         alt="Video Thumbnail"
+                        className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-200"
                     />
-
-                    <p className="
-                            absolute
-                            top-2
-                            left-2
-                            bg-black bg-opacity-60
-                            text-white
-                            px-2
-                            py-1
-                            rounded
-                            pointer-events-none
-                            text-sm
-                            z-1
-                          ">
+                    <span className="absolute top-1.5 left-1.5 bg-black/70 text-white px-1.5 py-0.5 rounded text-xs font-medium pointer-events-none">
                         {formatTime(duration)}
-                    </p>
+                    </span>
                 </div>
-
-
-                <div className={"flex flex-col justify-between p-2"}>
-                    <p>{title == "" ? "(No Title)" : title}</p>
-                    <p
-                        className={"text-gray-600 text-sm"}
-                    >
-                        {timeAgo}
+                <div className="flex flex-col p-2">
+                    <p className="font-medium text-gray-900 text-sm leading-snug line-clamp-2">
+                        {title === "" ? "(No Title)" : title}
                     </p>
+                    <p className="text-gray-500 text-xs mt-0.5">{timeAgo}</p>
                 </div>
             </div>
         </Link>

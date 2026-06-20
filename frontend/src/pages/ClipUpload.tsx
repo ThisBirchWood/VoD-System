@@ -38,20 +38,16 @@ const ClipUpload = () => {
             return;
         }
 
-
         uploadFile(file)
             .then(uuid => {
-
                 if (isVideoFileSupported(file)) {
                     navigate(`/create/${uuid}`)
                 } else {
                     convertFile(uuid);
                     const interval = setInterval(async() => await pollProgress(uuid, interval), 500);
                 }
-
             })
             .catch((e: Error) => setError(`Failed to upload file: ${e.message}`));
-
     });
 
     const pollProgress = async (id: string, intervalId: number) => {
@@ -71,27 +67,27 @@ const ClipUpload = () => {
     }
 
     return (
-        <Box className={"flex flex-col justify-between gap-3 p-5"}>
-            <input
-                type="file"
-                onChange={(e) => {
-                    const selected = e.target.files?.[0] ?? null;
-                    setFile(selected);
-                }}
-                className={"h-100 cursor-pointer rounded-lg border border-dashed border-gray-400 bg-white p-4 text-center hover:bg-gray-50 transition"}
-            />
+        <div className="flex items-start justify-center p-8 min-h-full">
+            <Box className="flex flex-col gap-4 p-6 w-full max-w-md">
+                <h1 className="text-lg font-semibold text-gray-900">Upload Clip</h1>
 
-            <BlueButton
-                onClick={press}>
-                Upload
-            </BlueButton>
+                <input
+                    type="file"
+                    onChange={(e) => {
+                        const selected = e.target.files?.[0] ?? null;
+                        setFile(selected);
+                        setError(null);
+                    }}
+                    className="h-36 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center text-sm text-gray-500 hover:bg-gray-100 hover:border-primary transition-colors duration-150"
+                />
 
-            <label className={"text-center text-red-500"}>{error}</label>
-            <progress
-                value={progress}
-                className={"bg-gray-300 rounded-lg h-1"}>
-            </progress>
-        </Box>
+                <BlueButton onClick={press}>Upload</BlueButton>
+
+                {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+
+                <progress value={progress} className="w-full h-1 rounded bg-gray-200" />
+            </Box>
+        </div>
     )
 };
 

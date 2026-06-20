@@ -95,10 +95,10 @@ const ClipEdit = () => {
     }, [id]);
 
     return (
-        <div className={"grid grid-cols-[7fr_3fr]"}>
+        <div className={"grid grid-cols-[7fr_3fr] gap-4 p-4"}>
             <video
                    ref={videoRef}
-                   className={"w-full rounded-lg shadow-lg border border-gray-300 bg-black m-auto"}>
+                   className={"w-full rounded-lg shadow-sm bg-black"}>
                 <source src={videoUrl} type="video/mp4" />
                 <source src={videoUrl} type="video/webm" />
                 <source src={videoUrl} type="video/ogg" />

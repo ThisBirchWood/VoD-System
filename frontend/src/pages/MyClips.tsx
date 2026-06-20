@@ -14,18 +14,29 @@ const MyClips = () => {
     }, []);
 
     return (
-        <div className={"flex flex-row"}>
-            {clips.map((clip) => (
-                <VideoCard
-                    id={clip.id}
-                    title={clip.title}
-                    duration={clip.duration}
-                    createdAt={clip.createdAt}
-                    className={"w-40 m-5"}
-                />
-            ))}
+        <div className="p-6">
+            <h1 className="text-2xl font-semibold text-gray-900 mb-6">My Clips</h1>
 
-            {error}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {clips.map((clip) => (
+                    <VideoCard
+                        key={clip.id}
+                        id={clip.id}
+                        title={clip.title}
+                        duration={clip.duration}
+                        createdAt={clip.createdAt}
+                    />
+                ))}
+            </div>
+
+            {clips.length === 0 && !error && (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <p className="text-base">No clips yet.</p>
+                    <p className="text-sm mt-1">Upload your first clip to get started.</p>
+                </div>
+            )}
+
+            {error && <p className="text-sm text-red-500 mt-4">{error.toString()}</p>}
         </div>
     );
 }
