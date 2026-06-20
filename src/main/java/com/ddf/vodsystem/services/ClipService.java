@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.ClipOptions;
-import com.ddf.vodsystem.dto.ClipUpdateRequest;
+import com.ddf.vodsystem.controllers.dto.ClipUpdateRequest;
 import com.ddf.vodsystem.entities.*;
 
 import java.io.File;

@@ -1,8 +1,8 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.controllers.input.ClipSectionRequest;
+import com.ddf.vodsystem.controllers.dto.ClipSectionRequest;
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.controllers.input.SaveSectionRequest;
+import com.ddf.vodsystem.controllers.dto.SaveSectionRequest;
 import com.ddf.vodsystem.entities.Stream;
 import com.ddf.vodsystem.services.StreamService;
 import org.slf4j.Logger;

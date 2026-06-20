@@ -1,4 +1,4 @@
-package com.ddf.vodsystem.dto;
+package com.ddf.vodsystem.controllers.dto;
 
 public record ClipUpdateRequest (
         String title,

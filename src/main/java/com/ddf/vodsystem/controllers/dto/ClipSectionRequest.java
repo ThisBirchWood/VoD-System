@@ -1,4 +1,4 @@
-package com.ddf.vodsystem.controllers.input;
+package com.ddf.vodsystem.controllers.dto;
 
 import jakarta.validation.constraints.NotNull;
 
