@@ -1,11 +1,11 @@
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from "react";
 import Playbar from "./../components/video/Playbar";
 import PlaybackSlider from "./../components/video/PlaybackSlider";
 import ClipRangeSlider from "./../components/video/ClipRangeSlider";
 import ConfigBox from "../components/video/ConfigBox.tsx";
 import ExportWidget from "../components/video/ExportWidget.tsx";
-import {editFile, getMetadata, processFile, getProgress} from "../utils/endpoints"
+import { editFile, processFile, getProgress, uploadFile } from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
 import MetadataBox from "../components/video/MetadataBox.tsx";
@@ -13,13 +13,16 @@ import MetadataBox from "../components/video/MetadataBox.tsx";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ClipEdit = () => {
-    const { id } = useParams();
+    const location = useLocation();
+    const localFile: File = location.state?.file;
+
     const videoRef = useRef<HTMLVideoElement | null>(null);
-    const videoUrl = API_URL + `/api/v1/download/input/${id}`
+    const [videoUrl, setVideoUrl] = useState<string>('');
+    const [uploadedId, setUploadedId] = useState<string | null>(null);
+
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
     const [outputMetadata, setOutputMetadata] = useState<VideoMetadata>({
-        // default values
         title: "",
         description: "",
         startPoint: 0,
@@ -33,20 +36,47 @@ const ClipEdit = () => {
     const [downloadable, setDownloadable] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const sendData = async() => {
-        if (!id) return;
+    useEffect(() => {
+        if (!localFile) return;
+        const url = URL.createObjectURL(localFile);
+        setVideoUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [localFile]);
 
-        editFile(id, outputMetadata)
-            .then(() => {
+    const handleVideoMetadataLoaded = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        setMetadata({
+            title: '',
+            description: '',
+            startPoint: 0,
+            duration: video.duration,
+            width: video.videoWidth,
+            height: video.videoHeight,
+            fps: 30,
+            fileSize: localFile?.size ?? 0,
+        });
+    };
 
-                processFile(id)
-                    .catch((err: Error) => setError(`Failed to process file: ${err.message}`));
+    const sendData = async () => {
+        if (!localFile) return;
 
-            })
+        let fileId: string;
+        try {
+            fileId = await uploadFile(localFile);
+            setUploadedId(fileId);
+        } catch (err: unknown) {
+            setError(`Failed to upload file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            return;
+        }
+
+        editFile(fileId, outputMetadata)
+            .then(() => processFile(fileId)
+                .catch((err: Error) => setError(`Failed to process file: ${err.message}`)))
             .catch((err: Error) => setError(`Failed to edit file: ${err.message}`));
 
-        const interval = setInterval(async() => await pollProgress(id, interval), 500);
-    }
+        const interval = setInterval(async () => await pollProgress(fileId, interval), 500);
+    };
 
     const pollProgress = async (id: string, intervalId: number) => {
         getProgress(id)
@@ -57,17 +87,19 @@ const ClipEdit = () => {
                     clearInterval(intervalId);
                     setDownloadable(true);
                 } else {
-                    setDownloadable(false)
+                    setDownloadable(false);
                 }
-        })
+            })
             .catch((err: Error) => {
                 setError(`Failed to fetch progress: ${err.message}`);
                 clearInterval(intervalId);
             });
-    }
+    };
 
     const handleDownload = async () => {
-        const response = await fetch(API_URL + `/api/v1/download/output/${id}`);
+        if (!uploadedId) return;
+
+        const response = await fetch(API_URL + `/api/v1/download/output/${uploadedId}`);
 
         if (!response.ok) {
             console.error('Download failed');
@@ -79,42 +111,26 @@ const ClipEdit = () => {
         const a = document.createElement('a');
 
         a.href = url;
-        a.download = `${id}.mp4`;
+        a.download = `${uploadedId}.mp4`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
     };
 
-    useEffect(() => {
-        if (!id) return;
-
-        getMetadata(id)
-            .then((data) => setMetadata(data ?? null))
-            .catch((err) => console.error("Metadata fetch failed:", err));
-    }, [id]);
-
     return (
         <div className={"grid grid-cols-[7fr_3fr] gap-4 p-4"}>
             <video
-                   ref={videoRef}
-                   className={"w-full rounded-lg shadow-sm bg-black"}>
-                <source src={videoUrl} type="video/mp4" />
-                <source src={videoUrl} type="video/webm" />
-                <source src={videoUrl} type="video/ogg" />
-                Your browser does not support the video tag. Bzzzz.
-            </video>
-
+                ref={videoRef}
+                src={videoUrl}
+                className={"w-full rounded-lg shadow-sm bg-black"}
+                onLoadedMetadata={handleVideoMetadataLoaded}
+            />
 
             <Box className={"w-4/5 h-full m-auto"}>
-                <MetadataBox
-                    setMetadata={setOutputMetadata}
-                />
-                <ConfigBox
-                    setMetadata={setOutputMetadata}
-                />
+                <MetadataBox setMetadata={setOutputMetadata} />
+                <ConfigBox setMetadata={setOutputMetadata} />
             </Box>
-
 
             {metadata &&
                 <Box className={"mt-4 p-5"}>
@@ -158,6 +174,6 @@ const ClipEdit = () => {
             </Box>
         </div>
     );
-}
+};
 
 export default ClipEdit;
