@@ -59,15 +59,10 @@ public class DirectoryService {
         return file;
     }
 
-    public File getVodFile(String filename) {
+    public File getVodFile(String filename) throws IOException {
         String dir = outputDir + File.separator + "vods" + File.separator + filename;
         File file = new File(dir);
-
-        try {
-            createDirectory(file.getParent());
-        } catch (IOException e) {
-            logger.error("Error creating vods directory: {}", e.getMessage());
-        }
+        createDirectory(file.getParent());
 
         return file;
     }

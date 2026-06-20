@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,16 +33,19 @@ public class StreamService {
     private final StreamRepository streamRepository;
     private final UserService userService;
     private final StreamActionsService streamActionsService;
+    private final DirectoryService directoryService;
 
     @Value("${storage.stream}")
     private String streamDataPath;
 
     public StreamService(StreamRepository streamRepository,
                          UserService userService,
-                         StreamActionsService streamActionsService) {
+                         StreamActionsService streamActionsService,
+                         DirectoryService directoryService) {
         this.streamRepository = streamRepository;
         this.userService = userService;
         this.streamActionsService = streamActionsService;
+        this.directoryService = directoryService;
     }
 
     public Stream startStream(String streamKey) {
@@ -141,7 +141,8 @@ public class StreamService {
         float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
         float duration = (endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000f;
 
-        streamActionsService.saveSection(fileSegments, trimOffset, duration);
+        File outputFile = directoryService.getVodFile(UUID.randomUUID() + ".mp4");
+        streamActionsService.saveSection(fileSegments, trimOffset, duration, outputFile);
     }
 
     /**

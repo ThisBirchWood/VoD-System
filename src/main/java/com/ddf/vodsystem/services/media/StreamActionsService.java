@@ -27,13 +27,12 @@ public class StreamActionsService {
     public CompletableFuture<File> saveSection(
             List<File> segments,
             float trimOffset,
-            float duration
+            float duration,
+            File outputFile
     ) throws IOException, InterruptedException {
         String concatInput = segments.stream()
                 .map(File::getAbsolutePath)
                 .collect(Collectors.joining("|"));
-
-        File outputFile = directoryService.getVodFile(UUID.randomUUID() + ".mp4");
 
         List<String> command = List.of(
                 "ffmpeg",
