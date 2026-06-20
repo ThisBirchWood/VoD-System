@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HexFormat;
 import java.util.Optional;
 
 @Service
@@ -67,12 +69,17 @@ public class UserService {
         return jwtService.generateToken(user.getId());
     }
 
+    public Optional<User> getUserByStreamKey(String streamKey) {
+        return userRepository.findByStreamKey(streamKey);
+    }
+
     private User createOrUpdateUser(User user) {
         Optional<User> existingUser = userRepository.findByGoogleId(user.getGoogleId());
 
         if (existingUser.isEmpty()) {
             user.setRole(0);
             user.setCreatedAt(LocalDateTime.now());
+            user.setStreamKey(generateStreamKey());
             return userRepository.saveAndFlush(user);
         }
 
@@ -106,5 +113,11 @@ public class UserService {
         } catch (GeneralSecurityException | IOException e) {
             throw new NotAuthenticated("Invalid ID token: " + e.getMessage());
         }
+    }
+
+    private String generateStreamKey() {
+        byte[] bytes = new byte[24];
+        new SecureRandom().nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
     }
 }

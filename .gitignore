@@ -40,5 +40,7 @@ build/
 
 ### Generated Files ###
 videos/
+outputs/
 
 generated
+.mvn

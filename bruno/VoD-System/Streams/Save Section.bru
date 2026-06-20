@@ -1,0 +1,23 @@
+meta {
+  name: Save Section
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/stream/save
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "startTime": "2026-06-20T00:15:00Z",
+    "endTime": "2026-06-20T00:16:00Z"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

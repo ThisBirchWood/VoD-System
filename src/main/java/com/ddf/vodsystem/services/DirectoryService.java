@@ -59,6 +59,14 @@ public class DirectoryService {
         return file;
     }
 
+    public File getVodFile(String filename) throws IOException {
+        String dir = outputDir + File.separator + "vods" + File.separator + filename;
+        File file = new File(dir);
+        createDirectory(file.getParent());
+
+        return file;
+    }
+
     public File getUserThumbnailsFile(Long userId, String fileName) {
         if (userId == null || fileName == null || fileName.isEmpty()) {
             throw new IllegalArgumentException("User ID and file name cannot be null or empty");

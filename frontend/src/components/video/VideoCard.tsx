@@ -13,6 +13,7 @@ type VideoCardProps = {
 }
 
 const fallbackThumbnail = "../../../public/default_thumbnail.png";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const VideoCard = ({
                        id,
@@ -45,7 +46,7 @@ const VideoCard = ({
             <div className={clsx("flex flex-col", className)}>
                 <div className={"relative inline-block"}>
                     <img
-                        src={thumbnailAvailable ? `/api/v1/download/thumbnail/${id}` : fallbackThumbnail}
+                        src={thumbnailAvailable ? API_URL + `/api/v1/download/thumbnail/${id}` : fallbackThumbnail}
                         alt="Video Thumbnail"
                     />
 

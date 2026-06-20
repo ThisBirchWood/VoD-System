@@ -10,10 +10,12 @@ import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
 import MetadataBox from "../components/video/MetadataBox.tsx";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const ClipEdit = () => {
     const { id } = useParams();
     const videoRef = useRef<HTMLVideoElement | null>(null);
-    const videoUrl = `/api/v1/download/input/${id}`
+    const videoUrl = API_URL + `/api/v1/download/input/${id}`
     const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
     const [playbackValue, setPlaybackValue] = useState(0);
     const [outputMetadata, setOutputMetadata] = useState<VideoMetadata>({
@@ -65,7 +67,7 @@ const ClipEdit = () => {
     }
 
     const handleDownload = async () => {
-        const response = await fetch(`/api/v1/download/output/${id}`);
+        const response = await fetch(API_URL + `/api/v1/download/output/${id}`);
 
         if (!response.ok) {
             console.error('Download failed');

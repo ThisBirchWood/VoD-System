@@ -34,5 +34,8 @@ public class User {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "stream_key")
+    private String streamKey;
 }
 

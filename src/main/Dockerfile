@@ -15,6 +15,12 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+ENV POSTGRES_DATA=/app/db
+ENV MEDIA_DATA=/app/data/media
+ENV STREAM_DATA=/app/data/media/streams
+
+VOLUME ["app/db", "app/data/media/streams", "/app/data/media"]
+
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080

@@ -70,6 +70,8 @@ const Topbar = ({
                     />
 
                     <Dropdown label={user.name}>
+                        <DropdownItem item="Profile"
+                                      onClick={() => navigate("/profile")} />
                         <DropdownItem item="Logout"
                                       onClick={() => handleLogout()}
                                       className={"text-red-500 font-medium"} />

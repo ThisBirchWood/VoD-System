@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import SidebarButton from "./buttons/SidebarButton.tsx";
-import { Plus, Film, Home } from 'lucide-react';
+import { Plus, Film, Home, User as UserIcon } from 'lucide-react';
 import Box from "./Box.tsx";
 import type {User} from "../utils/types.ts";
 
@@ -30,11 +30,18 @@ const Sidebar = ({user, className}: props) => {
             />
 
             { user && (
-                <SidebarButton
-                    url={"/my-clips"}
-                    logo={<Film size={20}/>}
-                    label={"My Clips"}
-                />
+                <>
+                    <SidebarButton
+                        url={"/my-clips"}
+                        logo={<Film size={20}/>}
+                        label={"My Clips"}
+                    />
+                    <SidebarButton
+                        url={"/profile"}
+                        logo={<UserIcon size={20}/>}
+                        label={"Profile"}
+                    />
+                </>
                 )}
         </Box>
     );
