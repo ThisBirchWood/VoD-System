@@ -9,7 +9,7 @@ const MyClips = () => {
 
     useEffect(() => {
         getClips()
-            .then(setClips)
+            .then((data) => setClips(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())))
             .catch((err) => setError(err));
     }, []);
 
