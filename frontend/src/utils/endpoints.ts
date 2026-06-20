@@ -253,6 +253,26 @@ const getVideoBlob = async(id: string): Promise<Blob> => {
     }
 }
 
+const patchClip = async (id: number, data: { title?: string; description?: string }): Promise<Clip> => {
+    const response = await fetch(API_URL + `/api/v1/clips/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to update clip: ${response.status}`);
+    }
+
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') {
+        throw new Error(`Failed to update clip: ${result.message}`);
+    }
+
+    return result.data;
+};
+
 const deleteClip = async (id: number): Promise<void> => {
     const response = await fetch(API_URL + `/api/v1/clips/${id}`, {
         method: 'DELETE',
@@ -289,6 +309,7 @@ export {
     getClips,
     getClipById,
     getVideoBlob,
+    patchClip,
     deleteClip,
     isThumbnailAvailable
 };

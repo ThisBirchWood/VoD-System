@@ -3,13 +3,14 @@ import { formatTime, stringToDate, dateToTimeAgo } from "../../utils/utils.ts";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { isThumbnailAvailable } from "../../utils/endpoints.ts";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 
 type VideoCardProps = {
     id: number,
     title: string,
     duration: number,
     createdAt: string,
+    onEdit?: () => void,
     onDelete?: () => void,
     className?: string,
 }
@@ -17,7 +18,7 @@ type VideoCardProps = {
 const fallbackThumbnail = "../../../public/default_thumbnail.png";
 const API_URL = import.meta.env.VITE_API_URL;
 
-const VideoCard = ({ id, title, duration, createdAt, onDelete, className }: VideoCardProps) => {
+const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className }: VideoCardProps) => {
     const [timeAgo, setTimeAgo] = useState(dateToTimeAgo(stringToDate(createdAt)));
     const [thumbnailAvailable, setThumbnailAvailable] = useState(true);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -66,7 +67,7 @@ const VideoCard = ({ id, title, duration, createdAt, onDelete, className }: Vide
                         {formatTime(duration)}
                     </span>
 
-                    {onDelete && (
+                    {(onEdit || onDelete) && (
                         <div
                             ref={menuRef}
                             className="absolute top-1.5 right-1.5"
@@ -81,14 +82,24 @@ const VideoCard = ({ id, title, duration, createdAt, onDelete, className }: Vide
 
                             {menuOpen && (
                                 <div className="absolute right-0 top-7 w-32 bg-white rounded-lg border border-gray-200 shadow-md z-50 py-1 overflow-hidden">
-                                    {!confirmDelete && (
-                                        <button
-                                            onClick={(e) => stopAndRun(e, () => setConfirmDelete(true))}
-                                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50"
-                                        >
-                                            <Trash2 size={13} /> Delete
-                                        </button>
-                                    )}
+                                    {!confirmDelete && (<>
+                                        {onEdit && (
+                                            <button
+                                                onClick={(e) => stopAndRun(e, onEdit)}
+                                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                            >
+                                                <Pencil size={13} /> Edit
+                                            </button>
+                                        )}
+                                        {onDelete && (
+                                            <button
+                                                onClick={(e) => stopAndRun(e, () => setConfirmDelete(true))}
+                                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+                                            >
+                                                <Trash2 size={13} /> Delete
+                                            </button>
+                                        )}
+                                    </>)}
                                     {confirmDelete && (
                                         <div className="px-3 py-2">
                                             <p className="text-xs text-gray-600 mb-2">Delete this clip?</p>

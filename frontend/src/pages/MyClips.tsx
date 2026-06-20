@@ -1,11 +1,13 @@
 import VideoCard from "../components/video/VideoCard";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getClips, deleteClip } from "../utils/endpoints";
 import type { Clip } from "../utils/types";
 
 const MyClips = () => {
     const [clips, setClips] = useState<Clip[]>([]);
     const [error, setError] = useState<null | string>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         getClips()
@@ -34,6 +36,7 @@ const MyClips = () => {
                         title={clip.title}
                         duration={clip.duration}
                         createdAt={clip.createdAt}
+                        onEdit={() => navigate(`/clips/${clip.id}/edit`)}
                         onDelete={() => handleDelete(clip.id)}
                     />
                 ))}
