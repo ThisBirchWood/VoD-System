@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.services;
 
 import com.ddf.vodsystem.dto.ClipOptions;
+import com.ddf.vodsystem.dto.ClipUpdateRequest;
 import com.ddf.vodsystem.entities.*;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
+import com.ddf.vodsystem.exceptions.ClipNotFound;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.exceptions.StorageException;
@@ -70,16 +72,38 @@ public class ClipService {
         Optional<Clip> clip = clipRepository.findById(id);
 
         if (clip.isEmpty()) {
-            logger.warn("Clip with ID {} not found", id);
-            return clip;
+            throw new ClipNotFound("Clip with id " + id + " not found.");
         }
 
         if (!isAuthenticatedForClip(clip.get())) {
-            logger.warn("User is not authorized to access clip with ID {}", id);
-            throw new NotAuthenticated("You are not authorized to access this clip");
+            throw new NotAuthenticated("You are not authorized to access clip: " + id);
         }
 
         return clip;
+    }
+
+    public Clip updateClip(Long id, ClipUpdateRequest newFields) {
+        Optional<Clip> possibleClip = clipRepository.findById(id);
+
+        if (possibleClip.isEmpty()) {
+            throw new ClipNotFound("Clip with id " + id + " not found.");
+        }
+
+        Clip clip = possibleClip.get();
+
+        if (!isAuthenticatedForClip(clip)) {
+            throw new NotAuthenticated("You are not authorized to access clip: " + id);
+        }
+
+        if (newFields.title() != null) {
+            clip.setTitle(newFields.title());
+        }
+
+        if (newFields.description() != null) {
+            clip.setDescription(newFields.description());
+        }
+
+        return clipRepository.saveAndFlush(clip);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.ClipDTO;
 import com.ddf.vodsystem.dto.APIResponse;
+import com.ddf.vodsystem.dto.ClipUpdateRequest;
 import com.ddf.vodsystem.entities.Clip;
 import com.ddf.vodsystem.services.ClipService;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,17 @@ public class ClipController {
                         "Clip retrieved successfully",
                         clipDTO
                 )
+        );
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<APIResponse<ClipDTO>> updateClip(@PathVariable Long id,
+                                                           @RequestBody ClipUpdateRequest updateFields) {
+        Clip clip = clipService.updateClip(id, updateFields);
+        ClipDTO clipDTO = convertToDTO(clip);
+
+        return ResponseEntity.ok(
+                new APIResponse<>(SUCCESS, "Clip updated successfully", clipDTO)
         );
     }
 
