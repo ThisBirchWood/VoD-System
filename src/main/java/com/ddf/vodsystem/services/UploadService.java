@@ -24,14 +24,14 @@ import org.slf4j.LoggerFactory;
 public class UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadService.class);
 
-    private final JobService jobService;
+    private final JobRegistryService jobRegistryService;
     private final MetadataService metadataService;
     private final DirectoryService directoryService;
 
-    public UploadService(JobService jobService,
+    public UploadService(JobRegistryService jobRegistryService,
                          MetadataService metadataService,
                          DirectoryService directoryService) {
-        this.jobService = jobService;
+        this.jobRegistryService = jobRegistryService;
         this.metadataService = metadataService;
         this.directoryService = directoryService;
     }
@@ -54,7 +54,7 @@ public class UploadService {
 
         ClipOptions clipOptions = getMetadataWithTimeout(inputFile);
         Job job = new Job(uuid, inputFile, outputFile, clipOptions);
-        jobService.add(job);
+        jobRegistryService.add(job);
 
         return uuid;
     }

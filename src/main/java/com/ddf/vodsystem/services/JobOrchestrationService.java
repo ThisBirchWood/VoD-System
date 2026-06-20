@@ -17,16 +17,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.ddf.vodsystem.exceptions.JobNotFound;
-
 /**
- * Service for managing and processing jobs in a background thread.
- * Uses a blocking queue to avoid busy waiting and ensures jobs are processed sequentially.
+ * Orchestrates the processing pipeline for a {@link Job}: converting (remuxing)
+ * the input file and, separately, compressing/persisting the output clip.
+ * <p>
+ * Job storage and lookup are handled by {@link JobRegistryService}; this class
+ * is only responsible for acting on a {@link Job} instance once it's been retrieved.
+ * Long-running steps (remux, compress) are kicked off asynchronously via
+ * {@link java.util.concurrent.CompletableFuture}-returning service calls rather
+ * than blocked on, so callers should not assume the job is finished when these
+ * methods return.
  */
 @Service
-public class JobService {
-    private static final Logger logger = LoggerFactory.getLogger(JobService.class);
-    private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
+public class JobOrchestrationService {
+    private static final Logger logger = LoggerFactory.getLogger(JobOrchestrationService.class);
     private final ClipService clipService;
     private final RemuxService remuxService;
     private final DirectoryService directoryService;
@@ -34,14 +38,19 @@ public class JobService {
     private final UserService userService;
 
     /**
-     * Constructs a JobService with the given CompressionService.
-     * @param clipService the compression service to use for processing jobs
+     * Constructs the orchestration service with its collaborating services.
+     *
+     * @param clipService         used to persist a completed clip's metadata once processing succeeds
+     * @param remuxService        performs the remux step during conversion
+     * @param compressionService  performs the compression step during processing
+     * @param directoryService    used for filesystem operations (e.g. copying the input file to a temp location)
+     * @param userService         used to resolve the currently logged-in user when persisting a clip
      */
-    public JobService(ClipService clipService,
-                      RemuxService remuxService,
-                      CompressionService compressionService,
-                      DirectoryService directoryService,
-                      UserService userService) {
+    public JobOrchestrationService(ClipService clipService,
+                                   RemuxService remuxService,
+                                   CompressionService compressionService,
+                                   DirectoryService directoryService,
+                                   UserService userService) {
         this.clipService = clipService;
         this.remuxService = remuxService;
         this.directoryService = directoryService;
@@ -50,30 +59,19 @@ public class JobService {
     }
 
     /**
-     * Adds a new job to the job map.
-     * @param job the job to add
+     * Converts a job's input file in place by remuxing it.
+     * <p>
+     * The original input file is first copied to a temporary {@code .temp} file so the
+     * remux can read from a stable source; on successful completion the temp file is
+     * deleted. The remux itself runs asynchronously — this method returns once the
+     * remux has been kicked off, not once it has finished. Progress/completion is
+     * tracked via {@code job.getStatus().getConversion()}, which is reset at the
+     * start of this call and marked complete in the remux's completion callback.
+     *
+     * @param job the job whose input file should be converted
+     * @throws StorageException if the temporary file cannot be created, or if it
+     *         cannot be deleted after a successful remux
      */
-    public void add(Job job) {
-        logger.info("Added job: {}", job.getUuid());
-        jobs.put(job.getUuid(), job);
-    }
-
-    /**
-     * Retrieves a job by its UUID.
-     * @param uuid the UUID of the job
-     * @return the Job object
-     * @throws JobNotFound if the job does not exist
-     */
-    public Job getJob(String uuid) {
-        Job job = jobs.get(uuid);
-
-        if (job == null) {
-            throw new JobNotFound("Job not found");
-        }
-
-        return job;
-    }
-
     public void convertJob(Job job) {
         logger.info("Converting job: {}", job.getUuid());
         File tempFile = new File(job.getInputFile().getAbsolutePath() + ".temp");
@@ -115,8 +113,16 @@ public class JobService {
     }
 
     /**
-     * Marks a job as ready and adds it to the processing queue.
-     * @param job The job to process
+     * Compresses a job's output file according to its output clip options and, on
+     * success, persists the resulting clip against the currently logged-in user (if any).
+     * <p>
+     * Compression runs asynchronously — this method returns once compression has been
+     * kicked off, not once it has finished. Progress is tracked via
+     * {@code job.getStatus().getProcess()}, which is reset at the start of this call.
+     * If compression or persistence fails, the job's status is marked failed with the
+     * triggering exception's message.
+     *
+     * @param job the job to process
      */
     public void processJob(Job job) {
         logger.info("Job ready: {}", job.getUuid());

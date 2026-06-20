@@ -15,27 +15,27 @@ import java.io.File;
 @Service
 public class DownloadService {
 
-    private final JobService jobService;
+    private final JobRegistryService jobRegistryService;
     private final ClipRepository clipRepository;
     private final ClipService clipService;
 
-    public DownloadService(JobService jobService,
+    public DownloadService(JobRegistryService jobRegistryService,
                            ClipRepository clipRepository,
                            ClipService clipService) {
-        this.jobService = jobService;
+        this.jobRegistryService = jobRegistryService;
         this.clipRepository = clipRepository;
         this.clipService = clipService;
     }
 
     public Resource downloadInput(String uuid) {
-        Job job = jobService.getJob(uuid);
+        Job job = jobRegistryService.getJob(uuid);
 
         File file = job.getInputFile();
         return new FileSystemResource(file);
     }
 
     public Resource downloadOutput(String uuid) {
-        Job job = jobService.getJob(uuid);
+        Job job = jobRegistryService.getJob(uuid);
 
         if (!job.getStatus().getProcess().isComplete()) {
             throw new JobNotFinished("Job is not finished");

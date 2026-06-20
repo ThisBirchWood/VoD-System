@@ -8,17 +8,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EditService {
-    private final JobService jobService;
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EditService.class);
     private final MetadataService metadataService;
+    private final JobRegistryService jobRegistryService;
+    private final JobOrchestrationService jobOrchestrationService;
 
-    public EditService(JobService jobService, MetadataService metadataService) {
-        this.jobService = jobService;
+    public EditService(JobOrchestrationService jobOrchestrationService,
+                       MetadataService metadataService,
+                       JobRegistryService jobRegistryService) {
         this.metadataService = metadataService;
+        this.jobRegistryService = jobRegistryService;
+        this.jobOrchestrationService = jobOrchestrationService;
+
     }
 
     public void edit(String uuid, ClipOptions clipOptions) {
-        Job job = jobService.getJob(uuid);
+        Job job = jobRegistryService.getJob(uuid);
         metadataService.validateMetadata(job.getInputClipOptions(), clipOptions);
         job.setOutputClipOptions(clipOptions);
 
@@ -26,21 +31,21 @@ public class EditService {
     }
 
     public void process(String uuid) {
-        Job job = jobService.getJob(uuid);
-        jobService.processJob(job);
+        Job job = jobRegistryService.getJob(uuid);
+        jobOrchestrationService.processJob(job);
 
         logger.info("Job {} - Started processing", uuid);
     }
 
     public void convert(String uuid) {
-        Job job = jobService.getJob(uuid);
-        jobService.convertJob(job);
+        Job job = jobRegistryService.getJob(uuid);
+        jobOrchestrationService.convertJob(job);
 
         logger.info("Job {} - Started converting", uuid);
     }
 
     public JobStatus getStatus(String uuid) {
-        Job job = jobService.getJob(uuid);
+        Job job = jobRegistryService.getJob(uuid);
         return job.getStatus();
     }
 }
