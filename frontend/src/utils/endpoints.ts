@@ -2,6 +2,10 @@ import type {VideoMetadata, APIResponse, User, Clip, ProgressResult } from "./ty
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+export class AuthError extends Error {
+    constructor() { super("Not authenticated"); this.name = "AuthError"; }
+}
+
 /**
  * Login function
  * @param GoogleToken - The Google token received from the frontend.
@@ -227,6 +231,7 @@ const getClipById = async (id: string): Promise<Clip | null> => {
     const response = await fetch(API_URL + `/api/v1/clips/${id}`, {credentials: "include",});
 
     if (!response.ok) {
+        if (response.status === 401 || response.status === 403) throw new AuthError();
         throw new Error(`Failed to fetch clip: ${response.status}`);
     }
 
@@ -241,8 +246,9 @@ const getClipById = async (id: string): Promise<Clip | null> => {
 
 const getVideoBlob = async(id: string): Promise<Blob> => {
     const response = await fetch(API_URL + `/api/v1/download/clip/${id}`, {credentials: "include",});
-    
+
     if (!response.ok) {
+        if (response.status === 401 || response.status === 403) throw new AuthError();
         throw new Error(`Failed to fetch video: ${id}: ${response.status}`)
     }
 

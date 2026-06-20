@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Lock, Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
 import type { Clip } from "../utils/types";
-import { getClipById, getVideoBlob } from "../utils/endpoints.ts";
+import { AuthError, getClipById, getVideoBlob } from "../utils/endpoints.ts";
 import Box from "../components/Box.tsx";
 import { dateToTimeAgo, formatTime, stringToDate } from "../utils/utils.ts";
 
@@ -18,6 +18,7 @@ const VideoPlayer = () => {
     // Data
     const [videoUrl, setVideoUrl] = useState<string | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
+    const [notAuthenticated, setNotAuthenticated] = useState(false);
     const [clip, setClip] = useState<Clip | null>(null);
     const [timeAgo, setTimeAgo] = useState("");
 
@@ -41,11 +42,16 @@ const VideoPlayer = () => {
     useEffect(() => {
         if (!id) { setError("Clip ID is required."); return; }
 
-        getVideoBlob(id).then((blob) => setVideoUrl(URL.createObjectURL(blob)));
+        getVideoBlob(id)
+            .then((blob) => setVideoUrl(URL.createObjectURL(blob)))
+            .catch((e) => { if (e instanceof AuthError) setNotAuthenticated(true); });
 
         getClipById(id)
             .then(setClip)
-            .catch(() => setError("Failed to load clip details."));
+            .catch((e) => {
+                if (e instanceof AuthError) setNotAuthenticated(true);
+                else setError("Failed to load clip details.");
+            });
     }, [id]);
 
     useEffect(() => {
@@ -176,6 +182,27 @@ const VideoPlayer = () => {
     const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
     const effectiveVolume = isMuted ? 0 : volume;
     const VolumeIcon = effectiveVolume === 0 ? VolumeX : effectiveVolume < 0.5 ? Volume1 : Volume2;
+
+    if (notAuthenticated) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center gap-4 text-center p-8">
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Lock size={24} className="text-gray-400" />
+                </div>
+                <div>
+                    <p className="text-lg font-semibold text-gray-900">Not authenticated</p>
+                    <p className="text-sm text-gray-500 mt-1">You don't have access to this clip.</p>
+                </div>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors duration-150"
+                >
+                    <ArrowLeft size={16} />
+                    Go back
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full flex flex-col p-4 gap-3">
