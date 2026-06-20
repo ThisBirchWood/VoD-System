@@ -3,11 +3,13 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
+import com.ddf.vodsystem.exceptions.StorageException;
 import com.ddf.vodsystem.services.media.MetadataService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.UUID;
@@ -41,10 +43,14 @@ public class UploadService {
 
         File inputFile = directoryService.getTempInputFile(uuid + "." + extension);
         File outputFile = directoryService.getTempOutputFile(uuid + ".mp4");
-        directoryService.saveAtDir(inputFile, file);
 
-        // add job
-        logger.info("Uploaded file and creating job with UUID: {}", uuid);
+        try {
+            directoryService.saveMultipartFile(inputFile, file);
+        } catch (IOException e) {
+            throw new StorageException("Could not save Multipart file at: " + inputFile, e);
+        }
+
+        logger.info("Multi-part file uploaded at {}", inputFile);
 
         ClipOptions clipOptions = getMetadataWithTimeout(inputFile);
         Job job = new Job(uuid, inputFile, outputFile, clipOptions);

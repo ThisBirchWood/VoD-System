@@ -141,7 +141,7 @@ public class StreamService {
         float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
         float duration = (endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000f;
 
-        File outputFile = directoryService.getVodFile(UUID.randomUUID() + ".mp4");
+        File outputFile = directoryService.getVodFile(user.getId(), UUID.randomUUID() + ".mp4");
         streamActionsService.saveSection(fileSegments, trimOffset, duration, outputFile);
     }
 

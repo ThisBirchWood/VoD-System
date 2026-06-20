@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
+import com.ddf.vodsystem.exceptions.StorageException;
 import com.ddf.vodsystem.repositories.ClipRepository;
 import com.ddf.vodsystem.services.media.MetadataService;
 import com.ddf.vodsystem.services.media.ThumbnailService;
@@ -152,10 +153,17 @@ public class ClipService {
                              User user,
                              File tempFile,
                              String fileName) {
-        // Move clip from temp to output directory
-        File clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
-        File thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
-        directoryService.cutFile(tempFile, clipFile);
+        File clipFile;
+        File thumbnailFile;
+
+        // Move temp file from temp dir to output dir
+        try {
+            clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
+            thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
+            directoryService.cutFile(tempFile, clipFile);
+        } catch (IOException e) {
+            throw new StorageException("Failed to move clip from temporary directory to output directory", e);
+        }
 
         ClipOptions clipMetadata;
         try {
@@ -165,11 +173,14 @@ public class ClipService {
             throw new FFMPEGException("Error retrieving video metadata for clip: " + e.getMessage());
         }
 
+        // Thumbnail generation can fail with error propagation
         try {
             thumbnailService.createThumbnail(clipFile, thumbnailFile, 0.0f);
-        } catch (IOException | InterruptedException e) {
-            logger.error("Error generating thumbnail for user: {}, {}", user.getId(), e.getMessage());
+        } catch (InterruptedException e) {
+            logger.error("Thumbnail generation interrupted for user: {}", user.getId(), e);
             Thread.currentThread().interrupt();
+        } catch (IOException e) {
+            logger.error("Error generating thumbnail for user: {}", user.getId(), e);
         }
 
         clipMetadata.setTitle(clipOptions.getTitle());

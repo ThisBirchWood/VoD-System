@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.entities.User;
+import com.ddf.vodsystem.exceptions.StorageException;
 import com.ddf.vodsystem.services.media.CompressionService;
 import com.ddf.vodsystem.services.media.RemuxService;
 
@@ -76,7 +77,12 @@ public class JobService {
     public void convertJob(Job job) {
         logger.info("Converting job: {}", job.getUuid());
         File tempFile = new File(job.getInputFile().getAbsolutePath() + ".temp");
-        directoryService.copyFile(job.getInputFile(), tempFile);
+
+        try {
+            directoryService.copyFile(job.getInputFile(), tempFile);
+        } catch (IOException e) {
+            throw new StorageException("Could not create temporary file: " + tempFile, e);
+        }
 
         job.getStatus().getConversion().reset();
 
@@ -92,7 +98,7 @@ public class JobService {
                         try {
                             Files.deleteIfExists(Paths.get(tempFile.getAbsolutePath()));
                         } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            throw new StorageException("Could not delete path at: " + tempFile.getAbsolutePath(), e);
                         }
                     }).whenComplete((ignored, throwable) -> {
                         if (throwable != null) {
@@ -129,11 +135,14 @@ public class JobService {
                     )).exceptionally(
                             ex -> {
                                 job.getStatus().setFailed(true);
+                                job.getStatus().setFailedReason(ex.getMessage());
+                                logger.error("Error processing job {}: {}", job.getUuid(), ex.getMessage());
                                 return null;
                             }
                     );
         } catch (IOException | InterruptedException e) {
             job.getStatus().setFailed(true);
+            job.getStatus().setFailedReason(e.getMessage());
             logger.error("Error processing job {}: {}", job.getUuid(), e.getMessage());
             Thread.currentThread().interrupt();
         }

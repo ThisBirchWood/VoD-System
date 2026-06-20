@@ -1,12 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.exceptions.AlreadyStreaming;
-import com.ddf.vodsystem.exceptions.FFMPEGException;
-import com.ddf.vodsystem.exceptions.JobNotFinished;
-import com.ddf.vodsystem.exceptions.JobNotFound;
-import com.ddf.vodsystem.exceptions.KeyNotFound;
-import com.ddf.vodsystem.exceptions.NotAuthenticated;
+import com.ddf.vodsystem.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -91,5 +86,12 @@ public class GlobalExceptionHandler {
         logger.error("AlreadyStreaming: {}", ex.getMessage());
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<APIResponse<Void>> handleStorage(StorageException e) {
+        logger.error("Storage operation failed", e);
+        APIResponse<Void> response = new APIResponse<>(ERROR, "Could not process file", null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

@@ -7,6 +7,7 @@ public class JobStatus {
     private ProgressTracker process = new ProgressTracker();
     private ProgressTracker conversion = new ProgressTracker();
     private boolean failed = false;
+    private String failedReason;
 }
 
 

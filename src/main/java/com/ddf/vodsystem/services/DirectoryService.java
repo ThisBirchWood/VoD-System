@@ -42,80 +42,72 @@ public class DirectoryService {
         return new File(dir);
     }
 
-    public File getUserClipsFile(Long userId, String fileName) {
-        if (userId == null || fileName == null || fileName.isEmpty()) {
-            throw new IllegalArgumentException("User ID and file name cannot be null or empty");
+    public File getUserFolder(Long userId) throws IOException {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null or empty");
         }
 
-        String dir = outputDir + File.separator + userId + File.separator + "clips" + File.separator + fileName;
-        File file = new File(dir);
+        String dir = outputDir + File.separator + userId;
+        createDirectory(dir);
+        return new File(dir);
+    }
 
-        try {
-            createDirectory(file.getParent());
-        } catch (IOException e) {
-            logger.error("Error creating clips directory: {}", e.getMessage());
+    public File getUserClipsFile(Long userId, String filename) throws IOException {
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("File name cannot be null or empty");
         }
 
+        File userDir = getUserFolder(userId);
+        String fullPath = userDir.getAbsolutePath() + File.separator + "clips" + File.separator + filename;
+        File file = new File(fullPath);
+
+        createDirectory(file.getParent());
         return file;
     }
 
-    public File getVodFile(String filename) throws IOException {
-        String dir = outputDir + File.separator + "vods" + File.separator + filename;
-        File file = new File(dir);
+    public File getVodFile(Long userId, String filename) throws IOException {
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("File name cannot be null or empty");
+        }
+
+        String userDir = getUserFolder(userId).getAbsolutePath();
+        File file = new File(userDir + File.separator + "vods" + File.separator + filename);
         createDirectory(file.getParent());
 
         return file;
     }
 
-    public File getUserThumbnailsFile(Long userId, String fileName) {
-        if (userId == null || fileName == null || fileName.isEmpty()) {
-            throw new IllegalArgumentException("User ID and file name cannot be null or empty");
+    public File getUserThumbnailsFile(Long userId, String filename) throws IOException {
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("File name cannot be null or empty");
         }
 
-        String dir = outputDir + File.separator + userId + File.separator + "thumbnails" + File.separator + fileName;
-        File file = new File(dir);
-
-        try {
-            createDirectory(file.getParent());
-        } catch (IOException e) {
-            logger.error("Error creating thumbnails directory: {}", e.getMessage());
-        }
+        String userDir = getUserFolder(userId).getAbsolutePath();
+        File file = new File(userDir + File.separator + "thumbnails" + File.separator + filename);
+        createDirectory(file.getParent());
 
         return file;
     }
 
-    public void saveAtDir(File file, MultipartFile multipartFile) {
-        try {
-            createDirectory(file.getAbsolutePath());
-            Path filePath = Paths.get(file.getAbsolutePath());
-            Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+    public void saveMultipartFile(File file, MultipartFile multipartFile) throws IOException {
+        createDirectory(file.getParent());
+        Path filePath = Paths.get(file.getAbsolutePath());
+        Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    public void copyFile(File source, File target) {
+    public void copyFile(File source, File target) throws IOException {
         Path sourcePath = Paths.get(source.getAbsolutePath());
         Path destPath = Paths.get(target.getAbsolutePath());
 
-        try {
-            Files.createDirectories(destPath.getParent());
-            Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Copied file from {} to {}", sourcePath, destPath);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        Files.createDirectories(destPath.getParent());
+        Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
+        logger.info("Copied file from {} to {}", sourcePath, destPath);
     }
 
-    public void cutFile(File source, File target) {
+    public void cutFile(File source, File target) throws IOException {
         copyFile(source, target);
-
-        try {
-            Files.deleteIfExists(source.toPath());
-            logger.info("Deleted source file: {}", source.getAbsolutePath());
-        } catch (IOException e) {
-            logger.error("Error deleting source file: {}", e.getMessage());
-        }
+        Files.deleteIfExists(source.toPath());
+        logger.info("Deleted source file: {}", source.getAbsolutePath());
     }
 
     public String getFileExtension(String filePath) {
