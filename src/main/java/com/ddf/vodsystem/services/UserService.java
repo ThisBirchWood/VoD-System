@@ -28,7 +28,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
-
     public UserService(UserRepository userRepository,
                        JwtService jwtService,
                        @Value("${google.client.id}") String googleClientId) {

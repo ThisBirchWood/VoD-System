@@ -85,9 +85,14 @@ public class StreamService {
         streamRepository.saveAndFlush(stream);
     }
 
-    public Optional<Stream> getActiveStream(String streamKey) {
-        User user = resolveUser(streamKey);
-        return streamRepository.findByUserAndEndDateIsNull(user);
+    public Optional<Stream> getActiveStream() {
+        Optional<User> user = userService.getLoggedInUser();
+
+        if (user.isEmpty()) {
+            throw new NotAuthenticated("Log in to see user streams");
+        }
+
+        return streamRepository.findByUserAndEndDateIsNull(user.get());
     }
 
     public List<Stream> getStreamHistory(Long userId) {

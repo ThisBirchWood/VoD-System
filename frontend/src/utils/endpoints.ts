@@ -295,6 +295,13 @@ const deleteClip = async (id: number): Promise<void> => {
     }
 };
 
+const getStreamStatus = async (): Promise<boolean> => {
+    const response = await fetch(API_URL + '/api/v1/stream/current', { credentials: 'include' });
+    if (!response.ok) return false;
+    const result: APIResponse = await response.json();
+    return result.status === 'success' && result.data?.isStreaming === true;
+};
+
 const isThumbnailAvailable = async (id: number): Promise<boolean> => {
     const response = await fetch(API_URL + `/api/v1/download/thumbnail/${id}`, {credentials: "include"});
     return response.ok;
@@ -305,6 +312,7 @@ const isThumbnailAvailable = async (id: number): Promise<boolean> => {
 export {
     login,
     logout,
+    getStreamStatus,
     uploadFile,
     editFile,
     processFile,

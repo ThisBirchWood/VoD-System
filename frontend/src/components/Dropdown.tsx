@@ -18,7 +18,7 @@ const DropdownItem = ({ item, onClick, className }: DropdownItemProps) => {
 }
 
 type DropdownProps = {
-    label: string;
+    label: React.ReactNode;
     children: React.ReactNode;
     className?: string;
 }

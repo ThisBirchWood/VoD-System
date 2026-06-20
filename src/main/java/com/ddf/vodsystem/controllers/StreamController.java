@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.controllers.dto.ClipSectionRequest;
+import com.ddf.vodsystem.controllers.dto.StreamResponse;
 import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.controllers.dto.SaveSectionRequest;
 import com.ddf.vodsystem.entities.Stream;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/stream")
@@ -65,5 +67,15 @@ public class StreamController {
     public ResponseEntity<APIResponse<List<Stream>>> getStreamHistory(@PathVariable Long userId) {
         List<Stream> history = streamService.getStreamHistory(userId);
         return ResponseEntity.ok(new APIResponse<>("success", "Stream history retrieved", history));
+    }
+
+    @GetMapping("/current")
+    public ResponseEntity<APIResponse<StreamResponse>> getCurrentStream() {
+        Optional<Stream> stream = streamService.getActiveStream();
+        return stream.map(value -> ResponseEntity.ok(new APIResponse<>("success",
+                "Streaming status retrieved",
+                new StreamResponse(true, value.getId())))).orElseGet(() -> ResponseEntity.ok(new APIResponse<>("success",
+                "Streaming status retrieved",
+                new StreamResponse(false, null))));
     }
 }
