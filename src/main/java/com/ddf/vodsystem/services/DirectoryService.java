@@ -23,6 +23,9 @@ public class DirectoryService {
     @Value("${storage.outputs}")
     private String outputDir;
 
+    @Value("${STREAM_DATA}")
+    private String streamDir;
+
     @Value("${storage.temp.inputs}")
     private String tempInputsDir;
 
@@ -74,6 +77,12 @@ public class DirectoryService {
         File file = new File(userDir + File.separator + "vods" + File.separator + filename);
         createDirectory(file.getParent());
 
+        return file;
+    }
+
+    public File getStreamDir(String streamKey) throws IOException {
+        File file = new File(streamDir + File.separator + streamKey);
+        createDirectory(file.getAbsolutePath());
         return file;
     }
 

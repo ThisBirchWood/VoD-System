@@ -9,7 +9,6 @@ import com.ddf.vodsystem.repositories.StreamRepository;
 import com.ddf.vodsystem.services.media.StreamActionsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +33,6 @@ public class StreamService {
     private final UserService userService;
     private final StreamActionsService streamActionsService;
     private final DirectoryService directoryService;
-
-    @Value("${storage.stream}")
-    private String streamDataPath;
 
     public StreamService(StreamRepository streamRepository,
                          UserService userService,
@@ -135,8 +131,8 @@ public class StreamService {
         User user = userService.getLoggedInUser()
                 .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
 
-        String streamDirectory = streamDataPath + File.separator + user.getStreamKey();
-        List<File> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
+        File streamDirectory = directoryService.getStreamDir(user.getStreamKey());
+        List<File> fileSegments = getSegmentsInRange(streamDirectory.getAbsolutePath(), startTime, endTime);
 
         if (fileSegments.isEmpty()) {
             throw new IllegalArgumentException("No stream segments found in the given time range");
