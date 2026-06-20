@@ -1,6 +1,6 @@
 import VideoCard from "../components/video/VideoCard";
-import {useEffect, useState} from "react";
-import { getClips } from "../utils/endpoints";
+import { useEffect, useState } from "react";
+import { getClips, deleteClip } from "../utils/endpoints";
 import type { Clip } from "../utils/types";
 
 const MyClips = () => {
@@ -9,9 +9,18 @@ const MyClips = () => {
 
     useEffect(() => {
         getClips()
-            .then((data) => setClips(data))
+            .then(setClips)
             .catch((err) => setError(err));
     }, []);
+
+    const handleDelete = async (id: number) => {
+        try {
+            await deleteClip(id);
+            setClips(prev => prev.filter(c => c.id !== id));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to delete clip");
+        }
+    };
 
     return (
         <div className="p-6">
@@ -25,6 +34,7 @@ const MyClips = () => {
                         title={clip.title}
                         duration={clip.duration}
                         createdAt={clip.createdAt}
+                        onDelete={() => handleDelete(clip.id)}
                     />
                 ))}
             </div>

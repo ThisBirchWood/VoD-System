@@ -253,13 +253,27 @@ const getVideoBlob = async(id: string): Promise<Blob> => {
     }
 }
 
-const isThumbnailAvailable = async (id: number): Promise<boolean> => {
-    const response = await fetch(API_URL + `/api/v1/download/thumbnail/${id}`, {credentials: "include"});
+const deleteClip = async (id: number): Promise<void> => {
+    const response = await fetch(API_URL + `/api/v1/clips/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+
     if (!response.ok) {
-        return false;
+        throw new Error(`Failed to delete clip: ${response.status}`);
     }
 
-    return true;
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') {
+        throw new Error(`Failed to delete clip: ${result.message}`);
+    }
+};
+
+const isThumbnailAvailable = async (id: number): Promise<boolean> => {
+    const response = await fetch(API_URL + `/api/v1/download/thumbnail/${id}`, {credentials: "include"});
+    return response.ok;
+
+
 }
 
 export {
@@ -275,5 +289,6 @@ export {
     getClips,
     getClipById,
     getVideoBlob,
+    deleteClip,
     isThumbnailAvailable
 };
