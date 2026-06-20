@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.dto.TokenDTO;
+import com.ddf.vodsystem.controllers.dto.Token;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
@@ -39,9 +39,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<APIResponse<TokenDTO>> login(@RequestBody TokenDTO tokenDTO,
-                                                       HttpServletResponse response) {
-        String jwt = userService.login(tokenDTO.getToken());
+    public ResponseEntity<APIResponse<Token>> login(@RequestBody Token token,
+                                                    HttpServletResponse response) {
+        String jwt = userService.login(token.token());
 
         ResponseCookie cookie = ResponseCookie.from("token", jwt)
                 .httpOnly(true)
@@ -54,7 +54,7 @@ public class UserController {
         response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Logged in successfully", new TokenDTO(jwt))
+                new APIResponse<>("success", "Logged in successfully", new Token(jwt))
         );
     }
 
