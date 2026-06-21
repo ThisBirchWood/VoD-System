@@ -33,15 +33,18 @@ public class StreamService {
     private final UserService userService;
     private final StreamActionsService streamActionsService;
     private final DirectoryService directoryService;
+    private final ClipService clipService;
 
     public StreamService(StreamRepository streamRepository,
                          UserService userService,
                          StreamActionsService streamActionsService,
-                         DirectoryService directoryService) {
+                         DirectoryService directoryService,
+                         ClipService clipService) {
         this.streamRepository = streamRepository;
         this.userService = userService;
         this.streamActionsService = streamActionsService;
         this.directoryService = directoryService;
+        this.clipService = clipService;
     }
 
     public Stream startStream(String streamKey) {
@@ -121,9 +124,8 @@ public class StreamService {
      *                                  or if no stream segments exist in the given range
      * @throws NotAuthenticated         if no user is currently authenticated
      * @throws IOException              if reading the stream directory or its segments fails
-     * @throws InterruptedException     if the thread is interrupted while performing the save
      */
-    public void saveSection(Instant startTime, Instant endTime) throws IOException, InterruptedException {
+    public void saveSection(Instant startTime, Instant endTime) throws IOException {
         if (startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
@@ -159,9 +161,8 @@ public class StreamService {
      *                                  or if no stream segments exist in the computed window
      * @throws NotAuthenticated         if no user is currently authenticated
      * @throws IOException              if reading the stream directory or its segments fails
-     * @throws InterruptedException     if the thread is interrupted while performing the save
      */
-    public void clip(float duration) throws IOException, InterruptedException {
+    public void clip(float duration) throws IOException {
         if (duration <= 0 || duration > CLIP_MAX_LENGTH) {
             throw new IllegalArgumentException("Clip length must be between 0 and " + CLIP_MAX_LENGTH + " seconds");
         }
@@ -170,7 +171,30 @@ public class StreamService {
         Instant endTime = Instant.now();
         Instant startTime = endTime.minus(Duration.ofMillis((long) (duration * 1000)));
 
-        saveSection(startTime, endTime);
+        User user = userService.getLoggedInUser()
+                .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
+
+        File streamDirectory = directoryService.getStreamDir(user.getStreamKey());
+        List<File> fileSegments = getSegmentsInRange(streamDirectory.getAbsolutePath(), startTime, endTime);
+
+        if (fileSegments.isEmpty()) {
+            throw new IllegalArgumentException("No stream segments found in the given time range");
+        }
+
+        long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
+        float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
+
+        File outputFile = directoryService.getTempOutputFile(UUID.randomUUID() + ".mp4");
+        streamActionsService.saveSection(fileSegments, trimOffset, duration, outputFile)
+                .thenRun(() ->
+                        clipService.persistClip(
+                                Instant.now().toString(),
+                                "",
+                                user,
+                                outputFile,
+                                outputFile.getName()
+                        )
+                );
     }
 
     @Scheduled(fixedDelay = 30_000)
