@@ -1,13 +1,13 @@
 import MenuButton from "./MenuButton.tsx";
 import { Link, useLocation } from "react-router-dom";
 
-type props = {
+type Props = {
     url: string;
     logo: React.ReactNode;
-    label: String;
+    label: string;
 }
 
-const SidebarButton = ({url, logo, label}: props) => {
+const SidebarButton = ({url, logo, label}: Props) => {
     const { pathname } = useLocation();
     const isActive = url === "/" ? pathname === "/" : pathname.startsWith(url);
 

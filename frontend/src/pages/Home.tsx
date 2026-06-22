@@ -3,8 +3,8 @@ import { Upload, Scissors, SlidersHorizontal, Radio, LayoutGrid, Play } from "lu
 const features = [
     {
         icon: Upload,
-        title: "Upload & convert",
-        description: "Drop in a video file. Non-native formats are converted automatically before editing.",
+        title: "Upload & compress",
+        description: "Drop in a video file, set your clip range and export settings, then compress.",
     },
     {
         icon: Scissors,
@@ -71,7 +71,7 @@ const Home = () => {
 
             {/* Format note */}
             <p className="text-xs text-gray-400">
-                Supports MP4, MOV, WebM, and OGG. Non-native formats are converted on upload.
+                Supports MP4, MOV, WebM, and OGG.
             </p>
         </div>
     );

@@ -25,9 +25,12 @@ const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className
     const [confirmDelete, setConfirmDelete] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
-    setTimeout(() => {
-        setTimeAgo(dateToTimeAgo(stringToDate(createdAt)));
-    }, 1000);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimeAgo(dateToTimeAgo(stringToDate(createdAt)));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [createdAt]);
 
     useEffect(() => {
         isThumbnailAvailable(id)
