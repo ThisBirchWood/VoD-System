@@ -229,7 +229,7 @@ public class ClipService {
         try {
             newClipFile = directoryService.getUserClipsFile(user.getId(), fileName);
             thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
-            directoryService.cutFile(clipFile, newClipFile);
+            directoryService.copyFile(clipFile, newClipFile);
         } catch (IOException e) {
             throw new StorageException("Failed to move clip from temporary directory to output directory", e);
         }

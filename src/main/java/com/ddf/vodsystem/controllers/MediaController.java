@@ -1,16 +1,19 @@
 package com.ddf.vodsystem.controllers;
 
+import com.ddf.vodsystem.controllers.dto.ClipSectionRequest;
+import com.ddf.vodsystem.controllers.dto.SaveSectionRequest;
 import com.ddf.vodsystem.controllers.dto.UUIDResponse;
 import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.services.MediaService;
+import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/v1/media")
@@ -22,10 +25,10 @@ public class MediaController {
         this.mediaService = mediaService;
     }
 
-    @PostMapping("/compress")
+    @PostMapping(value = "/compress", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<APIResponse<UUIDResponse>> compress(
             @RequestParam("file")MultipartFile file,
-            @RequestParam("options") ClipOptions options
+            @Valid @ModelAttribute ClipOptions options
             ) throws IOException, InterruptedException {
         Job job = mediaService.compress(file, options);
         return ResponseEntity.ok(new APIResponse<>(
@@ -38,9 +41,8 @@ public class MediaController {
 
     @PostMapping("/save")
     public ResponseEntity<APIResponse<UUIDResponse>> save(
-            @RequestParam("start") Instant startTime,
-            @RequestParam("end") Instant endTime) throws IOException {
-        Job job = mediaService.saveSection(startTime, endTime);
+            @RequestBody SaveSectionRequest saveSectionRequest) throws IOException {
+        Job job = mediaService.saveSection(saveSectionRequest.startTime(), saveSectionRequest.endTime());
         return ResponseEntity.ok(new APIResponse<>(
                 SUCCESS,
                 "Section saving successfully started",
@@ -50,8 +52,8 @@ public class MediaController {
 
     @PostMapping("/clip")
     public ResponseEntity<APIResponse<UUIDResponse>> clip(
-            @RequestParam("duration") float duration) throws IOException {
-        Job job = mediaService.clip(duration);
+            @RequestBody ClipSectionRequest clipSectionRequest) throws IOException {
+        Job job = mediaService.clip(clipSectionRequest.duration());
         return ResponseEntity.ok(new APIResponse<>(
                 SUCCESS,
                 "Clipping successfully started",

@@ -3,6 +3,7 @@ package com.ddf.vodsystem.controllers;
 import com.ddf.vodsystem.controllers.dto.JobResponse;
 import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.dto.Job;
+import com.ddf.vodsystem.exceptions.ClipNotFound;
 import com.ddf.vodsystem.exceptions.NotReadyException;
 import com.ddf.vodsystem.services.JobRegistryService;
 import org.springframework.core.io.FileSystemResource;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/v1/job")
+@RequestMapping("api/v1/jobs")
 public class JobController {
     private final JobRegistryService jobRegistryService;
     private static final String SUCCESS = "success";
@@ -57,7 +58,7 @@ public class JobController {
         Resource resource = new FileSystemResource(job.getDownload());
 
         if (!resource.exists()) {
-            return ResponseEntity.notFound().build();
+            throw new ClipNotFound("Job download file " + job.getDownload() + " does not exist.");
         }
 
         return ResponseEntity.ok()
