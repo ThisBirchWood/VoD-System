@@ -5,6 +5,10 @@ import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.controllers.dto.ClipUpdateRequest;
 import com.ddf.vodsystem.entities.Clip;
 import com.ddf.vodsystem.services.ClipService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +20,7 @@ import java.util.Optional;
 public class ClipController {
     private final ClipService clipService;
     private static final String SUCCESS = "success";
+    private static final String FILENAME_HEADER = "inline; filename=\"%s\"";
 
     public ClipController(ClipService clipService) {
         this.clipService = clipService;
@@ -77,6 +82,34 @@ public class ClipController {
                         "Clip with ID " + id + " has been deleted"
                 )
         );
+    }
+
+    @GetMapping("/{id}/media")
+    public ResponseEntity<Resource> downloadClip(@PathVariable Long id) {
+        Resource resource = clipService.downloadClip(id);
+
+        if (resource == null || !resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
+                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                .body(resource);
+    }
+
+    @GetMapping("/{id}/thumbnail")
+    public ResponseEntity<Resource> downloadThumbnail(@PathVariable Long id) {
+        Resource resource = clipService.downloadThumbnail(id);
+
+        if (resource == null || !resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
+                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                .body(resource);
     }
 
     private ClipResponse convertToDTO(Clip clip) {

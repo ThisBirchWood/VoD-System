@@ -1,9 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.controllers.dto.ClipSectionRequest;
 import com.ddf.vodsystem.controllers.dto.StreamResponse;
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.controllers.dto.SaveSectionRequest;
 import com.ddf.vodsystem.entities.Stream;
 import com.ddf.vodsystem.services.StreamService;
 import org.slf4j.Logger;
@@ -11,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,20 +44,6 @@ public class StreamController {
     public ResponseEntity<APIResponse<Void>> heartbeat(@RequestParam("name") String streamKey) {
         streamService.heartbeatStream(streamKey);
         return ResponseEntity.ok(new APIResponse<>("success", "Heartbeat recorded", null));
-    }
-
-    @PostMapping("/save")
-    public ResponseEntity<APIResponse<Void>> saveSection(
-            @RequestBody SaveSectionRequest request) throws IOException, InterruptedException {
-        streamService.saveSection(request.startTime(), request.endTime());
-        return ResponseEntity.accepted().body(new APIResponse<>("success", "Section saved", null));
-    }
-
-    @PostMapping("/clip")
-    public ResponseEntity<APIResponse<Void>> saveClip(
-            @RequestBody ClipSectionRequest request) throws IOException, InterruptedException {
-        streamService.clip(request.duration());
-        return ResponseEntity.accepted().body(new APIResponse<>("success", "Clip saved", null));
     }
 
     @GetMapping("/history/{userId}")

@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services.media;
 
+import com.ddf.vodsystem.dto.ProgressTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -50,7 +51,8 @@ public class StreamActionsService {
             List<File> segments,
             float trimOffset,
             float duration,
-            File outputFile
+            File outputFile,
+            ProgressTracker progressTracker
     ) {
         try {
             String concatInput = segments.stream()
@@ -69,7 +71,7 @@ public class StreamActionsService {
 
             logger.info("Saving section with ({} segments) to '{}'",
                     segments.size(), outputFile.getAbsolutePath());
-            CommandRunner.run(command, line -> logger.debug("{}", line));
+            CommandRunner.run(command, line -> CommandRunner.setProgress(line, progressTracker, duration));
 
             return CompletableFuture.completedFuture(outputFile);
         } catch (Exception e) {

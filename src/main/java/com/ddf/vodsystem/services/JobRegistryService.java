@@ -6,12 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * In-memory store for {@link Job} instances, keyed by job UUID.
- * Provides add/lookup only — actual job processing is handled by
- * {@link JobOrchestrationService}.
+ * Provides add/lookup only
  */
 @Service
 public class JobRegistryService {
@@ -19,13 +19,16 @@ public class JobRegistryService {
     private final ConcurrentHashMap<String, Job> jobs = new ConcurrentHashMap<>();
 
     /**
-     * Adds a new job to the job map.
-     *
-     * @param job the job to add
+     * Creates and returns a new job
+     * @return Job
      */
-    public void add(Job job) {
-        logger.info("Added job: {}", job.getUuid());
-        jobs.put(job.getUuid(), job);
+    public Job generateJob() {
+        String uuid = UUID.randomUUID().toString();
+        Job job = new Job(uuid);
+
+        jobs.put(uuid, job);
+        logger.info("New job with UUID {} created", uuid);
+        return job;
     }
 
     /**

@@ -119,17 +119,6 @@ public class DirectoryService {
         logger.info("Deleted source file: {}", source.getAbsolutePath());
     }
 
-    public String getFileExtension(String filePath) {
-        Path path = Paths.get(filePath);
-        String fileName = path.getFileName().toString();
-
-        int dotIndex = fileName.lastIndexOf('.');
-        if (dotIndex == -1) {
-            return ""; // No extension
-        }
-        return fileName.substring(dotIndex + 1);
-    }
-
     private void createDirectory(String dir) throws IOException {
         // Create the directory if it doesn't exist
         Path outputPath = Paths.get(dir);

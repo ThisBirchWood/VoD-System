@@ -12,15 +12,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import com.ddf.vodsystem.exceptions.ClipNotFound;
-import com.ddf.vodsystem.exceptions.FFMPEGException;
-import com.ddf.vodsystem.exceptions.NotAuthenticated;
-import com.ddf.vodsystem.exceptions.StorageException;
+import com.ddf.vodsystem.exceptions.*;
 import com.ddf.vodsystem.repositories.ClipRepository;
 import com.ddf.vodsystem.services.media.MetadataService;
 import com.ddf.vodsystem.services.media.ThumbnailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -144,6 +143,51 @@ public class ClipService {
             return false;
         }
         return user.get().getId().equals(clip.getUser().getId());
+    }
+
+    public Resource downloadClip(Long id) {
+        Optional<Clip> possibleClip = getClipById(id);
+
+        if (possibleClip.isEmpty()) {
+            throw new ClipNotFound("Clip " + id + " doesn't exist");
+        }
+
+        Clip clip = possibleClip.get();
+
+        if (!isAuthenticatedForClip(clip)) {
+            throw new NotAuthenticated("Not authenticated for this clip");
+        }
+
+        String path = clip.getVideoPath();
+        File file = new File(path);
+
+        if (!file.exists()) {
+            throw new JobNotFound("Clip file not found");
+        }
+
+        return new FileSystemResource(file);
+    }
+
+    public Resource downloadThumbnail(Long id) {
+        Optional<Clip> possibleClip = getClipById(id);
+
+        if (possibleClip.isEmpty()) {
+            throw new ClipNotFound("Clip " + id + " doesn't exist");
+        }
+
+        Clip clip = possibleClip.get();
+
+        if (!isAuthenticatedForClip(clip)) {
+            throw new NotAuthenticated("Not authenticated for this clip thumbnail");
+        }
+
+        String path = clip.getThumbnailPath();
+        File file = new File(path);
+        if (!file.exists()) {
+            throw new JobNotFound("Thumbnail file not found");
+        }
+
+        return new FileSystemResource(file);
     }
 
     /**
