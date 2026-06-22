@@ -58,7 +58,7 @@ const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className
             <div className={clsx("flex flex-col group cursor-pointer", className)}>
                 <div className="relative overflow-hidden rounded-lg">
                     <img
-                        src={thumbnailAvailable ? API_URL + `/api/v1/download/thumbnail/${id}` : fallbackThumbnail}
+                        src={thumbnailAvailable ? API_URL + `/api/v1/clips/${id}/thumbnail` : fallbackThumbnail}
                         alt="Video Thumbnail"
                         className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-200"
                     />

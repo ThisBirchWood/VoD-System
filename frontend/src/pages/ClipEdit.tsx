@@ -5,7 +5,7 @@ import PlaybackSlider from "./../components/video/PlaybackSlider";
 import ClipRangeSlider from "./../components/video/ClipRangeSlider";
 import ConfigBox from "../components/video/ConfigBox.tsx";
 import ExportWidget from "../components/video/ExportWidget.tsx";
-import { editFile, processFile, getProgress, uploadFile } from "../utils/endpoints"
+import { compress, getJob } from "../utils/endpoints"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
 import MetadataBox from "../components/video/MetadataBox.tsx";
@@ -61,33 +61,29 @@ const ClipEdit = () => {
     const sendData = async () => {
         if (!localFile) return;
 
-        let fileId: string;
+        let jobId: string;
         try {
-            fileId = await uploadFile(localFile);
-            setUploadedId(fileId);
+            jobId = await compress(localFile, outputMetadata);
+            setUploadedId(jobId);
         } catch (err: unknown) {
-            setError(`Failed to upload file: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            setError(`Failed to start compression: ${err instanceof Error ? err.message : 'Unknown error'}`);
             return;
         }
 
-        editFile(fileId, outputMetadata)
-            .then(() => processFile(fileId)
-                .catch((err: Error) => setError(`Failed to process file: ${err.message}`)))
-            .catch((err: Error) => setError(`Failed to edit file: ${err.message}`));
-
-        const interval = setInterval(async () => await pollProgress(fileId, interval), 500);
+        const interval = setInterval(async () => await pollProgress(jobId, interval), 500);
     };
 
-    const pollProgress = async (id: string, intervalId: number) => {
-        getProgress(id)
-            .then((progress) => {
-                setProgress(progress.process.progress);
+    const pollProgress = async (jobId: string, intervalId: number) => {
+        getJob(jobId)
+            .then((job) => {
+                setProgress(job.progress);
 
-                if (progress.process.complete) {
+                if (job.state === 'FAILED') {
+                    setError(`Compression failed: ${job.errorOutput ?? 'Unknown error'}`);
+                    clearInterval(intervalId);
+                } else if (job.isComplete) {
                     clearInterval(intervalId);
                     setDownloadable(true);
-                } else {
-                    setDownloadable(false);
                 }
             })
             .catch((err: Error) => {
@@ -99,7 +95,7 @@ const ClipEdit = () => {
     const handleDownload = async () => {
         if (!uploadedId) return;
 
-        const response = await fetch(API_URL + `/api/v1/download/output/${uploadedId}`);
+        const response = await fetch(API_URL + `/api/v1/jobs/${uploadedId}/download`, { credentials: 'include' });
 
         if (!response.ok) {
             console.error('Download failed');
