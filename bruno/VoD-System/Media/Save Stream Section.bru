@@ -1,0 +1,18 @@
+meta {
+  name: Save Stream Section
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/media/save
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "startTime": "2026-06-21T17:27:00Z",
+    "endTime": "2026-06-21T17:28:00Z"
+  }
+}

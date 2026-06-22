@@ -1,0 +1,17 @@
+meta {
+  name: Clip Stream
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/media/clip
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "duration": 60
+  }
+}
