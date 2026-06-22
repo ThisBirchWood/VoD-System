@@ -4,7 +4,7 @@ meta {
   seq: 2
 }
 
-get {
+post {
   url: {{base_url}}/media/save
   body: json
   auth: inherit
@@ -15,4 +15,8 @@ body:json {
     "startTime": "2026-06-21T17:27:00Z",
     "endTime": "2026-06-21T17:28:00Z"
   }
+}
+
+script:post-response {
+  bru.setEnvVar("uuid", res.getBody().data.uuid);
 }

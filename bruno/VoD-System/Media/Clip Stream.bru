@@ -4,7 +4,7 @@ meta {
   seq: 3
 }
 
-get {
+post {
   url: {{base_url}}/media/clip
   body: json
   auth: inherit
@@ -12,6 +12,10 @@ get {
 
 body:json {
   {
-    "duration": 60
+    "duration": 60.0
   }
+}
+
+script:post-response {
+  bru.setEnvVar("uuid", res.getBody().data.uuid);
 }
