@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.entities.User;
@@ -133,7 +132,8 @@ public class JobOrchestrationService {
             compressionService.compress(job.getInputFile(), job.getOutputFile(), job.getOutputClipOptions(), job.getStatus().getProcess())
                     .thenRun(() -> user.ifPresent(userVal ->
                             clipService.persistClip(
-                                    job.getOutputClipOptions(),
+                                    job.getOutputClipOptions().getTitle(),
+                                    job.getOutputClipOptions().getDescription(),
                                     userVal,
                                     job.getOutputFile(),
                                     job.getInputFile().getName()

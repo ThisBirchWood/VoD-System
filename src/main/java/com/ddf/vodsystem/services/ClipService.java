@@ -173,25 +173,26 @@ public class ClipService {
         return clipRepository.save(clip);
     }
 
-    public void persistClip(ClipOptions clipOptions,
-                             User user,
-                             File tempFile,
-                             String fileName) {
-        File clipFile;
+    public void persistClip(String title,
+                            String description,
+                            User user,
+                            File clipFile,
+                            String fileName) {
+        File newClipFile;
         File thumbnailFile;
 
         // Move temp file from temp dir to output dir
         try {
-            clipFile = directoryService.getUserClipsFile(user.getId(), fileName);
+            newClipFile = directoryService.getUserClipsFile(user.getId(), fileName);
             thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
-            directoryService.cutFile(tempFile, clipFile);
+            directoryService.cutFile(clipFile, newClipFile);
         } catch (IOException e) {
             throw new StorageException("Failed to move clip from temporary directory to output directory", e);
         }
 
         ClipOptions clipMetadata;
         try {
-            clipMetadata = metadataService.getVideoMetadata(clipFile).get();
+            clipMetadata = metadataService.getVideoMetadata(newClipFile).get();
         } catch (InterruptedException | ExecutionException e) {
             Thread.currentThread().interrupt();
             throw new FFMPEGException("Error retrieving video metadata for clip: " + e.getMessage());
@@ -199,7 +200,7 @@ public class ClipService {
 
         // Thumbnail generation can fail with error propagation
         try {
-            thumbnailService.createThumbnail(clipFile, thumbnailFile, 0.0f);
+            thumbnailService.createThumbnail(newClipFile, thumbnailFile, 0.0f);
         } catch (InterruptedException e) {
             logger.error("Thumbnail generation interrupted for user: {}", user.getId(), e);
             Thread.currentThread().interrupt();
@@ -207,10 +208,10 @@ public class ClipService {
             logger.error("Error generating thumbnail for user: {}", user.getId(), e);
         }
 
-        clipMetadata.setTitle(clipOptions.getTitle());
-        clipMetadata.setDescription(clipOptions.getDescription());
+        clipMetadata.setTitle(title);
+        clipMetadata.setDescription(description);
 
-        Clip clip = saveClip(clipMetadata, user, clipFile.getAbsolutePath(), thumbnailFile.getAbsolutePath());
+        Clip clip = saveClip(clipMetadata, user, newClipFile.getAbsolutePath(), thumbnailFile.getAbsolutePath());
         logger.info("Clip created successfully with ID: {}", clip.getId());
     }
 
