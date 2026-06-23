@@ -160,9 +160,9 @@ public class ClipService {
         }
 
         String path = clip.getVideoPath();
-        File file = new File(path);
+        Path file = directoryService.resolvePath(path);
 
-        if (!file.exists()) {
+        if (!Files.exists(file)) {
             throw new JobNotFound("Clip file not found");
         }
 
@@ -183,8 +183,9 @@ public class ClipService {
         }
 
         String path = clip.getThumbnailPath();
-        File file = new File(path);
-        if (!file.exists()) {
+        Path file = directoryService.resolvePath(path);
+
+        if (!Files.exists(file)) {
             throw new JobNotFound("Thumbnail file not found");
         }
 
@@ -213,8 +214,8 @@ public class ClipService {
         clip.setFps(options.getFps());
         clip.setDuration(options.getDuration() - options.getStartPoint());
         clip.setFileSize(options.getFileSize());
-        clip.setVideoPath(videoPath.toString());
-        clip.setThumbnailPath(thumbnailPath.toString());
+        clip.setVideoPath(directoryService.relativisePath(videoPath.toAbsolutePath()).toString());
+        clip.setThumbnailPath(directoryService.relativisePath(thumbnailPath.toAbsolutePath()).toString());
         return clipRepository.save(clip);
     }
 

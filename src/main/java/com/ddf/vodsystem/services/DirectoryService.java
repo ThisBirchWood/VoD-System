@@ -77,6 +77,18 @@ public class DirectoryService {
         return streamFolder;
     }
 
+    public Path relativisePath(Path path) {
+        Path media = Path.of(usersDir).toAbsolutePath();
+        Path newPath = path.toAbsolutePath();
+        return media.relativize(newPath);
+    }
+
+    public Path resolvePath(String path) {
+        Path media = Path.of(usersDir).toAbsolutePath();
+        Path newPath = Path.of(path);
+        return media.resolve(newPath);
+    }
+
     public void saveMultipartFile(Path path, MultipartFile multipartFile) throws IOException {
         Files.createDirectories(path.getParent());
         Files.copy(multipartFile.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
