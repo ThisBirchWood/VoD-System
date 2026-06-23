@@ -7,6 +7,7 @@ import com.ddf.vodsystem.entities.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -200,8 +201,8 @@ public class ClipService {
      */
     public Clip saveClip(ClipOptions options,
                          User user,
-                         String videoPath,
-                         String thumbnailPath) {
+                         Path videoPath,
+                         Path thumbnailPath) {
         Clip clip = new Clip();
         clip.setUser(user);
         clip.setTitle(options.getTitle() != null ? options.getTitle() : "Untitled Clip");
@@ -212,23 +213,23 @@ public class ClipService {
         clip.setFps(options.getFps());
         clip.setDuration(options.getDuration() - options.getStartPoint());
         clip.setFileSize(options.getFileSize());
-        clip.setVideoPath(videoPath);
-        clip.setThumbnailPath(thumbnailPath);
+        clip.setVideoPath(videoPath.toString());
+        clip.setThumbnailPath(thumbnailPath.toString());
         return clipRepository.save(clip);
     }
 
     public void persistClip(String title,
                             String description,
                             User user,
-                            File clipFile,
+                            Path clipFile,
                             String fileName) {
-        File newClipFile;
-        File thumbnailFile;
+        Path newClipFile;
+        Path thumbnailFile;
 
         // Move temp file from temp dir to output dir
         try {
-            newClipFile = directoryService.getUserClipsFile(user.getId(), fileName);
-            thumbnailFile = directoryService.getUserThumbnailsFile(user.getId(), fileName + ".png");
+            newClipFile = directoryService.getClipsDir(user.getId()).resolve(fileName);
+            thumbnailFile = directoryService.getThumbnailsDir(user.getId()).resolve(fileName + ".png");
             directoryService.copyFile(clipFile, newClipFile);
         } catch (IOException e) {
             throw new StorageException("Failed to move clip from temporary directory to output directory", e);
@@ -255,7 +256,7 @@ public class ClipService {
         clipMetadata.setTitle(title);
         clipMetadata.setDescription(description);
 
-        Clip clip = saveClip(clipMetadata, user, newClipFile.getAbsolutePath(), thumbnailFile.getAbsolutePath());
+        Clip clip = saveClip(clipMetadata, user, newClipFile, thumbnailFile);
         logger.info("Clip created successfully with ID: {}", clip.getId());
     }
 

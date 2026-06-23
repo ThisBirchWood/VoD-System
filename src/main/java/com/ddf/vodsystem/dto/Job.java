@@ -2,7 +2,7 @@ package com.ddf.vodsystem.dto;
 
 import lombok.Data;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.time.Instant;
 
 @Data
@@ -12,7 +12,7 @@ public class Job {
     private JobState state = JobState.READY;
     private String errorOutput;
 
-    private File download;
+    private Path download;
     private Instant createdAt = Instant.now();
 
     public Job(String uuid) {

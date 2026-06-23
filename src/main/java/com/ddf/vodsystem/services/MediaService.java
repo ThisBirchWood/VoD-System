@@ -10,12 +10,14 @@ import com.ddf.vodsystem.services.media.StreamActionsService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class MediaService {
@@ -49,8 +51,8 @@ public class MediaService {
         Optional<User> user = userService.getLoggedInUser();
         String filename = job.getUuid() + ".mp4";
 
-        File tempInputFile = directoryService.getTempInputFile(filename);
-        File tempOutputFile = directoryService.getTempOutputFile(filename);
+        Path tempInputFile = directoryService.getTempInputDir().resolve(filename);
+        Path tempOutputFile = directoryService.getTempOutputDir().resolve(filename);
         directoryService.saveMultipartFile(tempInputFile, file);
 
         job.setState(JobState.PROCESSING);
@@ -107,8 +109,8 @@ public class MediaService {
                 .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
 
         Job job = jobRegistryService.generateJob();
-        File streamDirectory = directoryService.getStreamDir(user.getStreamKey());
-        List<File> fileSegments = getSegmentsInRange(streamDirectory.getAbsolutePath(), startTime, endTime);
+        Path streamDirectory = directoryService.getStreamDir(user.getStreamKey());
+        List<Path> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
 
         if (fileSegments.isEmpty()) {
             throw new IllegalArgumentException("No stream segments found in the given time range");
@@ -119,7 +121,7 @@ public class MediaService {
         float duration = (endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000f;
 
         job.setState(JobState.PROCESSING);
-        File outputFile = directoryService.getVodFile(user.getId(), UUID.randomUUID() + ".mp4");
+        Path outputFile = directoryService.getVodsDir(user.getId()).resolve(UUID.randomUUID() + ".mp4");
         streamActionsService.saveSection(
             fileSegments,
             trimOffset,
@@ -167,8 +169,8 @@ public class MediaService {
                 .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
 
         Job job = jobRegistryService.generateJob();
-        File streamDirectory = directoryService.getStreamDir(user.getStreamKey());
-        List<File> fileSegments = getSegmentsInRange(streamDirectory.getAbsolutePath(), startTime, endTime);
+        Path streamDirectory = directoryService.getStreamDir(user.getStreamKey());
+        List<Path> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
 
         if (fileSegments.isEmpty()) {
             throw new IllegalArgumentException("No stream segments found in the given time range");
@@ -177,7 +179,7 @@ public class MediaService {
         long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
         float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
 
-        File outputFile = directoryService.getTempOutputFile(UUID.randomUUID() + ".mp4");
+        Path outputFile = directoryService.getTempOutputDir().resolve(UUID.randomUUID() + ".mp4");
         streamActionsService.saveSection(fileSegments, trimOffset, duration, outputFile, job.getProgressTracker())
             .thenRun(() -> {
                 job.setDownload(outputFile);
@@ -188,7 +190,7 @@ public class MediaService {
                         "",
                         user,
                         outputFile,
-                        outputFile.getName()
+                        outputFile.getFileName().toString()
                     );
                 }
             ).exceptionally(ex -> {
@@ -201,25 +203,24 @@ public class MediaService {
         return job;
     }
 
-    private List<File> getSegmentsInRange(String streamDirectory, Instant startTime, Instant endTime) {
-        File dir = new File(streamDirectory);
-        File[] tsFiles = dir.listFiles((d, name) -> name.endsWith(".ts"));
-        if (tsFiles == null) return List.of();
-
+    private List<Path> getSegmentsInRange(Path streamDirectory, Instant startTime, Instant endTime) throws IOException {
         long startMs = startTime.toEpochMilli();
         long endMs = endTime.toEpochMilli();
 
-        return Arrays.stream(tsFiles)
-                .filter(f -> {
-                    long segMs = parseTimestampMs(f);
-                    return segMs < endMs && (segMs + HLS_SEGMENT_LENGTH * 1000) > startMs;
-                })
-                .sorted(Comparator.comparingLong(this::parseTimestampMs))
-                .collect(Collectors.toList());
+        try (Stream<Path> files = Files.list(streamDirectory)) {
+            return files
+                    .filter(p -> p.getFileName().toString().endsWith(".ts"))
+                    .filter(p -> {
+                        long segMs = parseTimestampMs(p);
+                        return segMs < endMs && (segMs + HLS_SEGMENT_LENGTH * 1000) > startMs;
+                    })
+                    .sorted(Comparator.comparingLong(this::parseTimestampMs))
+                    .collect(Collectors.toList());
+        }
     }
 
-    private long parseTimestampMs(File file) {
-        String name = file.getName().replace(".ts", "");
+    private long parseTimestampMs(Path path) {
+        String name = path.getFileName().toString().replace(".ts", "");
         long value = Long.parseLong(name);
         // nginx hls_fragment_naming system uses seconds; convert to ms
         return value < 1_000_000_000_000L ? value * 1000L : value;

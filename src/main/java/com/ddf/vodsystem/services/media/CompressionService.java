@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -26,14 +26,18 @@ public class CompressionService {
     private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
     @Async("ffmpegTaskExecutor")
-    public CompletableFuture<CommandOutput> compress(File inputFile,
-                                                     File outputFile,
+    public CompletableFuture<CommandOutput> compress(Path inputFile,
+                                                     Path outputFile,
                                                      ClipOptions clipOptions,
                                                      ProgressTracker progress
     ) throws IOException, InterruptedException {
-        logger.info("Compressing video from {} to {}", inputFile.getAbsolutePath(), outputFile.getAbsolutePath());
+        logger.info("Compressing video from {} to {}", inputFile.toAbsolutePath(), outputFile.toAbsolutePath());
 
-        List<String> command = buildCommand(inputFile, outputFile, clipOptions);
+        List<String> command = buildCommand(
+                inputFile,
+                outputFile,
+                clipOptions
+        );
         CommandOutput result = CommandRunner.run(command, line -> setProgress(line, progress, clipOptions.getDuration()));
         progress.markComplete();
 
@@ -93,14 +97,14 @@ public class CompressionService {
         return command;
     }
 
-    private List<String> buildInputs(File inputFile, Float startPoint, Float length) {
+    private List<String> buildInputs(Path inputFile, Float startPoint, Float length) {
         List<String> command = new ArrayList<>();
 
         command.add("-ss");
         command.add(startPoint.toString());
 
         command.add("-i");
-        command.add(inputFile.getAbsolutePath());
+        command.add(inputFile.toAbsolutePath().toString());
 
         command.add("-t");
         command.add(Float.toString(length));
@@ -108,7 +112,7 @@ public class CompressionService {
         return command;
     }
 
-    private List<String> buildCommand(File inputFile, File outputFile, ClipOptions clipOptions) {
+    private List<String> buildCommand(Path inputFile, Path outputFile, ClipOptions clipOptions) {
         List<String> command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");
@@ -126,7 +130,7 @@ public class CompressionService {
         }
 
         // Output file
-        command.add(outputFile.getAbsolutePath());
+        command.add(outputFile.toAbsolutePath().toString());
         return command;
     }
 }

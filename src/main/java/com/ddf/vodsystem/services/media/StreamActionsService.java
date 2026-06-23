@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -47,16 +47,16 @@ public class StreamActionsService {
      *         failure
      */
     @Async("ffmpegTaskExecutor")
-    public CompletableFuture<File> saveSection(
-            List<File> segments,
+    public CompletableFuture<Path> saveSection(
+            List<Path> segments,
             float trimOffset,
             float duration,
-            File outputFile,
+            Path outputFile,
             ProgressTracker progressTracker
     ) {
         try {
             String concatInput = segments.stream()
-                    .map(File::getAbsolutePath)
+                    .map(p -> p.toAbsolutePath().toString())
                     .collect(Collectors.joining("|"));
 
             List<String> command = List.of(
@@ -66,16 +66,16 @@ public class StreamActionsService {
                     "-ss", String.valueOf(trimOffset),
                     "-t", String.valueOf(duration),
                     "-c", "copy",
-                    outputFile.getAbsolutePath()
+                    outputFile.toAbsolutePath().toString()
             );
 
             logger.info("Saving section with ({} segments) to '{}'",
-                    segments.size(), outputFile.getAbsolutePath());
+                    segments.size(), outputFile);
             CommandRunner.run(command, line -> CommandRunner.setProgress(line, progressTracker, duration));
 
             return CompletableFuture.completedFuture(outputFile);
         } catch (Exception e) {
-            logger.error("Failed to save section to '{}'", outputFile.getAbsolutePath(), e);
+            logger.error("Failed to save section to '{}'", outputFile, e);
             return CompletableFuture.failedFuture(e);
         }
     }
