@@ -3,6 +3,7 @@ import { Eye, EyeOff, Copy, Check } from "lucide-react";
 import Box from "../components/Box.tsx";
 import { getUser } from "../utils/endpoints.ts";
 import type { User } from "../utils/types.ts";
+import { formatLocalDate } from "../utils/utils.ts";
 
 const Profile = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -44,7 +45,7 @@ const Profile = () => {
                     <p className="text-sm text-gray-500">@{user.username}</p>
                     <p className="text-sm text-gray-500">{user.email}</p>
                     <p className="text-xs text-gray-400 mt-1">
-                        Member since {new Date(user.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+                        Member since {formatLocalDate(user.createdAt)}
                     </p>
                 </div>
             </Box>

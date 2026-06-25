@@ -7,11 +7,18 @@ function formatTime(seconds: number): string {
     return `${m}:${pad(s)}`;
 }
 
+// Parses a UTC date string, appending Z if no timezone offset is present so
+// the browser always interprets the value as UTC rather than local time.
 function stringToDate(dateString: string): Date {
     const normalized = dateString.replace(/(\.\d{3})\d+/, "$1");
-    const date = new Date(normalized);
+    const withTz = /[Zz]$|[+-]\d{2}:\d{2}$|[+-]\d{4}$/.test(normalized) ? normalized : `${normalized}Z`;
+    const date = new Date(withTz);
     if (isNaN(date.getTime())) throw new Error("Invalid date string");
     return date;
+}
+
+function formatLocalDate(dateString: string, options?: Intl.DateTimeFormatOptions): string {
+    return stringToDate(dateString).toLocaleDateString(undefined, options ?? { year: "numeric", month: "long", day: "numeric" });
 }
 
 function dateToTimeAgo(date: Date): string {
@@ -33,4 +40,4 @@ function dateToTimeAgo(date: Date): string {
     return `${s} second${s !== 1 ? 's' : ''} ago`;
 }
 
-export { formatTime, stringToDate, dateToTimeAgo };
+export { formatTime, stringToDate, dateToTimeAgo, formatLocalDate };
