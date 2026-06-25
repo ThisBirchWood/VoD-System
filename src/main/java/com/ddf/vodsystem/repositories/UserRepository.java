@@ -11,4 +11,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.googleId = ?1")
     Optional<User> findByGoogleId(String googleId);
+
+    @Query("SELECT u FROM User u WHERE u.streamKey = ?1")
+    Optional<User> findByStreamKey(String streamKey);
 }

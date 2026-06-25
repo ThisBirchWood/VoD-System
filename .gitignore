@@ -39,6 +39,9 @@ build/
 .vscode/
 
 ### Generated Files ###
-videos/
+/videos
+/outputs
+frontend/.flowbite-react
 
 generated
+.mvn

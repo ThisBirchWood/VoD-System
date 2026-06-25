@@ -1,16 +1,13 @@
 services:
-
   postgres:
     image: postgres:15
     container_name: vod_postgres
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: vodSystem
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${POSTGRES_DATA}:/var/lib/postgresql/data
 
   backend:
     build:
@@ -21,6 +18,9 @@ services:
       - postgres
     env_file:
       - .env
+    volumes:
+      - ${MEDIA_DATA}:/app/media
+      - ${STREAM_DATA}:/app/stream
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -30,13 +30,27 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: vod_frontend
-    env_file:
-      - .env
+    environment:
+      VITE_API_URL: ${BACKEND_URL}
+      VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     depends_on:
       - backend
     ports:
       - "5173:5173"
     restart: unless-stopped
 
-volumes:
-  postgres_data:
+  rtmp:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: vod_rtmp
+    environment:
+      - WEB_SERVER_URL=http://backend:8080
+    ports:
+      - "1935:1935"
+    volumes:
+      - ${STREAM_DATA}:/stream
+    pull_policy: build
+    restart: unless-stopped
+    depends_on:
+      - backend

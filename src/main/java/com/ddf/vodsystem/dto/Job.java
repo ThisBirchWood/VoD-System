@@ -1,28 +1,21 @@
 package com.ddf.vodsystem.dto;
 
-import java.io.File;
 import lombok.Data;
+
+import java.nio.file.Path;
+import java.time.Instant;
 
 @Data
 public class Job {
     private String uuid;
-    private File inputFile;
-    private File outputFile;
+    private ProgressTracker progressTracker = new ProgressTracker();
+    private JobState state = JobState.READY;
+    private String errorOutput;
 
-    // configs
-    private ClipOptions inputClipOptions;
-    private ClipOptions outputClipOptions = new ClipOptions();
+    private Path download;
+    private Instant createdAt = Instant.now();
 
-    // job status
-    private JobStatus status = new JobStatus();
-
-    public Job(String uuid,
-               File inputFile,
-               File outputFile,
-               ClipOptions inputClipOptions) {
+    public Job(String uuid) {
         this.uuid = uuid;
-        this.inputFile = inputFile;
-        this.outputFile = outputFile;
-        this.inputClipOptions = inputClipOptions;
     }
 }

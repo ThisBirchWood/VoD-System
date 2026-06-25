@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -20,9 +20,11 @@ import java.util.concurrent.Future;
 public class MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
+    private static final String DURATION = "duration";
+
     @Async("ffmpegTaskExecutor")
-    public Future<ClipOptions> getVideoMetadata(File file) {
-        logger.info("Getting metadata for file {}", file.getAbsolutePath());
+    public Future<ClipOptions> getVideoMetadata(Path file) {
+        logger.info("Getting metadata for file {}", file);
 
         List<String> command = List.of(
                 "ffprobe",
@@ -30,7 +32,7 @@ public class MetadataService {
                 "-print_format", "json",
                 "-show_format", "-select_streams",
                 "v:0", "-show_entries", "stream=duration,width,height,r_frame_rate:format=size,duration",
-                "-i", file.getAbsolutePath()
+                "-i", file.toAbsolutePath().toString()
         );
 
         ObjectMapper mapper = new ObjectMapper();
@@ -50,48 +52,6 @@ public class MetadataService {
             throw new FFMPEGException("Error while getting video metadata: " + e);
         }
     }
-
-    public void validateMetadata(ClipOptions inputFileMetadata, ClipOptions outputFileMetadata) {
-        Float start = outputFileMetadata.getStartPoint();
-        Float duration = outputFileMetadata.getDuration();
-        Float fileSize = outputFileMetadata.getFileSize();
-        Integer width = outputFileMetadata.getWidth();
-        Integer height = outputFileMetadata.getHeight();
-        Float fps = outputFileMetadata.getFps();
-
-        if (start == null) {
-            outputFileMetadata.setStartPoint(0f);
-        }
-
-        if (duration == null) {
-            outputFileMetadata.setDuration(inputFileMetadata.getDuration());
-        }
-
-        if (start != null && start < 0) {
-            throw new IllegalArgumentException("Start point cannot be negative");
-        }
-
-        if (duration != null && duration < 0) {
-            throw new IllegalArgumentException("Duration cannot be negative");
-        }
-
-        if (fileSize != null && fileSize < 100) {
-            throw new IllegalArgumentException("File size cannot be less than 100kb");
-        }
-
-        if (width != null && width < 1) {
-            throw new IllegalArgumentException("Width cannot be less than 1");
-        }
-
-        if (height != null && height < 1) {
-            throw new IllegalArgumentException("Height cannot be less than 1");
-        }
-
-        if (fps != null && fps < 1) {
-            throw new IllegalArgumentException("FPS cannot be less than 1");
-        }
-    }
-
 
     private ClipOptions parseVideoMetadata(JsonNode node) {
         ClipOptions metadata = new ClipOptions();
@@ -120,8 +80,8 @@ public class MetadataService {
     }
 
     private Float extractDuration(JsonNode streamNode) {
-        if (streamNode.has("duration")) {
-            return Float.valueOf(streamNode.get("duration").asText());
+        if (streamNode.has(DURATION)) {
+            return Float.valueOf(streamNode.get(DURATION).asText());
         }
 
         throw new FFMPEGException("ffprobe duration missing");
@@ -157,8 +117,8 @@ public class MetadataService {
     }
 
     private void extractEndPointFromFormat(ClipOptions metadata, JsonNode formatNode) {
-        if (formatNode != null && formatNode.has("duration") && metadata.getDuration() == null) {
-            metadata.setDuration(Float.parseFloat(formatNode.get("duration").asText()));
+        if (formatNode != null && formatNode.has(DURATION) && metadata.getDuration() == null) {
+            metadata.setDuration(Float.parseFloat(formatNode.get(DURATION).asText()));
         }
     }
 

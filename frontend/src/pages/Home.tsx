@@ -1,43 +1,78 @@
+import { Upload, Scissors, SlidersHorizontal, Radio, LayoutGrid, Play } from "lucide-react";
+
+const features = [
+    {
+        icon: Upload,
+        title: "Upload & compress",
+        description: "Drop in a video file, set your clip range and export settings, then compress.",
+    },
+    {
+        icon: Scissors,
+        title: "Trim",
+        description: "Set start and end points with a range slider. Preview as you go.",
+    },
+    {
+        icon: SlidersHorizontal,
+        title: "Export settings",
+        description: "Choose resolution, frame rate, and an optional file size cap.",
+    },
+    {
+        icon: Radio,
+        title: "RTMP streaming",
+        description: "Point OBS at your stream key and go live. Find the key in your profile.",
+    },
+    {
+        icon: LayoutGrid,
+        title: "Clip library",
+        description: "Browse all your clips. Watch, rename, edit the description, or delete.",
+    },
+    {
+        icon: Play,
+        title: "Built-in player",
+        description: "Scrub, adjust volume, go fullscreen. Runs in the browser.",
+    },
+];
+
 const Home = () => {
-
     return (
-        <div className={"max-h-screen flex flex-col justify-center items-center px-6 py-12 text-gray-900"}>
-            {/* Logo */}
-            <img
-                src="/logo.png"
-                alt="VoD System Logo"
-                className={"h-44 mb-8 object-contain"}
-            />
-
-            {/* Description Container */}
-            <div className={"max-w-xl text-center"}>
-                <h2 className={"text-3xl font-semibold mb-6 text-gray-700"}>
-                    What is the VoD System?
-                </h2>
-                <p className={"text-lg leading-relaxed text-gray-600 mb-6"}>
-                    The VoD System is a powerful clip management platform designed to streamline how you
-                    handle your video content. Whether you're a content creator, streamer, or educator,
-                    VoD System lets you:
-                </p>
-
-                <ul className={"list-disc list-inside text-gray-600 mb-8 space-y-2"}>
-                    <li>Upload clips effortlessly and securely.</li>
-                    <li>Edit and trim videos with intuitive controls.</li>
-                    <li>Compress files to specific file sizes.</li>
-                    <li>Organize your clips for quick access and sharing.</li>
-                </ul>
-
-                <p className={"text-lg leading-relaxed text-gray-600"}>
-                    Designed with simplicity and efficiency in mind, VoD System adapts to your workflow,
-                    making video clip management faster and more enjoyable than ever.
+        <div className="flex flex-col items-center px-8 py-12 min-h-full">
+            {/* Hero */}
+            <div className="flex flex-col items-center text-center max-w-2xl mb-14">
+                <img
+                    src="/logo.png"
+                    alt="VoD System Logo"
+                    className="h-24 mb-6 object-contain"
+                />
+                <h1 className="text-4xl font-semibold text-gray-900 mb-3 leading-tight">
+                    A home for your clips.
+                </h1>
+                <p className="text-base text-gray-500 leading-relaxed">
+                    Upload, trim, and export video clips. Stream live if you need to.
                 </p>
             </div>
 
-            {/* File Support Note */}
-            <div className={"bg-gray-100 border border-gray-300 rounded-md p-4 text-sm text-gray-500 max-w-md mx-auto"}>
-                <strong>Note:</strong> Currently, only <code>.mp4</code> files are supported for upload and processing.
-                Support for additional video formats will be added in future updates.
+            {/* Feature grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl mb-10">
+                {features.map(({ icon: Icon, title, description }) => (
+                    <div
+                        key={title}
+                        className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3 shadow-sm"
+                    >
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Icon size={18} className="text-primary" />
+                        </div>
+                        <div>
+                            <p className="font-semibold text-gray-900 text-sm mb-1">{title}</p>
+                            <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+                        </div>
+                    </div>
+                ))}
             </div>
+
+            {/* Format note */}
+            <p className="text-xs text-gray-400">
+                Supports MP4, MOV, WebM, and OGG.
+            </p>
         </div>
     );
 };

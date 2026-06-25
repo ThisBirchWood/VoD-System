@@ -1,7 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.dto.APIResponse;
-import com.ddf.vodsystem.dto.TokenDTO;
+import com.ddf.vodsystem.controllers.dto.Token;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
@@ -14,18 +14,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/auth/")
+@RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+    private static final String SUCCESS = "success";
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @GetMapping("/user")
+    @GetMapping("/me")
     public ResponseEntity<APIResponse<User>> user() {
         Optional<User> user = userService.getLoggedInUser();
 
@@ -34,14 +35,14 @@ public class UserController {
         }
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "User retrieved successfully", user.get())
+                new APIResponse<>(SUCCESS, "User retrieved successfully", user.get())
         );
     }
 
     @PostMapping("/login")
-    public ResponseEntity<APIResponse<TokenDTO>> login(@RequestBody TokenDTO tokenDTO,
-                                                       HttpServletResponse response) {
-        String jwt = userService.login(tokenDTO.getToken());
+    public ResponseEntity<APIResponse<Token>> login(@RequestBody Token token,
+                                                    HttpServletResponse response) {
+        String jwt = userService.login(token.token());
 
         ResponseCookie cookie = ResponseCookie.from("token", jwt)
                 .httpOnly(true)
@@ -54,7 +55,7 @@ public class UserController {
         response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Logged in successfully", new TokenDTO(jwt))
+                new APIResponse<>(SUCCESS, "Logged in successfully", new Token(jwt))
         );
     }
 
@@ -71,7 +72,7 @@ public class UserController {
         response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Logged out successfully", null)
+                new APIResponse<>(SUCCESS, "Logged out successfully", null)
         );
     }
 }

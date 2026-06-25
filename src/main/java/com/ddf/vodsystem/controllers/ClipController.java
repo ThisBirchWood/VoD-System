@@ -1,9 +1,14 @@
 package com.ddf.vodsystem.controllers;
 
-import com.ddf.vodsystem.dto.ClipDTO;
+import com.ddf.vodsystem.controllers.dto.ClipResponse;
 import com.ddf.vodsystem.dto.APIResponse;
+import com.ddf.vodsystem.controllers.dto.ClipUpdateRequest;
 import com.ddf.vodsystem.entities.Clip;
 import com.ddf.vodsystem.services.ClipService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,15 +20,16 @@ import java.util.Optional;
 public class ClipController {
     private final ClipService clipService;
     private static final String SUCCESS = "success";
+    private static final String FILENAME_HEADER = "inline; filename=\"%s\"";
 
     public ClipController(ClipService clipService) {
         this.clipService = clipService;
     }
 
     @GetMapping("")
-    public ResponseEntity<APIResponse<List<ClipDTO>>> getClips() {
+    public ResponseEntity<APIResponse<List<ClipResponse>>> getClips() {
         List<Clip> clips = clipService.getClipsByUser();
-        List<ClipDTO> clipDTOs = clips.stream()
+        List<ClipResponse> clipDTOs = clips.stream()
                 .map(this::convertToDTO)
                 .toList();
 
@@ -36,19 +42,30 @@ public class ClipController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<APIResponse<ClipDTO>> getClipById(@PathVariable Long id) {
+    public ResponseEntity<APIResponse<ClipResponse>> getClipById(@PathVariable Long id) {
         Optional<Clip> clip = clipService.getClipById(id);
         if (clip.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        ClipDTO clipDTO = convertToDTO(clip.get());
+        ClipResponse clipDTO = convertToDTO(clip.get());
 
         return ResponseEntity.ok(
                 new APIResponse<>(SUCCESS,
                         "Clip retrieved successfully",
                         clipDTO
                 )
+        );
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<APIResponse<ClipResponse>> updateClip(@PathVariable Long id,
+                                                           @RequestBody ClipUpdateRequest updateFields) {
+        Clip clip = clipService.updateClip(id, updateFields);
+        ClipResponse clipDTO = convertToDTO(clip);
+
+        return ResponseEntity.ok(
+                new APIResponse<>(SUCCESS, "Clip updated successfully", clipDTO)
         );
     }
 
@@ -67,14 +84,42 @@ public class ClipController {
         );
     }
 
-    private ClipDTO convertToDTO(Clip clip) {
-        ClipDTO dto = new ClipDTO();
-        dto.setId(clip.getId());
-        dto.setUserId(clip.getUser().getId());
-        dto.setTitle(clip.getTitle());
-        dto.setDescription(clip.getDescription());
-        dto.setDuration(clip.getDuration());
-        dto.setCreatedAt(clip.getCreatedAt());
-        return dto;
+    @GetMapping("/{id}/media")
+    public ResponseEntity<Resource> downloadClip(@PathVariable Long id) {
+        Resource resource = clipService.downloadClip(id);
+
+        if (resource == null || !resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
+                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                .body(resource);
+    }
+
+    @GetMapping("/{id}/thumbnail")
+    public ResponseEntity<Resource> downloadThumbnail(@PathVariable Long id) {
+        Resource resource = clipService.downloadThumbnail(id);
+
+        if (resource == null || !resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
+                .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                .body(resource);
+    }
+
+    private ClipResponse convertToDTO(Clip clip) {
+        return new ClipResponse(
+                clip.getId(),
+                clip.getUser().getId(),
+                clip.getTitle(),
+                clip.getDescription(),
+                clip.getDuration(),
+                clip.getCreatedAt()
+        );
     }
 }

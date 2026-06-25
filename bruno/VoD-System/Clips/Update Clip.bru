@@ -1,0 +1,22 @@
+meta {
+  name: Update Clip
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/clips/5
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "NOT BZ"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -16,17 +16,19 @@ const ExportWidget = ({dataSend, handleDownload, downloadable, progress}: props)
                 Export
             </BlueButton>
 
-            { downloadable ?
-                (<BlueButton
-                    onClick={handleDownload}>
-                    Download
-                </BlueButton>)
-                :(
-                    <progress
-                        value={progress}
-                        className={"bg-gray-300 rounded-lg h-1"}>
-                    </progress> )
-            }
+            <div className="h-10 flex items-center">
+                { downloadable ?
+                    (<BlueButton className="w-full" onClick={handleDownload}>
+                        Download
+                    </BlueButton>)
+                    :(
+                        <progress
+                            value={progress}
+                            className="w-full h-1.5 rounded bg-gray-200">
+                        </progress>
+                    )
+                }
+            </div>
         </div>
     )
 }

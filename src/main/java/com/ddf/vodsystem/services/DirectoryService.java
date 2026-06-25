@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.stream.Stream;
 import java.nio.file.StandardCopyOption;
 
 import org.slf4j.Logger;
@@ -20,137 +20,120 @@ public class DirectoryService {
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(DirectoryService.class);
 
-    @Value("${storage.outputs}")
-    private String outputDir;
+    @Value("${media.users}")
+    private String usersDir;
 
-    @Value("${storage.temp.inputs}")
+    @Value("${media.streams}")
+    private String streamsDir;
+
+    @Value("${media.temp.inputs}")
     private String tempInputsDir;
 
-    @Value("${storage.temp.outputs}")
+    @Value("${media.temp.outputs}")
     private String tempOutputsDir;
 
     private static final long TEMP_DIR_TIME_LIMIT = 3 * 60 * 60 * (long) 1000; // 3 hours
     private static final long TEMP_DIR_CLEANUP_RATE = 30 * 60 * (long) 1000; // 30 minutes
 
-    public File getTempInputFile(String filename) {
-        String dir = tempInputsDir + File.separator + filename;
-        return new File(dir);
+    private static final String VODS_DIR_NAME = "vods";
+    private static final String CLIPS_DIR_NAME = "clips";
+    private static final String THUMBNAIL_DIR_NAME = "thumbnails";
+
+    public Path getTempInputDir() {
+        return Path.of(tempInputsDir);
     }
 
-    public File getTempOutputFile(String filename) {
-        String dir = tempOutputsDir + File.separator + filename;
-        return new File(dir);
+    public Path getTempOutputDir() {
+        return Path.of(tempOutputsDir);
     }
 
-    public File getUserClipsFile(Long userId, String fileName) {
-        if (userId == null || fileName == null || fileName.isEmpty()) {
-            throw new IllegalArgumentException("User ID and file name cannot be null or empty");
-        }
-
-        String dir = outputDir + File.separator + userId + File.separator + "clips" + File.separator + fileName;
-        File file = new File(dir);
-
-        try {
-            createDirectory(file.getParent());
-        } catch (IOException e) {
-            logger.error("Error creating clips directory: {}", e.getMessage());
-        }
-
-        return file;
+    public Path getUserDir(Long userId) throws IOException {
+        Path userDir = Path.of(usersDir + File.separator + userId);
+        Files.createDirectories(userDir);
+        return userDir;
     }
 
-    public File getUserThumbnailsFile(Long userId, String fileName) {
-        if (userId == null || fileName == null || fileName.isEmpty()) {
-            throw new IllegalArgumentException("User ID and file name cannot be null or empty");
-        }
-
-        String dir = outputDir + File.separator + userId + File.separator + "thumbnails" + File.separator + fileName;
-        File file = new File(dir);
-
-        try {
-            createDirectory(file.getParent());
-        } catch (IOException e) {
-            logger.error("Error creating thumbnails directory: {}", e.getMessage());
-        }
-
-        return file;
+    public Path getVodsDir(Long userId) throws IOException {
+        Path vodDir = getUserDir(userId).resolve(VODS_DIR_NAME);
+        Files.createDirectories(vodDir);
+        return vodDir;
     }
 
-    public void saveAtDir(File file, MultipartFile multipartFile) {
-        try {
-            createDirectory(file.getAbsolutePath());
-            Path filePath = Paths.get(file.getAbsolutePath());
-            Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+    public Path getClipsDir(Long userId) throws IOException {
+        Path clipsDir = getUserDir(userId).resolve(CLIPS_DIR_NAME);
+        Files.createDirectories(clipsDir);
+        return clipsDir;
     }
 
-    public void copyFile(File source, File target) {
-        Path sourcePath = Paths.get(source.getAbsolutePath());
-        Path destPath = Paths.get(target.getAbsolutePath());
-
-        try {
-            Files.createDirectories(destPath.getParent());
-            Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Copied file from {} to {}", sourcePath, destPath);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+    public Path getThumbnailsDir(Long userId) throws IOException {
+        Path thumbnailsDir = getUserDir(userId).resolve(THUMBNAIL_DIR_NAME);
+        Files.createDirectories(thumbnailsDir);
+        return thumbnailsDir;
     }
 
-    public void cutFile(File source, File target) {
-        copyFile(source, target);
-
-        try {
-            Files.deleteIfExists(source.toPath());
-            logger.info("Deleted source file: {}", source.getAbsolutePath());
-        } catch (IOException e) {
-            logger.error("Error deleting source file: {}", e.getMessage());
-        }
+    public Path getStreamDir(String streamKey) throws IOException {
+        Path streamFolder = Path.of(streamsDir, streamKey);
+        Files.createDirectories(streamFolder);
+        return streamFolder;
     }
 
-    public String getFileExtension(String filePath) {
-        Path path = Paths.get(filePath);
-        String fileName = path.getFileName().toString();
-
-        int dotIndex = fileName.lastIndexOf('.');
-        if (dotIndex == -1) {
-            return ""; // No extension
-        }
-        return fileName.substring(dotIndex + 1);
+    public Path relativisePath(Path path) {
+        Path media = Path.of(usersDir).toAbsolutePath();
+        Path newPath = path.toAbsolutePath();
+        return media.relativize(newPath);
     }
 
-    private void createDirectory(String dir) throws IOException {
-        // Create the directory if it doesn't exist
-        Path outputPath = Paths.get(dir);
-        if (Files.notExists(outputPath)) {
-            Files.createDirectories(outputPath);
-            logger.info("Created directory: {}", outputPath);
-        }
+    public Path resolvePath(String path) {
+        Path media = Path.of(usersDir).toAbsolutePath();
+        Path newPath = Path.of(path);
+        return media.resolve(newPath);
+    }
+
+    public void saveMultipartFile(Path path, MultipartFile multipartFile) throws IOException {
+        Files.createDirectories(path.getParent());
+        Files.copy(multipartFile.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    public void copyFile(Path source, Path target) throws IOException {
+        Files.createDirectories(target.getParent());
+        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        logger.info("Copied file from {} to {}", source, target);
     }
 
     private void cleanUpDirectory(String dir) throws IOException {
-        File file = new File(dir);
-        File[] files = file.listFiles();
+        Path dirPath = Path.of(dir);
 
-        if (files == null) {
+        if (Files.notExists(dirPath)) {
             logger.warn("No files found in directory: {}", dir);
             return;
         }
 
-        for (File f : files){
-            if (f.isFile() && f.lastModified() < (System.currentTimeMillis() - TEMP_DIR_TIME_LIMIT)) {
-                Files.delete(f.toPath());
-            }
+        try (Stream<Path> files = Files.list(dirPath)) {
+            files.filter(Files::isRegularFile)
+                    .filter(p -> {
+                        try {
+                            return Files.getLastModifiedTime(p).toMillis()
+                                    < System.currentTimeMillis() - TEMP_DIR_TIME_LIMIT;
+                        } catch (IOException e) {
+                            logger.warn("Could not read last modified time for {}", p);
+                            return false;
+                        }
+                    })
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                        } catch (IOException e) {
+                            logger.warn("Could not delete file {}", p);
+                        }
+                    });
         }
     }
 
     @PostConstruct
     public void createDirectoriesIfNotExist() throws IOException {
-        createDirectory(tempInputsDir);
-        createDirectory(tempOutputsDir);
-        createDirectory(outputDir);
+        Files.createDirectories(Path.of(tempInputsDir));
+        Files.createDirectories(Path.of(tempOutputsDir));
+        Files.createDirectories(Path.of(usersDir));
     }
 
     @Scheduled(fixedRate = TEMP_DIR_CLEANUP_RATE)

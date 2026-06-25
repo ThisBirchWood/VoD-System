@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.time.LocalDateTime;
+import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.HexFormat;
 import java.util.Optional;
 
 @Service
@@ -26,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     public UserService(UserRepository userRepository,
                        JwtService jwtService,
@@ -67,12 +70,17 @@ public class UserService {
         return jwtService.generateToken(user.getId());
     }
 
+    public Optional<User> getUserByStreamKey(String streamKey) {
+        return userRepository.findByStreamKey(streamKey);
+    }
+
     private User createOrUpdateUser(User user) {
         Optional<User> existingUser = userRepository.findByGoogleId(user.getGoogleId());
 
         if (existingUser.isEmpty()) {
             user.setRole(0);
-            user.setCreatedAt(LocalDateTime.now());
+            user.setCreatedAt(Instant.now());
+            user.setStreamKey(generateStreamKey());
             return userRepository.saveAndFlush(user);
         }
 
@@ -106,5 +114,11 @@ public class UserService {
         } catch (GeneralSecurityException | IOException e) {
             throw new NotAuthenticated("Invalid ID token: " + e.getMessage());
         }
+    }
+
+    private String generateStreamKey() {
+        byte[] bytes = new byte[24];
+        SECURE_RANDOM.nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
     }
 }

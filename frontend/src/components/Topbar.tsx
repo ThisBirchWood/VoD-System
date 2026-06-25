@@ -16,6 +16,7 @@ type props = {
     setSidebarToggled: (toggled: boolean) => void;
     user: User | null;
     fetchUser: () => void;
+    isStreaming: boolean;
     className?: string;
 }
 
@@ -24,6 +25,7 @@ const Topbar = ({
                     setSidebarToggled,
                     user,
                     fetchUser,
+                    isStreaming,
                     className}: props) => {
 
     const navigate = useNavigate();
@@ -56,7 +58,7 @@ const Topbar = ({
     }
 
     return (
-        <div className={clsx(className, "flex justify-between")}>
+        <div className={clsx(className, "flex justify-between items-center px-4 py-2 bg-white border-b border-gray-200")}>
             <MenuButton onClick={() => setSidebarToggled(!sidebarToggled)}>
                 {sidebarToggled ? <Menu size={24}/> :  <X size={24}/>}
             </MenuButton>
@@ -69,7 +71,19 @@ const Topbar = ({
                         referrerPolicy="no-referrer"
                     />
 
-                    <Dropdown label={user.name}>
+                    <Dropdown label={
+                        <span className="flex items-center gap-1.5">
+                            {user.name}
+                            {isStreaming && (
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                                </span>
+                            )}
+                        </span>
+                    }>
+                        <DropdownItem item="Profile"
+                                      onClick={() => navigate("/profile")} />
                         <DropdownItem item="Logout"
                                       onClick={() => handleLogout()}
                                       className={"text-red-500 font-medium"} />

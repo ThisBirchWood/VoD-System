@@ -17,8 +17,11 @@ type APIResponse = {
 
 type User = {
     name: string,
+    username: string,
     email: string,
-    profilePictureUrl: string
+    profilePictureUrl: string,
+    streamKey: string,
+    createdAt: string,
 }
 
 type Clip = {
@@ -30,15 +33,13 @@ type Clip = {
     createdAt: string,
 }
 
-type ProgressResult = {
-    process: {
-        progress: number,
-        complete: boolean
-    };
-    conversion: {
-        progress: number,
-        complete: boolean
-    };
+type JobResponse = {
+    uuid: string,
+    progress: number,
+    isComplete: boolean,
+    state: 'READY' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED',
+    errorOutput: string | null,
+    createdAt: string,
 };
 
 export type {
@@ -46,5 +47,5 @@ export type {
     VideoMetadata,
     User,
     Clip,
-    ProgressResult
+    JobResponse
 }

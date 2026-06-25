@@ -4,11 +4,12 @@ import Topbar from '../components/Topbar'
 import { Outlet } from 'react-router-dom';
 import {useEffect, useState} from "react";
 import type {User} from "../utils/types";
-import { getUser } from "../utils/endpoints";
+import { getUser, getStreamStatus } from "../utils/endpoints";
 
 const MainLayout = () => {
     const [sidebarToggled, setSidebarToggled] = useState(false);
     const [user, setUser] = useState<null | User>(null);
+    const [isStreaming, setIsStreaming] = useState(false);
 
     const fetchUser = async () => {
         try {
@@ -23,6 +24,14 @@ const MainLayout = () => {
         fetchUser();
     }, []);
 
+    useEffect(() => {
+        if (!user) return;
+        const poll = () => getStreamStatus().then(setIsStreaming).catch(() => {});
+        poll();
+        const interval = setInterval(poll, 10000);
+        return () => clearInterval(interval);
+    }, [user]);
+
     return (
         <div className={`transition-all duration-300 grid h-screen ${sidebarToggled ? "grid-cols-[0px_1fr]" : "grid-cols-[240px_1fr]"} grid-rows-[auto_1fr]`}>
             <Sidebar
@@ -33,8 +42,9 @@ const MainLayout = () => {
                 sidebarToggled={sidebarToggled}
                 setSidebarToggled={setSidebarToggled}
                 user={user}
-                fetchUser={fetchUser}/>
-            <div className="overflow-auto">
+                fetchUser={fetchUser}
+                isStreaming={isStreaming}/>
+            <div className="overflow-auto bg-background">
                 <Outlet />
             </div>
         </div>

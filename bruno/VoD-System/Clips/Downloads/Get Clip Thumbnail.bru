@@ -1,0 +1,15 @@
+meta {
+  name: Get Clip Thumbnail
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/clips/5/thumbnail
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

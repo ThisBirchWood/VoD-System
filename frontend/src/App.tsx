@@ -7,6 +7,8 @@ import Home from './pages/Home';
 import {useEffect} from "react";
 import MyClips from './pages/MyClips';
 import VideoPlayer from "./pages/VideoPlayer.tsx";
+import EditClip from "./pages/EditClip.tsx";
+import Profile from "./pages/Profile.tsx";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
@@ -25,6 +27,8 @@ function App() {
                         <Route path="/create/:id" element={<ClipEdit />} />
                         <Route path="/my-clips" element={<MyClips />} />
                         <Route path="/video/:id" element={<VideoPlayer />} />
+                        <Route path="/clips/:id/edit" element={<EditClip />} />
+                        <Route path="/profile" element={<Profile />} />
                     </Route>
                 </Routes>
             </Router>
