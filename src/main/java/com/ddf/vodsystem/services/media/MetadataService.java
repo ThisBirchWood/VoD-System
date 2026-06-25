@@ -20,6 +20,8 @@ import java.util.concurrent.Future;
 public class MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
 
+    private static final String DURATION = "duration";
+
     @Async("ffmpegTaskExecutor")
     public Future<ClipOptions> getVideoMetadata(Path file) {
         logger.info("Getting metadata for file {}", file);
@@ -78,8 +80,8 @@ public class MetadataService {
     }
 
     private Float extractDuration(JsonNode streamNode) {
-        if (streamNode.has("duration")) {
-            return Float.valueOf(streamNode.get("duration").asText());
+        if (streamNode.has(DURATION)) {
+            return Float.valueOf(streamNode.get(DURATION).asText());
         }
 
         throw new FFMPEGException("ffprobe duration missing");
@@ -115,8 +117,8 @@ public class MetadataService {
     }
 
     private void extractEndPointFromFormat(ClipOptions metadata, JsonNode formatNode) {
-        if (formatNode != null && formatNode.has("duration") && metadata.getDuration() == null) {
-            metadata.setDuration(Float.parseFloat(formatNode.get("duration").asText()));
+        if (formatNode != null && formatNode.has(DURATION) && metadata.getDuration() == null) {
+            metadata.setDuration(Float.parseFloat(formatNode.get(DURATION).asText()));
         }
     }
 

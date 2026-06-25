@@ -16,6 +16,7 @@ import java.util.Optional;
 @RequestMapping("/api/v1/stream")
 public class StreamController {
     private static final Logger logger = LoggerFactory.getLogger(StreamController.class);
+    private static final String SUCCESS = "success";
 
     private final StreamService streamService;
 
@@ -28,7 +29,7 @@ public class StreamController {
     public ResponseEntity<APIResponse<Stream>> startStream(@RequestParam("name") String streamKey) {
         logger.info("Stream start callback for key: {}", streamKey);
         Stream stream = streamService.startStream(streamKey);
-        return ResponseEntity.ok(new APIResponse<>("success", "Stream started", stream));
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Stream started", stream));
     }
 
     // Called by nginx on_publish_done
@@ -36,28 +37,28 @@ public class StreamController {
     public ResponseEntity<APIResponse<Void>> stopStream(@RequestParam("name") String streamKey) {
         logger.info("Stream stop callback for key: {}", streamKey);
         streamService.endStream(streamKey);
-        return ResponseEntity.ok(new APIResponse<>("success", "Stream ended", null));
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Stream ended", null));
     }
 
     // Called by nginx on_update
     @PostMapping("/heartbeat")
     public ResponseEntity<APIResponse<Void>> heartbeat(@RequestParam("name") String streamKey) {
         streamService.heartbeatStream(streamKey);
-        return ResponseEntity.ok(new APIResponse<>("success", "Heartbeat recorded", null));
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Heartbeat recorded", null));
     }
 
     @GetMapping("/history/{userId}")
     public ResponseEntity<APIResponse<List<Stream>>> getStreamHistory(@PathVariable Long userId) {
         List<Stream> history = streamService.getStreamHistory(userId);
-        return ResponseEntity.ok(new APIResponse<>("success", "Stream history retrieved", history));
+        return ResponseEntity.ok(new APIResponse<>(SUCCESS, "Stream history retrieved", history));
     }
 
     @GetMapping("/current")
     public ResponseEntity<APIResponse<StreamResponse>> getCurrentStream() {
         Optional<Stream> stream = streamService.getActiveStream();
-        return stream.map(value -> ResponseEntity.ok(new APIResponse<>("success",
+        return stream.map(value -> ResponseEntity.ok(new APIResponse<>(SUCCESS,
                 "Streaming status retrieved",
-                new StreamResponse(true, value.getId())))).orElseGet(() -> ResponseEntity.ok(new APIResponse<>("success",
+                new StreamResponse(true, value.getId())))).orElseGet(() -> ResponseEntity.ok(new APIResponse<>(SUCCESS,
                 "Streaming status retrieved",
                 new StreamResponse(false, null))));
     }

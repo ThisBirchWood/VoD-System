@@ -28,6 +28,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     public UserService(UserRepository userRepository,
                        JwtService jwtService,
                        @Value("${google.client.id}") String googleClientId) {
@@ -116,7 +118,7 @@ public class UserService {
 
     private String generateStreamKey() {
         byte[] bytes = new byte[24];
-        new SecureRandom().nextBytes(bytes);
+        SECURE_RANDOM.nextBytes(bytes);
         return HexFormat.of().formatHex(bytes);
     }
 }

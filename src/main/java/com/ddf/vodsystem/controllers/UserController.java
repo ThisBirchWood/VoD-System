@@ -20,6 +20,7 @@ public class UserController {
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+    private static final String SUCCESS = "success";
 
     public UserController(UserService userService) {
         this.userService = userService;
@@ -34,7 +35,7 @@ public class UserController {
         }
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "User retrieved successfully", user.get())
+                new APIResponse<>(SUCCESS, "User retrieved successfully", user.get())
         );
     }
 
@@ -54,7 +55,7 @@ public class UserController {
         response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Logged in successfully", new Token(jwt))
+                new APIResponse<>(SUCCESS, "Logged in successfully", new Token(jwt))
         );
     }
 
@@ -71,7 +72,7 @@ public class UserController {
         response.addHeader("Set-Cookie", cookie.toString());
 
         return ResponseEntity.ok(
-                new APIResponse<>("success", "Logged out successfully", null)
+                new APIResponse<>(SUCCESS, "Logged out successfully", null)
         );
     }
 }

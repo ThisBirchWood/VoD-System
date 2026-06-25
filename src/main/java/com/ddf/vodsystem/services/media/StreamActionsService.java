@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -75,8 +76,12 @@ public class StreamActionsService {
             progressTracker.markComplete();
 
             return CompletableFuture.completedFuture(outputFile);
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.error("Failed to save section to '{}'", outputFile, e);
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
+            logger.error("Failed to save section");
+            Thread.currentThread().interrupt();
             return CompletableFuture.failedFuture(e);
         }
     }
