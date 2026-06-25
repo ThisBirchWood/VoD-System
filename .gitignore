@@ -39,8 +39,7 @@ build/
 .vscode/
 
 ### Generated Files ###
-videos/
-video/
+/videos
 outputs/
 
 generated
