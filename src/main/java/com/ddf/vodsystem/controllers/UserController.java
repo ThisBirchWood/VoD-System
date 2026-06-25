@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/auth/")
+@RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
 
@@ -25,7 +25,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/user")
+    @GetMapping("/me")
     public ResponseEntity<APIResponse<User>> user() {
         Optional<User> user = userService.getLoggedInUser();
 

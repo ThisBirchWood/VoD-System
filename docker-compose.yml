@@ -8,8 +8,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ${POSTGRES_DATA}:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
 
   backend:
     build:
@@ -21,8 +19,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ${MEDIA_DATA}:/app/data/media
-      - ${STREAM_DATA}:/stream
+      - ${MEDIA_DATA}:/app/media
+      - ${STREAM_DATA}:/app/stream
     ports:
       - "8080:8080"
     restart: unless-stopped

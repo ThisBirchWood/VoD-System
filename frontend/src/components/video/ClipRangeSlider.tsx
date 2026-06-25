@@ -1,42 +1,32 @@
 import RangeSlider from 'react-range-slider-input';
 import 'react-range-slider-input/dist/style.css';
-import {useRef} from "react";
-import clsx from 'clsx';
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import type { VideoMetadata } from "../../utils/types.ts";
 
 type Props = {
     videoRef: HTMLVideoElement | null;
     videoMetadata: VideoMetadata;
-    setSliderValue: Function;
-    setMetadata: Function;
+    setSliderValue: Dispatch<SetStateAction<number>>;
+    setMetadata: Dispatch<SetStateAction<VideoMetadata>>;
     className?: string;
 };
 
-export default function ClipRangeSlider({videoRef,
-                                            videoMetadata,
-                                            setSliderValue,
-                                            setMetadata,
-                                            className}: Props) {
-    const previousRangeSliderInput = useRef<[number, number]>([0, 0]);
+export default function ClipRangeSlider({ videoRef, videoMetadata, setSliderValue, setMetadata, className }: Props) {
+    const previousRange = useRef<[number, number]>([0, 0]);
 
-    const handleRangeSliderInput = (val: [number, number]) => {
+    const handleRangeInput = (val: [number, number]) => {
         if (!videoRef) return;
 
-        if (previousRangeSliderInput.current[0] != val[0]) {
+        if (previousRange.current[0] !== val[0]) {
             videoRef.currentTime = val[0];
             setSliderValue(val[0]);
-        } else if (previousRangeSliderInput.current[1] != val[1]) {
+        } else if (previousRange.current[1] !== val[1]) {
             videoRef.currentTime = val[1];
             setSliderValue(val[1]);
         }
 
-        setMetadata((prevState: VideoMetadata) => ({
-            ...prevState,
-            startPoint: val[0],
-            duration: val[1] - val[0]
-        }
-        ))
-        previousRangeSliderInput.current = val;
+        setMetadata(prev => ({ ...prev, startPoint: val[0], duration: val[1] - val[0] }));
+        previousRange.current = val;
     };
 
     return (
@@ -44,9 +34,9 @@ export default function ClipRangeSlider({videoRef,
             min={0}
             max={videoMetadata.duration}
             step={0.1}
-            onInput={handleRangeSliderInput}
-            className={clsx(className)}
-            id={"range-slider"}
+            onInput={handleRangeInput}
+            className={className}
+            id="range-slider"
         />
-    )
+    );
 }

@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "clips")
@@ -28,7 +28,7 @@ public class Clip {
     private String description;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "width", nullable = false)
     private Integer width;

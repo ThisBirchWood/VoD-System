@@ -1,0 +1,16 @@
+meta {
+  name: Get Clip
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/clips/5
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

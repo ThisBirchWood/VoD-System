@@ -31,7 +31,6 @@ const Sidebar = ({user, className}: props) => {
                         <Divider />
                         <div className="flex flex-col gap-0.5">
                             <SidebarButton url="/my-clips" logo={<Film size={18}/>} label="Clips" />
-                            {/*<SidebarButton url="/vods" logo={<Video size={18}/>} label="VoDs" />*/}
                         </div>
                     </>
                 )}

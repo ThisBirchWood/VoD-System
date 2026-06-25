@@ -1,0 +1,22 @@
+meta {
+  name: Compress
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/media/compress
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/Users/dylan/Downloads/Is Russia at a Breaking Point_.mp4)
+  title: hello
+  startPoint: 10
+  duration: 30
+}
+
+script:post-response {
+  bru.setEnvVar("uuid", res.getBody().data.uuid);
+}

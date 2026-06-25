@@ -3,7 +3,7 @@ package com.ddf.vodsystem.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "users")
@@ -33,7 +33,7 @@ public class User {
     private Integer role; // 0: user, 1: admin
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "stream_key")
     private String streamKey;

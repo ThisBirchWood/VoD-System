@@ -1,37 +1,28 @@
+import { type Dispatch, type SetStateAction } from "react";
 import type { VideoMetadata } from "../../utils/types.ts";
 import Selector from "../Selector.tsx";
 import clsx from "clsx";
 
-type prop = {
-    setMetadata: Function;
+type Props = {
+    setMetadata: Dispatch<SetStateAction<VideoMetadata>>;
     className?: string;
-}
+};
 
 const inputClass = "border border-gray-300 bg-white rounded-md w-full p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors";
 
-export default function ConfigBox({setMetadata, className}: prop) {
+export default function ConfigBox({ setMetadata, className }: Props) {
     const updateRes = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const vals = e.target.value.split(",");
-        setMetadata((prevState: VideoMetadata) => ({
-            ...prevState,
-            width: parseInt(vals[0]),
-            height: parseInt(vals[1])
-        }))
-    }
+        const [width, height] = e.target.value.split(",").map(Number);
+        setMetadata(prev => ({ ...prev, width, height }));
+    };
 
     const updateFps = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setMetadata((prevState: VideoMetadata) => ({
-            ...prevState,
-            fps: parseInt(e.target.value)
-        }))
-    }
+        setMetadata(prev => ({ ...prev, fps: parseInt(e.target.value) }));
+    };
 
     const updateFileSize = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setMetadata((prevState: VideoMetadata) => ({
-            ...prevState,
-            fileSize: parseInt(e.target.value) * 1000
-        }))
-    }
+        setMetadata(prev => ({ ...prev, fileSize: parseInt(e.target.value) * 1000 }));
+    };
 
     return (
         <div className={clsx("flex flex-col gap-3 p-6", className)}>
@@ -64,5 +55,5 @@ export default function ConfigBox({setMetadata, className}: prop) {
                 />
             </Selector>
         </div>
-    )
+    );
 }
