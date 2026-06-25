@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -37,7 +37,7 @@ public class StreamService {
             throw new AlreadyStreaming("User " + user.getUsername() + " is already streaming.");
         });
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         Stream stream = new Stream();
         stream.setUser(user);
         stream.setStartDate(now);
@@ -52,7 +52,7 @@ public class StreamService {
                 .orElseThrow(() -> new IllegalStateException(
                         "No active stream found for user " + user.getUsername()));
 
-        stream.setEndDate(LocalDateTime.now());
+        stream.setEndDate(Instant.now());
         streamRepository.saveAndFlush(stream);
     }
 
@@ -63,7 +63,7 @@ public class StreamService {
                 .orElseThrow(() -> new IllegalStateException(
                         "No active stream found for user " + user.getUsername()));
 
-        stream.setLastSeen(LocalDateTime.now());
+        stream.setLastSeen(Instant.now());
         streamRepository.saveAndFlush(stream);
     }
 
@@ -97,11 +97,11 @@ public class StreamService {
     @Scheduled(fixedDelay = 30_000)
     @Transactional
     public void endStaleStreams() {
-        LocalDateTime cutoff = LocalDateTime.now().minusSeconds(HEARTBEAT_TIMEOUT_SECONDS);
+        Instant cutoff = Instant.now().minusSeconds(HEARTBEAT_TIMEOUT_SECONDS);
         List<Stream> stale = streamRepository.findByEndDateIsNullAndLastSeenBefore(cutoff);
         if (stale.isEmpty()) return;
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         for (Stream stream : stale) {
             stream.setEndDate(now);
             logger.warn("Stream {} for user {} ended due to heartbeat timeout", stream.getId(), stream.getUser().getUsername());

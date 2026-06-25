@@ -38,7 +38,7 @@ public class CompressionService {
                 outputFile,
                 clipOptions
         );
-        CommandOutput result = CommandRunner.run(command, line -> setProgress(line, progress, clipOptions.getDuration()));
+        CommandOutput result = CommandRunner.run(command, line -> CommandRunner.setProgress(line, progress, clipOptions.getDuration()));
         progress.markComplete();
 
         return CompletableFuture.completedFuture(result);

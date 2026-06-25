@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HexFormat;
 import java.util.Optional;
@@ -77,7 +77,7 @@ public class UserService {
 
         if (existingUser.isEmpty()) {
             user.setRole(0);
-            user.setCreatedAt(LocalDateTime.now());
+            user.setCreatedAt(Instant.now());
             user.setStreamKey(generateStreamKey());
             return userRepository.saveAndFlush(user);
         }

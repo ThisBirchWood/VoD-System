@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "streams")
@@ -21,11 +21,11 @@ public class Stream {
     private User user;
 
     @Column(name = "start_time")
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @Column(name = "end_time")
-    private LocalDateTime endDate;
+    private Instant endDate;
 
     @Column(name = "last_seen")
-    private LocalDateTime lastSeen;
+    private Instant lastSeen;
 }

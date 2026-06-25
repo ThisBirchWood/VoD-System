@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(100) NOT NULL,
     profile_picture_url VARCHAR(255),
     role INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     stream_key VARCHAR(64) NOT NULL UNIQUE
 );
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS clips (
     user_id BIGINT NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     width INTEGER NOT NULL,
     height INTEGER NOT NULL,
     fps FLOAT NOT NULL,

@@ -72,6 +72,7 @@ public class StreamActionsService {
             logger.info("Saving section with ({} segments) to '{}'",
                     segments.size(), outputFile);
             CommandRunner.run(command, line -> CommandRunner.setProgress(line, progressTracker, duration));
+            progressTracker.markComplete();
 
             return CompletableFuture.completedFuture(outputFile);
         } catch (Exception e) {

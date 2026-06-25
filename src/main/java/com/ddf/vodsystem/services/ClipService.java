@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -208,7 +208,7 @@ public class ClipService {
         clip.setUser(user);
         clip.setTitle(options.getTitle() != null ? options.getTitle() : "Untitled Clip");
         clip.setDescription(options.getDescription() != null ? options.getDescription() : "");
-        clip.setCreatedAt(LocalDateTime.now());
+        clip.setCreatedAt(Instant.now());
         clip.setWidth(options.getWidth());
         clip.setHeight(options.getHeight());
         clip.setFps(options.getFps());

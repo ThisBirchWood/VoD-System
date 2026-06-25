@@ -1,6 +1,6 @@
 package com.ddf.vodsystem.controllers.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ClipResponse(
         Long id,
@@ -8,5 +8,5 @@ public record ClipResponse(
         String title,
         String description,
         Float duration,
-        LocalDateTime createdAt
+        Instant createdAt
 ) {}
