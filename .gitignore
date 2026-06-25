@@ -40,7 +40,8 @@ build/
 
 ### Generated Files ###
 /videos
-outputs/
+/outputs
+frontend/.flowbite-react
 
 generated
 .mvn

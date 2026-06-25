@@ -8,7 +8,8 @@ function formatTime(seconds: number): string {
 }
 
 function stringToDate(dateString: string): Date {
-    const date = new Date(dateString.substring(0, 23));
+    const normalized = dateString.replace(/(\.\d{3})\d+/, "$1");
+    const date = new Date(normalized);
     if (isNaN(date.getTime())) throw new Error("Invalid date string");
     return date;
 }
