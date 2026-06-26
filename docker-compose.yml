@@ -32,6 +32,7 @@ services:
     container_name: vod_frontend
     environment:
       VITE_API_URL: ${BACKEND_URL}
+      VITE_FRONTEND_URL: ${FRONTEND_URL}
       VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     depends_on:
       - backend

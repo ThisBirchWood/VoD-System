@@ -6,6 +6,7 @@ import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -41,14 +42,15 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<APIResponse<Token>> login(@RequestBody Token token,
+		    				    HttpServletRequest request,
                                                     HttpServletResponse response) {
         String jwt = userService.login(token.token());
 
         ResponseCookie cookie = ResponseCookie.from("token", jwt)
                 .httpOnly(true)
                 .maxAge(jwtExpiration / 1000)
-                .sameSite("None")
-                .secure(true)
+                .sameSite(request.isSecure() ? "None" : "Lax")
+                .secure(request.isSecure())
                 .path("/")
                 .build();
 
@@ -60,12 +62,13 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<APIResponse<Void>> logout(HttpServletResponse response) {
+    public ResponseEntity<APIResponse<Void>> logout(HttpServletResponse response,
+		    				    HttpServletRequest request) {
         ResponseCookie cookie = ResponseCookie.from("token", "")
                 .httpOnly(true)
                 .maxAge(0)
-                .sameSite("None")
-                .secure(true)
+                .sameSite(request.isSecure() ? "None" : "Lax")
+                .secure(request.isSecure())
                 .path("/")
                 .build();
 
