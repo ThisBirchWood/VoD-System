@@ -34,6 +34,7 @@ const ClipEdit = () => {
     });
     const [progress, setProgress] = useState(0);
     const [downloadable, setDownloadable] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -59,7 +60,10 @@ const ClipEdit = () => {
     };
 
     const sendData = async () => {
-        if (!localFile) return;
+        if (!localFile || uploading) return;
+
+        setUploading(true);
+        setError(null);
 
         let jobId: string;
         try {
@@ -67,6 +71,7 @@ const ClipEdit = () => {
             setUploadedId(jobId);
         } catch (err: unknown) {
             setError(`Failed to start compression: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            setUploading(false);
             return;
         }
 
@@ -81,14 +86,17 @@ const ClipEdit = () => {
                 if (job.state === 'FAILED') {
                     setError(`Compression failed: ${job.errorOutput ?? 'Unknown error'}`);
                     clearInterval(intervalId);
+                    setUploading(false);
                 } else if (job.isComplete) {
                     clearInterval(intervalId);
                     setDownloadable(true);
+                    setUploading(false);
                 }
             })
             .catch((err: Error) => {
                 setError(`Failed to fetch progress: ${err.message}`);
                 clearInterval(intervalId);
+                setUploading(false);
             });
     };
 
@@ -166,6 +174,7 @@ const ClipEdit = () => {
                     handleDownload={handleDownload}
                     downloadable={downloadable}
                     progress={progress}
+                    uploading={uploading}
                 />
             </Box>
         </div>
