@@ -31,18 +31,20 @@ public class MediaService {
     private static final float CLIP_MAX_LENGTH = 180;
     private static final int HLS_SEGMENT_LENGTH = 3;
     private final StreamActionsService streamActionsService;
+    private final VodService vodService;
 
     public MediaService(JobRegistryService jobRegistryService,
                         DirectoryService directoryService,
                         CompressionService compressionService,
                         UserService userService,
-                        ClipService clipService, StreamActionsService streamActionsService) {
+                        ClipService clipService, StreamActionsService streamActionsService, VodService vodService) {
         this.jobRegistryService = jobRegistryService;
         this.directoryService = directoryService;
         this.compressionService = compressionService;
         this.userService = userService;
         this.clipService = clipService;
         this.streamActionsService = streamActionsService;
+        this.vodService = vodService;
     }
 
     public Job compress(MultipartFile file, ClipOptions clipOptions) throws IOException, InterruptedException {
@@ -132,6 +134,14 @@ public class MediaService {
                 job.setDownload(outputFile);
                 job.setState(JobState.SUCCEEDED);
                 logger.info("Stream save of job {} succeeded", job.getUuid());
+                vodService.persist(
+                        Instant.now().toString(),
+                        "",
+                        user,
+                        outputFile,
+                        outputFile.getFileName().toString()
+                );
+
             }).exceptionally(ex -> {
                 job.setState(JobState.FAILED);
                 job.setErrorOutput(ex.getMessage());
