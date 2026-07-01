@@ -45,6 +45,14 @@ public class VodService {
         this.userService = userService;
     }
 
+    /**
+     * Returns the VoD with the given ID, verifying ownership by the current user.
+     *
+     * @param id the ID of the VoD to retrieve
+     * @return the matching {@link Vod} entity
+     * @throws VodNotFound      if no VoD with {@code id} exists
+     * @throws NotAuthenticated if the current user does not own the VoD
+     */
     public Vod getVodById(Long id) {
         Optional<Vod> vod = vodRepository.findById(id);
 
@@ -59,6 +67,12 @@ public class VodService {
         return vod.get();
     }
 
+    /**
+     * Returns all VoDs belonging to the currently authenticated user.
+     *
+     * @return list of VoDs owned by the current user, in repository order
+     * @throws NotAuthenticated if no user session is present
+     */
     public List<Vod> getUserVods() {
         Optional<User> user = userService.getLoggedInUser();
 
@@ -69,6 +83,17 @@ public class VodService {
         return vodRepository.findByUser(user.get());
     }
 
+    /**
+     * Applies a partial update to an existing VoD's metadata.
+     * <p>
+     * Only non-null fields in {@code newFields} are written; null fields are left unchanged.
+     *
+     * @param id        the ID of the VoD to update
+     * @param newFields fields to overwrite; any null field is ignored
+     * @return the updated VoD as persisted in the database
+     * @throws VodNotFound      if no VoD with {@code id} exists
+     * @throws NotAuthenticated if the current user does not own the VoD
+     */
     public Vod updateVod(Long id, VodUpdateRequest newFields) {
         Vod vod = getVodById(id);
 
@@ -83,6 +108,14 @@ public class VodService {
         return vodRepository.saveAndFlush(vod);
     }
 
+    /**
+     * Deletes a VoD and its associated files from disk.
+     *
+     * @param id the ID of the VoD to delete
+     * @return {@code true} on success; always throws rather than returning {@code false}
+     * @throws VodNotFound      if no VoD with {@code id} exists
+     * @throws NotAuthenticated if the current user does not own the VoD
+     */
     public boolean deleteVod(Long id) {
         Vod vod = getVodById(id);
 
@@ -93,6 +126,14 @@ public class VodService {
         return true;
     }
 
+    /**
+     * Returns a streamable resource for the VoD's video file.
+     *
+     * @param id the ID of the VoD to download
+     * @return a {@link Resource} pointing to the VoD's video file on disk
+     * @throws VodNotFound      if no VoD with {@code id} exists, or the video file is missing on disk
+     * @throws NotAuthenticated if the current user does not own the VoD
+     */
     public Resource downloadVod(Long id) {
         Vod vod = getVodById(id);
         Path file = directoryService.resolvePath(vod.getVideoPath());
@@ -104,6 +145,14 @@ public class VodService {
         return new FileSystemResource(file);
     }
 
+    /**
+     * Returns a streamable resource for the VoD's thumbnail image.
+     *
+     * @param id the ID of the VoD whose thumbnail to download
+     * @return a {@link Resource} pointing to the thumbnail file on disk
+     * @throws VodNotFound      if no VoD with {@code id} exists, or the thumbnail file is missing on disk
+     * @throws NotAuthenticated if the current user does not own the VoD
+     */
     public Resource downloadThumbnail(Long id) {
         Vod vod = getVodById(id);
         Path file = directoryService.resolvePath(vod.getThumbnailPath());
@@ -115,6 +164,22 @@ public class VodService {
         return new FileSystemResource(file);
     }
 
+    /**
+     * Copies a processed VoD file into permanent storage, generates its thumbnail, and saves
+     * the VoD record to the database.
+     * <p>
+     * Thumbnail generation failure is non-fatal — the error is logged and the VoD is saved
+     * without a thumbnail rather than aborting.
+     *
+     * @param title       title to assign to the VoD
+     * @param description description to assign to the VoD
+     * @param user        owner of the VoD
+     * @param vodFile     path to the processed video file to copy into permanent storage
+     * @param fileName    filename used for both the permanent video file and the thumbnail
+     *                    (thumbnail is stored as {@code fileName + ".png"})
+     * @throws StorageException if copying the file to the VoDs directory fails
+     * @throws FFMPEGException  if reading video metadata from the copied file fails
+     */
     public void persist(String title,
                         String description,
                         User user,
