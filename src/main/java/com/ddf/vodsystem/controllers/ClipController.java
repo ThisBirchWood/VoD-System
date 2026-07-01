@@ -66,9 +66,7 @@ public class ClipController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<APIResponse<String>> deleteClip(@PathVariable Long id) {
-        if (!clipService.deleteClip(id)) {
-            return ResponseEntity.notFound().build();
-        }
+        clipService.deleteClip(id);
 
         return ResponseEntity.ok(
                 new APIResponse<>(

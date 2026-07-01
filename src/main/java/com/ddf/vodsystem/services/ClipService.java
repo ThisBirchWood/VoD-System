@@ -97,10 +97,6 @@ public class ClipService {
     public Clip updateClip(Long id, ClipUpdateRequest newFields) {
         Clip clip = getClipById(id);
 
-        if (!isAuthenticatedForClip(clip)) {
-            throw new NotAuthenticated("You are not authorized to access clip: " + id);
-        }
-
         if (newFields.title() != null) {
             clip.setTitle(newFields.title());
         }
@@ -116,22 +112,15 @@ public class ClipService {
      * Deletes a clip and its associated files from disk.
      *
      * @param id the ID of the clip to delete
-     * @return {@code true} on success; always throws rather than returning {@code false}
      * @throws ClipNotFound     if no clip with {@code id} exists
      * @throws NotAuthenticated if the current user does not own the clip
      */
-    public boolean deleteClip(Long id) {
+    public void deleteClip(Long id) {
         Clip clip = getClipById(id);
-
-        if (!isAuthenticatedForClip(clip)) {
-            throw new NotAuthenticated("You are not authorized to delete this clip");
-        }
-
         deleteClipFiles(clip);
         clipRepository.delete(clip);
 
         logger.info("Clip with ID {} deleted successfully", id);
-        return true;
     }
 
     /**
@@ -160,15 +149,11 @@ public class ClipService {
     public Resource downloadClip(Long id) {
         Clip clip = getClipById(id);
 
-        if (!isAuthenticatedForClip(clip)) {
-            throw new NotAuthenticated("Not authenticated for this clip");
-        }
-
         String path = clip.getVideoPath();
         Path file = directoryService.resolvePath(path);
 
         if (!Files.exists(file)) {
-            throw new JobNotFound("Clip file not found");
+            throw new ClipNotFound("Clip file not found");
         }
 
         return new FileSystemResource(file);
@@ -184,10 +169,6 @@ public class ClipService {
      */
     public Resource downloadThumbnail(Long id) {
         Clip clip = getClipById(id);
-
-        if (!isAuthenticatedForClip(clip)) {
-            throw new NotAuthenticated("Not authenticated for this clip thumbnail");
-        }
 
         String path = clip.getThumbnailPath();
         Path file = directoryService.resolvePath(path);

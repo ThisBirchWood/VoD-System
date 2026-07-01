@@ -112,18 +112,15 @@ public class VodService {
      * Deletes a VoD and its associated files from disk.
      *
      * @param id the ID of the VoD to delete
-     * @return {@code true} on success; always throws rather than returning {@code false}
      * @throws VodNotFound      if no VoD with {@code id} exists
      * @throws NotAuthenticated if the current user does not own the VoD
      */
-    public boolean deleteVod(Long id) {
+    public void deleteVod(Long id) {
         Vod vod = getVodById(id);
-
         deleteVodFiles(vod);
         vodRepository.delete(vod);
 
         logger.info("Vod with ID {} deleted successfully", id);
-        return true;
     }
 
     /**
