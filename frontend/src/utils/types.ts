@@ -33,6 +33,15 @@ type Clip = {
     createdAt: string,
 }
 
+type Vod = {
+    id: number,
+    userId: number,
+    title: string,
+    description: string,
+    duration: number,
+    createdAt: string,
+}
+
 type JobResponse = {
     uuid: string,
     progress: number,
@@ -47,5 +56,6 @@ export type {
     VideoMetadata,
     User,
     Clip,
+    Vod,
     JobResponse
 }

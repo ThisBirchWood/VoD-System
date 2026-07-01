@@ -1,4 +1,4 @@
-import type { VideoMetadata, APIResponse, User, Clip, JobResponse } from "./types.ts";
+import type { VideoMetadata, APIResponse, User, Clip, Vod, JobResponse } from "./types.ts";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -144,6 +144,69 @@ const deleteClip = async (id: number): Promise<void> => {
     if (result.status === 'error') throw new Error(`Failed to delete clip: ${result.message}`);
 };
 
+const getVods = async (): Promise<Vod[]> => {
+    const response = await fetch(API_URL + '/api/v1/vods', { credentials: 'include' });
+
+    if (!response.ok) {
+        const errorResult: APIResponse = await response.json();
+        throw new Error(`Failed to fetch vods: ${errorResult.message}`);
+    }
+
+    const result: APIResponse = await response.json();
+    return result.data;
+};
+
+const getVodById = async (id: string): Promise<Vod | null> => {
+    const response = await fetch(API_URL + `/api/v1/vods/${id}`, { credentials: 'include' });
+
+    if (!response.ok) {
+        if (response.status === 401 || response.status === 403) throw new AuthError();
+        throw new Error(`Failed to fetch vod: ${response.status}`);
+    }
+
+    const result: APIResponse = await response.json();
+    return result.data;
+};
+
+const getVodBlob = async (id: string): Promise<Blob> => {
+    const response = await fetch(API_URL + `/api/v1/vods/${id}/media`, { credentials: 'include' });
+
+    if (!response.ok) {
+        if (response.status === 401 || response.status === 403) throw new AuthError();
+        throw new Error(`Failed to fetch vod ${id}: ${response.status}`);
+    }
+
+    return response.blob();
+};
+
+const patchVod = async (id: number, data: { title?: string; description?: string }): Promise<Vod> => {
+    const response = await fetch(API_URL + `/api/v1/vods/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error(`Failed to update vod: ${response.status}`);
+
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') throw new Error(`Failed to update vod: ${result.message}`);
+
+    return result.data;
+};
+
+const deleteVod = async (id: number): Promise<void> => {
+    const response = await fetch(API_URL + `/api/v1/vods/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+
+    if (!response.ok) throw new Error(`Failed to delete vod: ${response.status}`);
+
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') throw new Error(`Failed to delete vod: ${result.message}`);
+};
+
 const getStreamStatus = async (): Promise<boolean> => {
     const response = await fetch(API_URL + '/api/v1/stream/current', { credentials: 'include' });
     if (!response.ok) return false;
@@ -151,8 +214,8 @@ const getStreamStatus = async (): Promise<boolean> => {
     return result.status === 'success' && result.data?.isStreaming === true;
 };
 
-const isThumbnailAvailable = async (id: number): Promise<boolean> => {
-    const response = await fetch(API_URL + `/api/v1/clips/${id}/thumbnail`, { credentials: 'include' });
+const isThumbnailAvailable = async (thumbnailUrl: string): Promise<boolean> => {
+    const response = await fetch(thumbnailUrl, { credentials: 'include' });
     return response.ok;
 };
 
@@ -167,6 +230,11 @@ export {
     getVideoBlob,
     patchClip,
     deleteClip,
+    getVods,
+    getVodById,
+    getVodBlob,
+    patchVod,
+    deleteVod,
     getStreamStatus,
     isThumbnailAvailable,
 };
