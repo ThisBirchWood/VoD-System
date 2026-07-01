@@ -1,0 +1,16 @@
+meta {
+  name: Get VoD Media
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/vods/1/media
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
