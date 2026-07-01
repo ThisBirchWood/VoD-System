@@ -1,0 +1,310 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Lock, Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
+import type { Vod } from "../utils/types";
+import { AuthError, getVodById, getVodBlob } from "../utils/endpoints.ts";
+import Box from "../components/Box.tsx";
+import { dateToTimeAgo, formatTime, stringToDate } from "../utils/utils.ts";
+
+const VodPlayer = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const progressRef = useRef<HTMLDivElement>(null);
+    const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const [videoUrl, setVideoUrl] = useState<string | undefined>(undefined);
+    const [error, setError] = useState<string | null>(null);
+    const [notAuthenticated, setNotAuthenticated] = useState(false);
+    const [vod, setVod] = useState<Vod | null>(null);
+    const [timeAgo, setTimeAgo] = useState("");
+
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [bufferedPct, setBufferedPct] = useState(0);
+    const [isWaiting, setIsWaiting] = useState(false);
+
+    const [volume, setVolume] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [controlsVisible, setControlsVisible] = useState(true);
+    const [isDragging, setIsDragging] = useState(false);
+
+    useEffect(() => {
+        if (!id) { setError("VoD ID is required."); return; }
+
+        getVodBlob(id)
+            .then((blob) => setVideoUrl(URL.createObjectURL(blob)))
+            .catch((e) => { if (e instanceof AuthError) setNotAuthenticated(true); });
+
+        getVodById(id)
+            .then(setVod)
+            .catch((e) => {
+                if (e instanceof AuthError) setNotAuthenticated(true);
+                else setError("Failed to load vod details.");
+            });
+    }, [id]);
+
+    useEffect(() => {
+        if (!vod?.createdAt) return;
+        const update = () => setTimeAgo(dateToTimeAgo(stringToDate(vod.createdAt)));
+        update();
+        const interval = setInterval(update, 1000);
+        return () => clearInterval(interval);
+    }, [vod]);
+
+    const scheduleHide = useCallback(() => {
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
+    }, []);
+
+    const showControls = useCallback(() => {
+        setControlsVisible(true);
+        scheduleHide();
+    }, [scheduleHide]);
+
+    useEffect(() => {
+        const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener('fullscreenchange', onChange);
+        return () => document.removeEventListener('fullscreenchange', onChange);
+    }, []);
+
+    const toggleFullscreen = useCallback(() => {
+        if (!containerRef.current) return;
+        document.fullscreenElement
+            ? document.exitFullscreen()
+            : containerRef.current.requestFullscreen();
+    }, []);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+            const video = videoRef.current;
+            if (!video) return;
+
+            switch (e.code) {
+                case 'Space': case 'KeyK':
+                    e.preventDefault();
+                    video.paused ? video.play() : video.pause();
+                    showControls();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    video.currentTime = Math.max(0, video.currentTime - 5);
+                    showControls();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    video.currentTime = Math.min(video.duration, video.currentTime + 5);
+                    showControls();
+                    break;
+                case 'KeyM':
+                    video.muted = !video.muted;
+                    setIsMuted(video.muted);
+                    break;
+                case 'KeyF':
+                    toggleFullscreen();
+                    break;
+            }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [showControls, toggleFullscreen]);
+
+    const seekTo = useCallback((clientX: number) => {
+        const rect = progressRef.current?.getBoundingClientRect();
+        const video = videoRef.current;
+        if (!rect || !video || !duration) return;
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        video.currentTime = ratio * duration;
+        setCurrentTime(ratio * duration);
+    }, [duration]);
+
+    useEffect(() => {
+        if (!isDragging) return;
+        const onMove = (e: MouseEvent) => seekTo(e.clientX);
+        const onUp = () => setIsDragging(false);
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        return () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        };
+    }, [isDragging, seekTo]);
+
+    const handleTimeUpdate = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        setCurrentTime(video.currentTime);
+        if (video.buffered.length > 0) {
+            setBufferedPct((video.buffered.end(video.buffered.length - 1) / video.duration) * 100);
+        }
+    };
+
+    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const v = parseFloat(e.target.value);
+        setVolume(v);
+        setIsMuted(v === 0);
+        if (videoRef.current) {
+            videoRef.current.volume = v;
+            videoRef.current.muted = v === 0;
+        }
+    };
+
+    const toggleMute = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.muted = !video.muted;
+        setIsMuted(video.muted);
+    };
+
+    const togglePlay = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.paused ? video.play() : video.pause();
+        showControls();
+    };
+
+    const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const effectiveVolume = isMuted ? 0 : volume;
+    const VolumeIcon = effectiveVolume === 0 ? VolumeX : effectiveVolume < 0.5 ? Volume1 : Volume2;
+
+    if (notAuthenticated) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center gap-4 text-center p-8">
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Lock size={24} className="text-gray-400" />
+                </div>
+                <div>
+                    <p className="text-lg font-semibold text-gray-900">Not authenticated</p>
+                    <p className="text-sm text-gray-500 mt-1">You don't have access to this VoD.</p>
+                </div>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors duration-150"
+                >
+                    <ArrowLeft size={16} />
+                    Go back
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="h-full flex flex-col p-4 gap-3">
+            <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 flex-shrink-0 transition-colors duration-150"
+            >
+                <ArrowLeft size={16} />
+                Back
+            </button>
+
+            <div
+                ref={containerRef}
+                className="relative bg-black rounded-xl overflow-hidden flex-1 min-h-0 select-none"
+                onMouseMove={showControls}
+                onMouseLeave={() => isPlaying && setControlsVisible(false)}
+                onClick={togglePlay}
+                style={{ cursor: controlsVisible ? 'default' : 'none' }}
+            >
+                <video
+                    ref={videoRef}
+                    className="w-full h-full object-contain"
+                    src={videoUrl}
+                    onPlay={() => { setIsPlaying(true); scheduleHide(); }}
+                    onPause={() => {
+                        setIsPlaying(false);
+                        setControlsVisible(true);
+                        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+                    }}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={() => { if (videoRef.current) setDuration(videoRef.current.duration); }}
+                    onWaiting={() => setIsWaiting(true)}
+                    onCanPlay={() => setIsWaiting(false)}
+                    onError={(e) => setError(e.currentTarget.error?.message || "An error occurred.")}
+                />
+
+                {isWaiting && videoUrl && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-11 h-11 rounded-full border-[3px] border-white/20 border-t-white animate-spin" />
+                    </div>
+                )}
+
+                <div className={`absolute inset-0 flex flex-col justify-end transition-opacity duration-300 pointer-events-none ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+
+                    <div
+                        className="relative px-4 pb-4 pt-10 pointer-events-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div
+                            ref={progressRef}
+                            className="relative h-1 rounded-full bg-white/25 cursor-pointer mb-3 group/prog hover:h-1.5 transition-[height] duration-150"
+                            onMouseDown={(e) => { setIsDragging(true); seekTo(e.clientX); }}
+                        >
+                            <div className="absolute inset-y-0 left-0 bg-white/35 rounded-full" style={{ width: `${bufferedPct}%` }} />
+                            <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: `${progressPct}%` }} />
+                            <div
+                                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover/prog:opacity-100 transition-opacity"
+                                style={{ left: `calc(${progressPct}% - 6px)` }}
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-3 text-white">
+                            <button onClick={togglePlay} className="hover:text-white/70 transition-colors">
+                                {isPlaying
+                                    ? <Pause size={20} fill="currentColor" />
+                                    : <Play size={20} fill="currentColor" />}
+                            </button>
+
+                            <div className="flex items-center gap-1.5 group/vol">
+                                <button onClick={toggleMute} className="hover:text-white/70 transition-colors">
+                                    <VolumeIcon size={18} />
+                                </button>
+                                <div className="overflow-hidden w-0 group-hover/vol:w-16 transition-[width] duration-200">
+                                    <input
+                                        type="range"
+                                        min={0} max={1} step={0.02}
+                                        value={effectiveVolume}
+                                        onChange={handleVolumeChange}
+                                        className="w-16 accent-white cursor-pointer"
+                                    />
+                                </div>
+                            </div>
+
+                            <span className="text-xs font-mono tabular-nums text-white/80">
+                                {formatTime(currentTime)} / {formatTime(duration)}
+                            </span>
+
+                            <div className="flex-1" />
+
+                            <button onClick={toggleFullscreen} className="hover:text-white/70 transition-colors">
+                                {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {error && <div className="text-red-500 text-sm mt-3">{error}</div>}
+            {!videoUrl && !error && (
+                <div className="text-gray-400 text-sm mt-3 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full border-2 border-gray-300 border-t-gray-500 animate-spin" />
+                    Loading video...
+                </div>
+            )}
+
+            <Box className="p-4 flex-shrink-0">
+                <p className="text-xl font-semibold text-gray-900">{vod?.title || "(No Title)"}</p>
+                <p className="text-sm text-gray-500 mt-1">{timeAgo}</p>
+            </Box>
+        </div>
+    );
+};
+
+export default VodPlayer;
