@@ -5,4 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record SaveSectionRequest(
         @NotNull Instant startTime,
-        @NotNull Instant endTime) {}
+        @NotNull Instant endTime,
+        String title,
+        String description) {}

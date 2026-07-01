@@ -6,8 +6,11 @@ import ClipEdit from './pages/ClipEdit';
 import Home from './pages/Home';
 import {useEffect} from "react";
 import MyClips from './pages/MyClips';
+import MyVods from './pages/MyVods';
 import VideoPlayer from "./pages/VideoPlayer.tsx";
+import VodPlayer from "./pages/VodPlayer.tsx";
 import EditClip from "./pages/EditClip.tsx";
+import EditVod from "./pages/EditVod.tsx";
 import Profile from "./pages/Profile.tsx";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -26,8 +29,11 @@ function App() {
                         <Route path="/create" element={<ClipUpload />} />
                         <Route path="/create/:id" element={<ClipEdit />} />
                         <Route path="/my-clips" element={<MyClips />} />
+                        <Route path="/my-vods" element={<MyVods />} />
                         <Route path="/video/:id" element={<VideoPlayer />} />
+                        <Route path="/vod/:id" element={<VodPlayer />} />
                         <Route path="/clips/:id/edit" element={<EditClip />} />
+                        <Route path="/vods/:id/edit" element={<EditVod />} />
                         <Route path="/profile" element={<Profile />} />
                     </Route>
                 </Routes>

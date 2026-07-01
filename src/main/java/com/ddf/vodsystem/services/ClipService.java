@@ -46,10 +46,10 @@ public class ClipService {
     }
 
     /**
-     * Retrieves all clips associated with the currently logged-in user.
+     * Returns all clips belonging to the currently authenticated user.
      *
-     * @return a list of clips belonging to the authenticated user.
-     * @throws NotAuthenticated if the user is not authenticated.
+     * @return list of clips owned by the current user, in repository order
+     * @throws NotAuthenticated if no user session is present
      */
     public List<Clip> getClipsByUser() {
         Optional<User> user = userService.getLoggedInUser();
@@ -62,11 +62,12 @@ public class ClipService {
     }
 
     /**
-     * Retrieves a clip by its ID, ensuring the user is authenticated to access it.
+     * Returns the clip with the given ID, verifying ownership by the current user.
      *
-     * @param id the ID of the clip to retrieve.
-     * @return an Optional containing the Clip if found and accessible, or empty if not found.
-     * @throws NotAuthenticated if the user is not authorized to access the clip.
+     * @param id the ID of the clip to retrieve
+     * @return an Optional containing the clip; never empty — throws instead of returning empty
+     * @throws ClipNotFound     if no clip with {@code id} exists
+     * @throws NotAuthenticated if the current user does not own the clip
      */
     public Optional<Clip> getClipById(Long id) {
         Optional<Clip> clip = clipRepository.findById(id);
@@ -82,6 +83,17 @@ public class ClipService {
         return clip;
     }
 
+    /**
+     * Applies a partial update to an existing clip's metadata.
+     * <p>
+     * Only non-null fields in {@code newFields} are written; null fields are left unchanged.
+     *
+     * @param id        the ID of the clip to update
+     * @param newFields fields to overwrite; any null field is ignored
+     * @return the updated clip as persisted in the database
+     * @throws ClipNotFound     if no clip with {@code id} exists
+     * @throws NotAuthenticated if the current user does not own the clip
+     */
     public Clip updateClip(Long id, ClipUpdateRequest newFields) {
         Optional<Clip> possibleClip = clipRepository.findById(id);
 
@@ -107,11 +119,12 @@ public class ClipService {
     }
 
     /**
-     * Deletes a clip by its ID, ensuring the user is authenticated to perform the deletion.
+     * Deletes a clip and its associated files from disk.
      *
-     * @param id the ID of the clip to delete.
-     * @return true if the clip was successfully deleted, false if it was not found.
-     * @throws NotAuthenticated if the user is not authorized to delete the clip.
+     * @param id the ID of the clip to delete
+     * @return {@code true} on success; always throws rather than returning {@code false}
+     * @throws ClipNotFound     if no clip with {@code id} exists
+     * @throws NotAuthenticated if the current user does not own the clip
      */
     public boolean deleteClip(Long id) {
         Optional<Clip> possibleClip = getClipById(id);
@@ -133,10 +146,11 @@ public class ClipService {
     }
 
     /**
-     * Checks if the currently logged-in user is authenticated to access the specified clip.
+     * Returns whether the current user owns the given clip.
      *
-     * @param clip the clip to check access for.
-     * @return true if the user is authenticated for the clip, false otherwise.
+     * @param clip the clip to check ownership of
+     * @return {@code true} if the current user's ID matches the clip's owner; {@code false} if
+     *         {@code clip} is null or no user session exists
      */
     public boolean isAuthenticatedForClip(Clip clip) {
         Optional<User> user = userService.getLoggedInUser();
@@ -146,6 +160,14 @@ public class ClipService {
         return user.get().getId().equals(clip.getUser().getId());
     }
 
+    /**
+     * Returns a streamable resource for the clip's video file.
+     *
+     * @param id the ID of the clip to download
+     * @return a {@link Resource} pointing to the clip's video file on disk
+     * @throws ClipNotFound     if no clip with {@code id} exists, or the video file is missing on disk
+     * @throws NotAuthenticated if the current user does not own the clip
+     */
     public Resource downloadClip(Long id) {
         Optional<Clip> possibleClip = getClipById(id);
 
@@ -169,6 +191,14 @@ public class ClipService {
         return new FileSystemResource(file);
     }
 
+    /**
+     * Returns a streamable resource for the clip's thumbnail image.
+     *
+     * @param id the ID of the clip whose thumbnail to download
+     * @return a {@link Resource} pointing to the thumbnail file on disk
+     * @throws ClipNotFound     if no clip with {@code id} exists, or the thumbnail file is missing on disk
+     * @throws NotAuthenticated if the current user does not own the clip
+     */
     public Resource downloadThumbnail(Long id) {
         Optional<Clip> possibleClip = getClipById(id);
 
@@ -193,32 +223,21 @@ public class ClipService {
     }
 
     /**
-     * Persists a clip to the database
-     * @param options ClipOptions object of the clip metadata to save to the database. All fields required except for title, description
-     * @param user User to save the clip to
-     * @param videoPath Path of the clip
-     * @param thumbnailPath Path of the thumbnail
-     * @return Clip object saved to the database
+     * Copies a processed clip file into permanent storage, generates its thumbnail, and saves
+     * the clip record to the database.
+     * <p>
+     * Thumbnail generation failure is non-fatal — the error is logged and the clip is saved
+     * without a thumbnail rather than aborting.
+     *
+     * @param title       title to assign to the clip
+     * @param description description to assign to the clip
+     * @param user        owner of the clip
+     * @param clipFile    path to the processed video file (typically in the temp output directory)
+     * @param fileName    filename used for both the permanent video file and the thumbnail
+     *                    (thumbnail is stored as {@code fileName + ".png"})
+     * @throws StorageException  if copying the file to the clips directory fails
+     * @throws FFMPEGException   if reading video metadata from the copied file fails
      */
-    public Clip saveClip(ClipOptions options,
-                         User user,
-                         Path videoPath,
-                         Path thumbnailPath) {
-        Clip clip = new Clip();
-        clip.setUser(user);
-        clip.setTitle(options.getTitle() != null ? options.getTitle() : "Untitled Clip");
-        clip.setDescription(options.getDescription() != null ? options.getDescription() : "");
-        clip.setCreatedAt(Instant.now());
-        clip.setWidth(options.getWidth());
-        clip.setHeight(options.getHeight());
-        clip.setFps(options.getFps());
-        clip.setDuration(options.getDuration() - options.getStartPoint());
-        clip.setFileSize(options.getFileSize());
-        clip.setVideoPath(directoryService.relativisePath(videoPath.toAbsolutePath()).toString());
-        clip.setThumbnailPath(directoryService.relativisePath(thumbnailPath.toAbsolutePath()).toString());
-        return clipRepository.save(clip);
-    }
-
     public void persistClip(String title,
                             String description,
                             User user,
@@ -259,6 +278,25 @@ public class ClipService {
 
         Clip clip = saveClip(clipMetadata, user, newClipFile, thumbnailFile);
         logger.info("Clip created successfully with ID: {}", clip.getId());
+    }
+
+    private Clip saveClip(ClipOptions metadata,
+                          User user,
+                          Path videoPath,
+                          Path thumbnailPath) {
+        Clip clip = new Clip();
+        clip.setUser(user);
+        clip.setTitle(metadata.getTitle() != null ? metadata.getTitle() : "Untitled Clip");
+        clip.setDescription(metadata.getDescription() != null ? metadata.getDescription() : "");
+        clip.setCreatedAt(Instant.now());
+        clip.setWidth(metadata.getWidth());
+        clip.setHeight(metadata.getHeight());
+        clip.setFps(metadata.getFps());
+        clip.setDuration(metadata.getDuration() - metadata.getStartPoint());
+        clip.setFileSize(metadata.getFileSize());
+        clip.setVideoPath(directoryService.relativisePath(videoPath.toAbsolutePath()).toString());
+        clip.setThumbnailPath(directoryService.relativisePath(thumbnailPath.toAbsolutePath()).toString());
+        return clipRepository.save(clip);
     }
 
     private void deleteClipFiles(Clip clip) {

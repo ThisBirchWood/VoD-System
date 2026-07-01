@@ -1,0 +1,23 @@
+meta {
+  name: Update VoD
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/vods/1
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "My VoD",
+    "description": ""
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

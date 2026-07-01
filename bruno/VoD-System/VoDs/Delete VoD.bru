@@ -1,0 +1,16 @@
+meta {
+  name: Delete VoD
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base_url}}/vods/1
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

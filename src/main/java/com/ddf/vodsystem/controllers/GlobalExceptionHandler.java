@@ -94,4 +94,18 @@ public class GlobalExceptionHandler {
         APIResponse<Void> response = new APIResponse<>(ERROR, "Could not process file", null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(ClipNotFound.class)
+    public ResponseEntity<APIResponse<Void>> handleClipNotFound(ClipNotFound ex) {
+        logger.error("ClipNotFound: {}", ex.getMessage());
+        APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(VodNotFound.class)
+    public ResponseEntity<APIResponse<Void>> handleVodNotFound(VodNotFound ex) {
+        logger.error("VodNotFound: {}", ex.getMessage());
+        APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
 }

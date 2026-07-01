@@ -13,17 +13,21 @@ type VideoCardProps = {
     onEdit?: () => void,
     onDelete?: () => void,
     className?: string,
+    mediaApiPath?: string,
+    playerPath?: string,
+    itemLabel?: string,
 }
 
 const fallbackThumbnail = "../../../public/default_thumbnail.png";
 const API_URL = import.meta.env.VITE_API_URL;
 
-const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className }: VideoCardProps) => {
+const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className, mediaApiPath = '/api/v1/clips', playerPath = '/video', itemLabel = 'clip' }: VideoCardProps) => {
     const [timeAgo, setTimeAgo] = useState(dateToTimeAgo(stringToDate(createdAt)));
     const [thumbnailAvailable, setThumbnailAvailable] = useState(true);
     const [menuOpen, setMenuOpen] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const thumbnailUrl = `${API_URL}${mediaApiPath}/${id}/thumbnail`;
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -33,10 +37,10 @@ const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className
     }, [createdAt]);
 
     useEffect(() => {
-        isThumbnailAvailable(id)
+        isThumbnailAvailable(thumbnailUrl)
             .then(setThumbnailAvailable)
             .catch(() => setThumbnailAvailable(false));
-    }, []);
+    }, [thumbnailUrl]);
 
     useEffect(() => {
         if (!menuOpen) return;
@@ -57,11 +61,11 @@ const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className
     };
 
     return (
-        <Link to={"/video/" + id}>
+        <Link to={`${playerPath}/${id}`}>
             <div className={clsx("flex flex-col group cursor-pointer", className)}>
                 <div className="relative overflow-hidden rounded-lg">
                     <img
-                        src={thumbnailAvailable ? API_URL + `/api/v1/clips/${id}/thumbnail` : fallbackThumbnail}
+                        src={thumbnailAvailable ? thumbnailUrl : fallbackThumbnail}
                         alt="Video Thumbnail"
                         className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-200"
                     />
@@ -105,7 +109,7 @@ const VideoCard = ({ id, title, duration, createdAt, onEdit, onDelete, className
                                     </>)}
                                     {confirmDelete && (
                                         <div className="px-3 py-2">
-                                            <p className="text-xs text-gray-600 mb-2">Delete this clip?</p>
+                                            <p className="text-xs text-gray-600 mb-2">Delete this {itemLabel}?</p>
                                             <div className="flex gap-1.5">
                                                 <button
                                                     onClick={(e) => stopAndRun(e, onDelete!)}
