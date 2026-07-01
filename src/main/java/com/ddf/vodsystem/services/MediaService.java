@@ -47,6 +47,20 @@ public class MediaService {
         this.vodService = vodService;
     }
 
+    /**
+     * Submits an asynchronous compression job for the uploaded video file.
+     * <p>
+     * Saves the upload to a temporary input path, then runs the compression pipeline
+     * in the background according to {@code clipOptions}. If a user session exists at
+     * call time, the output is also persisted as a clip when the job succeeds.
+     *
+     * @param file        the uploaded video file to compress
+     * @param clipOptions trim window, resolution, fps, and metadata for the output clip
+     * @return the {@link Job} tracking the compression; state transitions to
+     *         {@link JobState#SUCCEEDED} or {@link JobState#FAILED} asynchronously
+     * @throws IOException          if saving the upload to the temporary directory fails
+     * @throws InterruptedException if the current thread is interrupted while setting up the job
+     */
     public Job compress(MultipartFile file, ClipOptions clipOptions) throws IOException, InterruptedException {
         Job job = jobRegistryService.generateJob();
 
@@ -89,20 +103,29 @@ public class MediaService {
     }
 
     /**
-     * Saves a clip of the currently authenticated user's stream between two points in time.
+     * Saves a section of the currently authenticated user's live stream between two absolute timestamps.
      * <p>
-     * Locates the recorded {@code .ts} segments overlapping the requested window, computes the
-     * trim offset into the first (partially-overlapping) segment and the total clip duration,
-     * then delegates the actual extraction to {@link StreamActionsService#saveSection}.
+     * Locates the recorded {@code .ts} HLS segments that overlap {@code [startTime, endTime)}, computes
+     * the trim offset into the first partially-overlapping segment, then delegates extraction and muxing
+     * to {@link StreamActionsService#saveSection}. On success, the output is persisted as a VoD via
+     * {@link VodService#persist}.
      *
-     * @param startTime the inclusive start of the section to save; must be before {@code endTime}
-     * @param endTime   the exclusive end of the section to save
+     * @param startTime   inclusive start of the section to save; must be before {@code endTime}
+     * @param endTime     exclusive end of the section to save
+     * @param title       title for the saved VoD; defaults to the current timestamp if {@code null}
+     * @param description description for the saved VoD; defaults to an empty string if {@code null}
+     * @return the {@link Job} tracking the save; state transitions to
+     *         {@link JobState#SUCCEEDED} or {@link JobState#FAILED} asynchronously
      * @throws IllegalArgumentException if {@code startTime} is not before {@code endTime},
      *                                  or if no stream segments exist in the given range
      * @throws NotAuthenticated         if no user is currently authenticated
      * @throws IOException              if reading the stream directory or its segments fails
      */
-    public Job saveSection(Instant startTime, Instant endTime) throws IOException {
+    public Job saveSection(
+            Instant startTime,
+            Instant endTime,
+            String title,
+            String description) throws IOException {
         if (startTime.isAfter(endTime)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
@@ -111,105 +134,94 @@ public class MediaService {
                 .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
 
         Job job = jobRegistryService.generateJob();
-        Path streamDirectory = directoryService.getStreamDir(user.getStreamKey());
-        List<Path> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
-
-        if (fileSegments.isEmpty()) {
-            throw new IllegalArgumentException("No stream segments found in the given time range");
-        }
-
-        long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
-        float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
+        SegmentContext ctx = resolveSegments(user, startTime, endTime);
         float duration = (endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000f;
-
-        job.setState(JobState.PROCESSING);
         Path outputFile = directoryService.getVodsDir(user.getId()).resolve(UUID.randomUUID() + ".mp4");
-        streamActionsService.saveSection(
-            fileSegments,
-            trimOffset,
-            duration,
-            outputFile,
-            job.getProgressTracker()
-            ).thenRun(() -> {
-                job.setDownload(outputFile);
-                job.setState(JobState.SUCCEEDED);
-                logger.info("Stream save of job {} succeeded", job.getUuid());
-                vodService.persist(
-                        Instant.now().toString(),
-                        "",
-                        user,
-                        outputFile,
-                        outputFile.getFileName().toString()
-                );
 
-            }).exceptionally(ex -> {
-                job.setState(JobState.FAILED);
-                job.setErrorOutput(ex.getMessage());
-                logger.error("Stream section save job with UUID {} failed due to: {}", job.getUuid(), ex.getMessage());
-                return null;
-            });
-
-        return job;
+        return dispatchSaveJob(job, ctx, duration, outputFile, () ->
+            vodService.persist(
+                title == null ? Instant.now().toString() : title,
+                description == null ? "" : description,
+                user,
+                outputFile,
+                outputFile.getFileName().toString()
+            )
+        );
     }
 
     /**
-     * Saves a clip of the last {@code duration} seconds of the currently authenticated user's stream.
+     * Saves the last {@code duration} seconds of the currently authenticated user's live stream as a clip.
      * <p>
-     * Computes a time window ending at the current instant and beginning {@code duration} seconds
-     * earlier (with millisecond precision), then delegates to {@link #saveSection(Instant, Instant)}.
+     * Computes a window of {@code [now - duration, now)} with millisecond precision, locates the
+     * overlapping HLS {@code .ts} segments, and delegates extraction and muxing to
+     * {@link StreamActionsService#saveSection}. On success, the output is persisted as a clip via
+     * {@link ClipService#persistClip}.
      *
-     * @param duration the length of the clip in seconds, measured back from now; must be greater
-     *                 than {@code 0} and no greater than {@link #CLIP_MAX_LENGTH}. Fractional values
-     *                 are supported and resolved to the millisecond.
-     * @throws IllegalArgumentException if {@code duration} is not in the range {@code (0, CLIP_MAX_LENGTH]},
+     * @param duration    length of the clip in seconds measured back from now; must be in
+     *                    {@code (0, CLIP_MAX_LENGTH]}. Fractional values are supported.
+     * @param title       title for the saved clip; defaults to the current timestamp if {@code null}
+     * @param description description for the saved clip; defaults to an empty string if {@code null}
+     * @return the {@link Job} tracking the save; state transitions to
+     *         {@link JobState#SUCCEEDED} or {@link JobState#FAILED} asynchronously
+     * @throws IllegalArgumentException if {@code duration} is not in {@code (0, CLIP_MAX_LENGTH]},
      *                                  or if no stream segments exist in the computed window
      * @throws NotAuthenticated         if no user is currently authenticated
      * @throws IOException              if reading the stream directory or its segments fails
      */
-    public Job clip(float duration) throws IOException {
+    public Job clip(float duration, String title, String description) throws IOException {
         if (duration <= 0 || duration > CLIP_MAX_LENGTH) {
             throw new IllegalArgumentException("Clip length must be between 0 and " + CLIP_MAX_LENGTH + " seconds");
         }
 
-        // minusSeconds() is possible, but only does integer seconds, not float
         Instant endTime = Instant.now();
+        // minusSeconds() only does integer seconds, not float
         Instant startTime = endTime.minus(Duration.ofMillis((long) (duration * 1000)));
 
         User user = userService.getLoggedInUser()
                 .orElseThrow(() -> new NotAuthenticated("User is not authenticated"));
 
         Job job = jobRegistryService.generateJob();
-        Path streamDirectory = directoryService.getStreamDir(user.getStreamKey());
-        List<Path> fileSegments = getSegmentsInRange(streamDirectory, startTime, endTime);
+        SegmentContext ctx = resolveSegments(user, startTime, endTime);
+        Path outputFile = directoryService.getTempOutputDir().resolve(UUID.randomUUID() + ".mp4");
 
-        if (fileSegments.isEmpty()) {
+        return dispatchSaveJob(job, ctx, duration, outputFile, () ->
+            clipService.persistClip(
+                title == null ? Instant.now().toString() : title,
+                description == null ? "" : description,
+                user,
+                outputFile,
+                outputFile.getFileName().toString()
+            )
+        );
+    }
+
+    private record SegmentContext(List<Path> segments, float trimOffset) {}
+
+    private SegmentContext resolveSegments(User user, Instant startTime, Instant endTime) throws IOException {
+        Path streamDir = directoryService.getStreamDir(user.getStreamKey());
+        List<Path> segments = getSegmentsInRange(streamDir, startTime, endTime);
+        if (segments.isEmpty()) {
             throw new IllegalArgumentException("No stream segments found in the given time range");
         }
+        long firstMs = parseTimestampMs(segments.getFirst());
+        float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstMs) / 1000f);
+        return new SegmentContext(segments, trimOffset);
+    }
 
-        long firstSegmentMs = parseTimestampMs(fileSegments.getFirst());
-        float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstSegmentMs) / 1000f);
-
-        Path outputFile = directoryService.getTempOutputDir().resolve(UUID.randomUUID() + ".mp4");
-        streamActionsService.saveSection(fileSegments, trimOffset, duration, outputFile, job.getProgressTracker())
+    private Job dispatchSaveJob(Job job, SegmentContext ctx, float duration, Path outputFile, Runnable onSuccess) {
+        job.setState(JobState.PROCESSING);
+        streamActionsService.saveSection(ctx.segments(), ctx.trimOffset(), duration, outputFile, job.getProgressTracker())
             .thenRun(() -> {
                 job.setDownload(outputFile);
                 job.setState(JobState.SUCCEEDED);
-                logger.info("Stream clip of job {} succeeded", job.getUuid());
-                clipService.persistClip(
-                        Instant.now().toString(),
-                        "",
-                        user,
-                        outputFile,
-                        outputFile.getFileName().toString()
-                    );
-                }
-            ).exceptionally(ex -> {
+                logger.info("Stream save job {} succeeded", job.getUuid());
+                onSuccess.run();
+            }).exceptionally(ex -> {
                 job.setState(JobState.FAILED);
                 job.setErrorOutput(ex.getMessage());
-                logger.error("Clip save job with UUID {} failed due to: {}", job.getUuid(), ex.getMessage());
+                logger.error("Stream save job {} failed: {}", job.getUuid(), ex.getMessage());
                 return null;
             });
-
         return job;
     }
 

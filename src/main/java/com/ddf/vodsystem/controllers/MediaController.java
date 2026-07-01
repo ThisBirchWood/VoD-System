@@ -42,7 +42,11 @@ public class MediaController {
     @PostMapping("/save")
     public ResponseEntity<APIResponse<UUIDResponse>> save(
             @RequestBody SaveSectionRequest saveSectionRequest) throws IOException {
-        Job job = mediaService.saveSection(saveSectionRequest.startTime(), saveSectionRequest.endTime());
+        Job job = mediaService.saveSection(
+                saveSectionRequest.startTime(),
+                saveSectionRequest.endTime(),
+                saveSectionRequest.title(),
+                saveSectionRequest.description());
         return ResponseEntity.ok(new APIResponse<>(
                 SUCCESS,
                 "Section saving successfully started",
@@ -53,7 +57,11 @@ public class MediaController {
     @PostMapping("/clip")
     public ResponseEntity<APIResponse<UUIDResponse>> clip(
             @RequestBody ClipSectionRequest clipSectionRequest) throws IOException {
-        Job job = mediaService.clip(clipSectionRequest.duration());
+        Job job = mediaService.clip(
+                clipSectionRequest.duration(),
+                clipSectionRequest.title(),
+                clipSectionRequest.description()
+        );
         return ResponseEntity.ok(new APIResponse<>(
                 SUCCESS,
                 "Clipping successfully started",
