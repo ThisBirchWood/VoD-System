@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -214,7 +215,7 @@ public class MediaService {
                         return segMs < endMs && (segMs + HLS_SEGMENT_LENGTH * 1000) > startMs;
                     })
                     .sorted(Comparator.comparingLong(this::parseTimestampMs))
-                    .toList();
+                    .collect(Collectors.toList());
         }
     }
 
