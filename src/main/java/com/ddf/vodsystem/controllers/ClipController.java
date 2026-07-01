@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/clips")
@@ -43,12 +42,8 @@ public class ClipController {
 
     @GetMapping("/{id}")
     public ResponseEntity<APIResponse<ClipResponse>> getClipById(@PathVariable Long id) {
-        Optional<Clip> clip = clipService.getClipById(id);
-        if (clip.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        ClipResponse clipDTO = convertToDTO(clip.get());
+        Clip clip = clipService.getClipById(id);
+        ClipResponse clipDTO = convertToDTO(clip);
 
         return ResponseEntity.ok(
                 new APIResponse<>(SUCCESS,

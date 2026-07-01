@@ -65,11 +65,11 @@ public class ClipService {
      * Returns the clip with the given ID, verifying ownership by the current user.
      *
      * @param id the ID of the clip to retrieve
-     * @return an Optional containing the clip; never empty — throws instead of returning empty
+     * @return the matching {@link Clip} entity
      * @throws ClipNotFound     if no clip with {@code id} exists
      * @throws NotAuthenticated if the current user does not own the clip
      */
-    public Optional<Clip> getClipById(Long id) {
+    public Clip getClipById(Long id) {
         Optional<Clip> clip = clipRepository.findById(id);
 
         if (clip.isEmpty()) {
@@ -80,7 +80,7 @@ public class ClipService {
             throw new NotAuthenticated("You are not authorized to access clip: " + id);
         }
 
-        return clip;
+        return clip.get();
     }
 
     /**
@@ -95,13 +95,7 @@ public class ClipService {
      * @throws NotAuthenticated if the current user does not own the clip
      */
     public Clip updateClip(Long id, ClipUpdateRequest newFields) {
-        Optional<Clip> possibleClip = clipRepository.findById(id);
-
-        if (possibleClip.isEmpty()) {
-            throw new ClipNotFound("Clip with id " + id + " not found.");
-        }
-
-        Clip clip = possibleClip.get();
+        Clip clip = getClipById(id);
 
         if (!isAuthenticatedForClip(clip)) {
             throw new NotAuthenticated("You are not authorized to access clip: " + id);
@@ -127,13 +121,8 @@ public class ClipService {
      * @throws NotAuthenticated if the current user does not own the clip
      */
     public boolean deleteClip(Long id) {
-        Optional<Clip> possibleClip = getClipById(id);
-        if (possibleClip.isEmpty()) {
-            logger.warn("Clip with ID {} not found for deletion", id);
-            return false;
-        }
+        Clip clip = getClipById(id);
 
-        Clip clip = possibleClip.get();
         if (!isAuthenticatedForClip(clip)) {
             throw new NotAuthenticated("You are not authorized to delete this clip");
         }
@@ -169,13 +158,7 @@ public class ClipService {
      * @throws NotAuthenticated if the current user does not own the clip
      */
     public Resource downloadClip(Long id) {
-        Optional<Clip> possibleClip = getClipById(id);
-
-        if (possibleClip.isEmpty()) {
-            throw new ClipNotFound("Clip " + id + " doesn't exist");
-        }
-
-        Clip clip = possibleClip.get();
+        Clip clip = getClipById(id);
 
         if (!isAuthenticatedForClip(clip)) {
             throw new NotAuthenticated("Not authenticated for this clip");
@@ -200,13 +183,7 @@ public class ClipService {
      * @throws NotAuthenticated if the current user does not own the clip
      */
     public Resource downloadThumbnail(Long id) {
-        Optional<Clip> possibleClip = getClipById(id);
-
-        if (possibleClip.isEmpty()) {
-            throw new ClipNotFound("Clip " + id + " doesn't exist");
-        }
-
-        Clip clip = possibleClip.get();
+        Clip clip = getClipById(id);
 
         if (!isAuthenticatedForClip(clip)) {
             throw new NotAuthenticated("Not authenticated for this clip thumbnail");
