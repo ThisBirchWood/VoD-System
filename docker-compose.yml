@@ -45,6 +45,8 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: vod_rtmp
+    env_file:
+      - .env
     environment:
       - WEB_SERVER_URL=http://backend:8080
     ports:

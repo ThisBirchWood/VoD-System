@@ -7,6 +7,9 @@ import com.ddf.vodsystem.exceptions.MarkerNotFound;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.exceptions.NotStreaming;
 import com.ddf.vodsystem.repositories.MarkerRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,6 +22,9 @@ public class MarkerService {
     private final UserService userService;
     private final StreamService streamService;
     private final MarkerRepository markerRepository;
+
+    @Value("${stream.max-length}")
+    private Long maxStreamLength;
 
     public MarkerService(UserService userService, StreamService streamService, MarkerRepository markerRepository) {
         this.userService = userService;
@@ -64,5 +70,13 @@ public class MarkerService {
         marker.setMessage(message);
         marker.setTimestamp(Instant.now());
         return markerRepository.saveAndFlush(marker);
+    }
+
+    @Scheduled(fixedDelay = 360_000)
+    @Transactional
+    public void deleteOldMarkers() {
+        Instant cutoff = Instant.now().minusSeconds(maxStreamLength);
+        List<Marker> stale = markerRepository.findAllBefore(cutoff);
+        markerRepository.deleteAllInBatch(stale);
     }
 }

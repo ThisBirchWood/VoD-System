@@ -22,6 +22,8 @@ services:
     container_name: vod_rtmp
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
     environment:
       - WEB_SERVER_URL=http://host.docker.internal:8080
     ports:

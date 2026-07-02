@@ -20,7 +20,7 @@ rtmp {
             hls_path /stream;
             hls_fragment_naming system;
             hls_fragment 3;
-            hls_playlist_length 28800;
+            hls_playlist_length ${STREAM_RING_LENGTH_SECOND};
 
             on_publish ${WEB_SERVER_URL}/api/v1/stream/start;
             on_publish_done ${WEB_SERVER_URL}/api/v1/stream/stop;
