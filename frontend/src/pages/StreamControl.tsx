@@ -9,6 +9,7 @@ import {
     getStreamHistory,
     getMarkers,
     createMarker,
+    deleteMarker,
     saveSectionByMarkers,
     clipSection,
     getJob,
@@ -120,7 +121,7 @@ const StreamControl = () => {
 
     const refreshMarkers = () => {
         getMarkers()
-            .then((data) => setMarkers(data.filter((m) => m.streamId === streamStatus?.id)
+            .then((data) => setMarkers(data
                 .sort((a, b) => stringToDate(a.timestamp).getTime() - stringToDate(b.timestamp).getTime())))
             .catch(() => {});
     };
@@ -209,6 +210,17 @@ const StreamControl = () => {
         }
     };
 
+    const handleDeleteMarker = async (id: number) => {
+        try {
+            await deleteMarker(id);
+            if (startMarkerId === String(id)) setStartMarkerId("");
+            if (endMarkerId === String(id)) setEndMarkerId("");
+            refreshMarkers();
+        } catch (err) {
+            setMarkerError(err instanceof Error ? err.message : "Failed to delete marker");
+        }
+    };
+
     const handleChipClick = (id: number) => {
         const idStr = String(id);
         setMarkerSaveError(null);
@@ -289,28 +301,36 @@ const StreamControl = () => {
                         {markerError && <p className="text-sm text-red-500">{markerError}</p>}
 
                         {markers.length > 0 && (
-                            <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1">
+                            <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 pt-1.5">
                                 {markers.map((m) => {
                                     const isStart = startMarkerId === String(m.id);
                                     const isEnd = endMarkerId === String(m.id);
                                     return (
-                                        <button
-                                            key={m.id}
-                                            onClick={() => handleChipClick(m.id)}
-                                            className={clsx(
-                                                "flex-shrink-0 flex flex-col items-start gap-0.5 rounded-lg border px-3 py-1.5 text-left transition-colors duration-150",
-                                                isStart && "border-primary bg-primary/5 ring-1 ring-primary",
-                                                isEnd && "border-accent bg-accent/5 ring-1 ring-accent",
-                                                !isStart && !isEnd && "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                                            )}
-                                        >
-                                            <span className="text-xs font-medium text-gray-800 max-w-40 truncate">{m.message}</span>
-                                            <span className="text-[11px] text-gray-400">
-                                                {formatLocalDate(m.timestamp, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                                                {isStart && <span className="text-primary font-medium"> · start</span>}
-                                                {isEnd && <span className="text-accent font-medium"> · end</span>}
-                                            </span>
-                                        </button>
+                                        <div key={m.id} className="group relative flex-shrink-0">
+                                            <button
+                                                onClick={() => handleChipClick(m.id)}
+                                                className={clsx(
+                                                    "flex flex-col items-start gap-0.5 rounded-lg border px-3 py-1.5 text-left transition-colors duration-150",
+                                                    isStart && "border-primary bg-primary/5 ring-1 ring-primary",
+                                                    isEnd && "border-accent bg-accent/5 ring-1 ring-accent",
+                                                    !isStart && !isEnd && "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                                )}
+                                            >
+                                                <span className="text-xs font-medium text-gray-800 max-w-40 truncate">{m.message}</span>
+                                                <span className="text-[11px] text-gray-400">
+                                                    {formatLocalDate(m.timestamp, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                                                    {isStart && <span className="text-primary font-medium"> · start</span>}
+                                                    {isEnd && <span className="text-accent font-medium"> · end</span>}
+                                                </span>
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteMarker(m.id); }}
+                                                title="Delete marker"
+                                                className="hidden group-hover:flex items-center justify-center absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gray-400 hover:bg-red-500 text-white transition-colors duration-150"
+                                            >
+                                                <X size={10} />
+                                            </button>
+                                        </div>
                                     );
                                 })}
                             </div>

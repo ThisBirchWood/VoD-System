@@ -263,6 +263,18 @@ const createMarker = async (message: string): Promise<Marker> => {
     return result.data;
 };
 
+const deleteMarker = async (id: number): Promise<void> => {
+    const response = await fetch(API_URL + `/api/v1/markers/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+
+    if (!response.ok) throw new Error(`Failed to delete marker: ${response.status}`);
+
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') throw new Error(`Failed to delete marker: ${result.message}`);
+};
+
 const saveSection = async (startTime: string, endTime: string, title?: string, description?: string): Promise<string> => {
     const response = await fetch(API_URL + '/api/v1/media/save', {
         method: 'POST',
@@ -327,6 +339,7 @@ export {
     getStreamHistory,
     getMarkers,
     createMarker,
+    deleteMarker,
     saveSection,
     saveSectionByMarkers,
     clipSection,

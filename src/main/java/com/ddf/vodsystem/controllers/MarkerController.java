@@ -51,6 +51,15 @@ public class MarkerController {
         );
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<APIResponse<String>> deleteMarker(@PathVariable Long id) {
+        markerService.deleteMarker(id);
+
+        return ResponseEntity.ok(
+                new APIResponse<>(SUCCESS, "Marker deleted successfully", "Marker " + id + " deleted.")
+        );
+    }
+
     private MarkerResponse convertToDTO(Marker marker) {
         return new MarkerResponse(
                 marker.getId(),
