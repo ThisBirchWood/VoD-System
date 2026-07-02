@@ -1,0 +1,24 @@
+meta {
+  name: Save Stream Section By Markers
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/media/save/markers
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "startMarkerId": 1,
+    "endMarkerId": 2,
+    "title": "Hello",
+    "description": "my clip"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("uuid", res.getBody().data.uuid);
+}
