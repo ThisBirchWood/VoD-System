@@ -12,6 +12,7 @@ import VodPlayer from "./pages/VodPlayer.tsx";
 import EditClip from "./pages/EditClip.tsx";
 import EditVod from "./pages/EditVod.tsx";
 import Profile from "./pages/Profile.tsx";
+import StreamControl from "./pages/StreamControl.tsx";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 
@@ -35,6 +36,7 @@ function App() {
                         <Route path="/clips/:id/edit" element={<EditClip />} />
                         <Route path="/vods/:id/edit" element={<EditVod />} />
                         <Route path="/profile" element={<Profile />} />
+                        <Route path="/stream" element={<StreamControl />} />
                     </Route>
                 </Routes>
             </Router>

@@ -4,7 +4,8 @@ import Topbar from '../components/Topbar'
 import { Outlet } from 'react-router-dom';
 import {useEffect, useState} from "react";
 import type {User} from "../utils/types";
-import { getUser, getStreamStatus } from "../utils/endpoints";
+import { getUser } from "../utils/api/users";
+import { getStreamStatus } from "../utils/api/stream";
 
 const MainLayout = () => {
     const [sidebarToggled, setSidebarToggled] = useState(false);

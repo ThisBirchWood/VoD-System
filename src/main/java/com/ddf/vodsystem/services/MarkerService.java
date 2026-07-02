@@ -72,6 +72,11 @@ public class MarkerService {
         return markerRepository.saveAndFlush(marker);
     }
 
+    public void deleteMarker(Long id) {
+        Marker marker = getMarkerById(id);
+        markerRepository.delete(marker);
+    }
+
     @Scheduled(fixedDelay = 360_000)
     @Transactional
     public void deleteOldMarkers() {

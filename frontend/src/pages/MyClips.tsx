@@ -1,7 +1,7 @@
 import VideoCard from "../components/video/VideoCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getClips, deleteClip } from "../utils/endpoints";
+import { getClips, deleteClip } from "../utils/api/clips";
 import type { Clip } from "../utils/types";
 
 const MyClips = () => {

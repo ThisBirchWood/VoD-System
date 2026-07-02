@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { formatTime, stringToDate, dateToTimeAgo } from "../../utils/utils.ts";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { isThumbnailAvailable } from "../../utils/endpoints.ts";
+import { isThumbnailAvailable } from "../../utils/api/client.ts";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 
 type VideoCardProps = {

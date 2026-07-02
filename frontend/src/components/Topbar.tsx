@@ -1,5 +1,5 @@
 import { Menu, X } from 'lucide-react';
-import { login, logout } from "../utils/endpoints.ts";
+import { login, logout } from "../utils/api/users.ts";
 import { Dropdown, DropdownItem } from "./Dropdown.tsx";
 import { GoogleLogin } from '@react-oauth/google';
 

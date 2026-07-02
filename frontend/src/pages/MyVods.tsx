@@ -1,7 +1,7 @@
 import VideoCard from "../components/video/VideoCard";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getVods, deleteVod } from "../utils/endpoints";
+import { getVods, deleteVod } from "../utils/api/vods";
 import type { Vod } from "../utils/types";
 
 const MyVods = () => {

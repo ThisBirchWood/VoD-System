@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Copy, Check } from "lucide-react";
 import Box from "../components/Box.tsx";
-import { getUser } from "../utils/endpoints.ts";
+import { getUser } from "../utils/api/users.ts";
 import type { User } from "../utils/types.ts";
 import { formatLocalDate } from "../utils/utils.ts";
 

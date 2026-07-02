@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import SidebarButton from "./buttons/SidebarButton.tsx";
-import { Plus, Film, Home, User as UserIcon, Video } from 'lucide-react';
+import { Plus, Film, Home, User as UserIcon, Video, Radio } from 'lucide-react';
 import type {User} from "../utils/types.ts";
 
 type props = {
@@ -30,6 +30,7 @@ const Sidebar = ({user, className}: props) => {
                     <>
                         <Divider />
                         <div className="flex flex-col gap-0.5">
+                            <SidebarButton url="/stream" logo={<Radio size={18}/>} label="Stream" />
                             <SidebarButton url="/my-clips" logo={<Film size={18}/>} label="Clips" />
                             <SidebarButton url="/my-vods" logo={<Video size={18}/>} label="VoDs" />
                         </div>
