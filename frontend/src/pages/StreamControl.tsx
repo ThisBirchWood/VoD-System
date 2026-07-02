@@ -3,17 +3,11 @@ import { Radio, Check, Bookmark, Scissors, Film, Activity, Loader2, X } from "lu
 import clsx from "clsx";
 import Box from "../components/Box.tsx";
 import BlueButton from "../components/buttons/BlueButton.tsx";
-import {
-    getUser,
-    getCurrentStream,
-    getStreamHistory,
-    getMarkers,
-    createMarker,
-    deleteMarker,
-    saveSectionByMarkers,
-    clipSection,
-    getJob,
-} from "../utils/endpoints.ts";
+import { getUser } from "../utils/api/users.ts";
+import { getCurrentStream, getStreamHistory } from "../utils/api/stream.ts";
+import { getMarkers, createMarker, deleteMarker } from "../utils/api/markers.ts";
+import { saveSectionByMarkers, clipSection } from "../utils/api/media.ts";
+import { getJob } from "../utils/api/jobs.ts";
 import type { User, StreamStatus, StreamHistoryItem, Marker, JobResponse } from "../utils/types.ts";
 import { formatTime, formatLocalDate, stringToDate } from "../utils/utils.ts";
 
@@ -134,7 +128,6 @@ const StreamControl = () => {
         refreshMarkers();
         const interval = setInterval(refreshMarkers, 5000);
         return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isStreaming, streamStatus?.id]);
 
     useEffect(() => {

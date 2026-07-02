@@ -5,7 +5,8 @@ import PlaybackSlider from "./../components/video/PlaybackSlider";
 import ClipRangeSlider from "./../components/video/ClipRangeSlider";
 import ConfigBox from "../components/video/ConfigBox.tsx";
 import ExportWidget from "../components/video/ExportWidget.tsx";
-import { compress, getJob } from "../utils/endpoints"
+import { compress } from "../utils/api/media"
+import { getJob } from "../utils/api/jobs"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
 import MetadataBox from "../components/video/MetadataBox.tsx";

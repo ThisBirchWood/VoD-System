@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Lock, Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
 import type { Vod } from "../utils/types";
-import { AuthError, getVodById, getVodBlob } from "../utils/endpoints.ts";
+import { AuthError } from "../utils/api/client.ts";
+import { getVodById, getVodBlob } from "../utils/api/vods.ts";
 import Box from "../components/Box.tsx";
 import { dateToTimeAgo, formatTime, stringToDate } from "../utils/utils.ts";
 

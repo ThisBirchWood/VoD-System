@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Check } from "lucide-react";
-import { getVodById, patchVod } from "../utils/endpoints.ts";
+import { getVodById, patchVod } from "../utils/api/vods.ts";
 import Box from "../components/Box.tsx";
 import BlueButton from "../components/buttons/BlueButton.tsx";
 
