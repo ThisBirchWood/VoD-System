@@ -5,6 +5,7 @@ import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.dto.JobState;
 import com.ddf.vodsystem.entities.Marker;
 import com.ddf.vodsystem.entities.User;
+import com.ddf.vodsystem.exceptions.MarkerNotFound;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.media.CompressionService;
 import com.ddf.vodsystem.services.media.StreamActionsService;
@@ -152,6 +153,25 @@ public class MediaService {
         );
     }
 
+    /**
+     * Saves a section of the currently authenticated user's live stream between two markers.
+     * <p>
+     * Resolves {@code startMarkerId} and {@code endMarkerId} to their marker timestamps and
+     * delegates to {@link #saveSection(Instant, Instant, String, String)}.
+     *
+     * @param startMarkerId id of the marker whose timestamp begins the section to save
+     * @param endMarkerId   id of the marker whose timestamp ends the section to save
+     * @param title         title for the saved VoD; defaults to the current timestamp if {@code null}
+     * @param description   description for the saved VoD; defaults to an empty string if {@code null}
+     * @return the {@link Job} tracking the save; state transitions to
+     *         {@link JobState#SUCCEEDED} or {@link JobState#FAILED} asynchronously
+     * @throws MarkerNotFound           if either marker id does not exist
+     * @throws NotAuthenticated         if no user is currently authenticated, or the caller does not
+     *                                  own one of the referenced markers
+     * @throws IllegalArgumentException if the start marker's timestamp is not before the end
+     *                                  marker's, or if no stream segments exist in the given range
+     * @throws IOException              if reading the stream directory or its segments fails
+     */
     public Job saveSection(
             Long startMarkerId,
             Long endMarkerId,
