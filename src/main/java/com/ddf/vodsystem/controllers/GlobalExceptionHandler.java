@@ -115,4 +115,11 @@ public class GlobalExceptionHandler {
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
+
+    @ExceptionHandler(MarkerNotFound.class)
+    public ResponseEntity<APIResponse<Void>> handleMarkerNotFound(MarkerNotFound ex) {
+        logger.error("MarkerNotFound: {}", ex.getMessage());
+        APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
 }

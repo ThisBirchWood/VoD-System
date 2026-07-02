@@ -3,6 +3,7 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.entities.Marker;
 import com.ddf.vodsystem.entities.Stream;
 import com.ddf.vodsystem.entities.User;
+import com.ddf.vodsystem.exceptions.MarkerNotFound;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.exceptions.NotStreaming;
 import com.ddf.vodsystem.repositories.MarkerRepository;
@@ -23,6 +24,21 @@ public class MarkerService {
         this.userService = userService;
         this.streamService = streamService;
         this.markerRepository = markerRepository;
+    }
+
+    public Marker getMarkerById(Long id) {
+        Optional<Marker> marker = markerRepository.findById(id);
+
+        if (marker.isEmpty()) {
+            throw new MarkerNotFound("Marker does not exist");
+        }
+
+        Optional<User> user = userService.getLoggedInUser();
+        if (user.isEmpty() || !user.get().equals(marker.get().getUser())) {
+            throw new NotAuthenticated("User not authenticated for this marker");
+        }
+
+        return marker.get();
     }
 
     public List<Marker> getUserMarkers() {

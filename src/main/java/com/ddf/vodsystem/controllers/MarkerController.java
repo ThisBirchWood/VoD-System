@@ -33,6 +33,15 @@ public class MarkerController {
         );
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<APIResponse<MarkerResponse>> getMarkerById(@PathVariable Long id) {
+        Marker marker = markerService.getMarkerById(id);
+
+        return ResponseEntity.ok(
+                new APIResponse<>(SUCCESS, "Marker retrieved successfully", convertToDTO(marker))
+        );
+    }
+
     @PostMapping("")
     public ResponseEntity<APIResponse<MarkerResponse>> createMarker(@Valid @RequestBody MarkerCreateRequest request) {
         Marker marker = markerService.create(request.message());
