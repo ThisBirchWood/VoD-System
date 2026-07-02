@@ -1,6 +1,7 @@
 package com.ddf.vodsystem.controllers;
 
 import com.ddf.vodsystem.controllers.dto.ClipSectionRequest;
+import com.ddf.vodsystem.controllers.dto.SaveSectionByMarkerRequest;
 import com.ddf.vodsystem.controllers.dto.SaveSectionRequest;
 import com.ddf.vodsystem.controllers.dto.UUIDResponse;
 import com.ddf.vodsystem.dto.Job;
@@ -47,6 +48,21 @@ public class MediaController {
                 saveSectionRequest.endTime(),
                 saveSectionRequest.title(),
                 saveSectionRequest.description());
+        return ResponseEntity.ok(new APIResponse<>(
+                SUCCESS,
+                "Section saving successfully started",
+                new UUIDResponse(job.getUuid())
+        ));
+    }
+
+    @PostMapping("/save/markers")
+    public ResponseEntity<APIResponse<UUIDResponse>> saveByMarkers(
+            @Valid @RequestBody SaveSectionByMarkerRequest saveSectionByMarkerRequest) throws IOException {
+        Job job = mediaService.saveSection(
+                saveSectionByMarkerRequest.startMarkerId(),
+                saveSectionByMarkerRequest.endMarkerId(),
+                saveSectionByMarkerRequest.title(),
+                saveSectionByMarkerRequest.description());
         return ResponseEntity.ok(new APIResponse<>(
                 SUCCESS,
                 "Section saving successfully started",

@@ -174,7 +174,7 @@ public class ClipService {
         Path file = directoryService.resolvePath(path);
 
         if (!Files.exists(file)) {
-            throw new JobNotFound("Thumbnail file not found");
+            throw new ClipNotFound("Thumbnail file not found");
         }
 
         return new FileSystemResource(file);
