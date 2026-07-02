@@ -13,17 +13,19 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class CompressionService {
     private static final Logger logger = LoggerFactory.getLogger(CompressionService.class);
+    private final CommandRunner commandRunner;
 
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
-    private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
+
+    public CompressionService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
 
     @Async("ffmpegTaskExecutor")
     public CompletableFuture<CommandOutput> compress(Path inputFile,
@@ -38,18 +40,10 @@ public class CompressionService {
                 outputFile,
                 clipOptions
         );
-        CommandOutput result = CommandRunner.run(command, line -> CommandRunner.setProgress(line, progress, clipOptions.getDuration()));
+        CommandOutput result = commandRunner.run(command, line -> commandRunner.setProgress(line, progress, clipOptions.getDuration()));
         progress.markComplete();
 
         return CompletableFuture.completedFuture(result);
-    }
-
-    private void setProgress(String line, ProgressTracker progress, float length) {
-        Matcher matcher = timePattern.matcher(line);
-        if (matcher.find()) {
-            float timeInMs = Float.parseFloat(matcher.group(1)) / 1000000f;
-            progress.setProgress(timeInMs / length);
-        }
     }
 
     private List<String> buildFilters(Float fps, Integer width, Integer height) {

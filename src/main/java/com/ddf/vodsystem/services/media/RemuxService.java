@@ -9,12 +9,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class RemuxService {
-    private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
+    private final CommandRunner commandRunner;
+
+    public RemuxService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
 
     @Async("ffmpegTaskExecutor")
     public CompletableFuture<CommandOutput> remux(File inputFile,
@@ -33,14 +35,7 @@ public class RemuxService {
                 outputFile.getAbsolutePath()
         );
 
-        return CompletableFuture.completedFuture(CommandRunner.run(command, line -> setProgress(line, remuxProgress, length)));
-    }
-
-    private void setProgress(String line, ProgressTracker progress, float length) {
-        Matcher matcher = timePattern.matcher(line);
-        if (matcher.find()) {
-            float timeInMs = Float.parseFloat(matcher.group(1)) / 1000000f;
-            progress.setProgress(timeInMs / length);
-        }
+        return CompletableFuture.completedFuture(commandRunner.run(command, line ->
+                commandRunner.setProgress(line, remuxProgress, length)));
     }
 }

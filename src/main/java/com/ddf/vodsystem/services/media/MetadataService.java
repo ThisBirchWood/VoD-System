@@ -19,8 +19,13 @@ import java.util.concurrent.Future;
 @Service
 public class MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
+    public final CommandRunner commandRunner;
 
     private static final String DURATION = "duration";
+
+    public MetadataService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
 
     @Async("ffmpegTaskExecutor")
     public Future<ClipOptions> getVideoMetadata(Path file) {
@@ -39,7 +44,7 @@ public class MetadataService {
         StringBuilder outputBuilder = new StringBuilder();
 
         try {
-            CommandOutput output = CommandRunner.run(command);
+            CommandOutput output = commandRunner.run(command);
 
             for (String line : output.getOutput()) {
                 outputBuilder.append(line);

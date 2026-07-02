@@ -23,6 +23,11 @@ import java.util.stream.Collectors;
 @Service
 public class StreamActionsService {
     private static final Logger logger = LoggerFactory.getLogger(StreamActionsService.class);
+    private final CommandRunner commandRunner;
+
+    public StreamActionsService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
 
     /**
      * Concatenates a list of video segments and extracts a trimmed section
@@ -71,7 +76,7 @@ public class StreamActionsService {
 
             logger.info("Saving section with ({} segments) to '{}'",
                     segments.size(), outputFile);
-            CommandRunner.run(command, line -> CommandRunner.setProgress(line, progressTracker, duration));
+            commandRunner.run(command, line -> commandRunner.setProgress(line, progressTracker, duration));
             progressTracker.markComplete();
 
             return CompletableFuture.completedFuture(outputFile);

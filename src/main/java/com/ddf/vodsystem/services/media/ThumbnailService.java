@@ -12,6 +12,11 @@ import java.util.List;
 @Service
 public class ThumbnailService {
     private static final Logger logger = LoggerFactory.getLogger(ThumbnailService.class);
+    private final CommandRunner commandRunner;
+
+    public ThumbnailService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
 
     @Async("ffmpegTaskExecutor")
     public void createThumbnail(Path inputFile, Path outputFile, Float timeInVideo) throws IOException, InterruptedException {
@@ -25,6 +30,6 @@ public class ThumbnailService {
                 outputFile.toAbsolutePath().toString()
         );
 
-        CommandRunner.run(command);
+        commandRunner.run(command);
     }
 }
