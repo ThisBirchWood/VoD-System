@@ -3,6 +3,7 @@ package com.ddf.vodsystem.services;
 import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.dto.Job;
 import com.ddf.vodsystem.dto.JobState;
+import com.ddf.vodsystem.entities.Marker;
 import com.ddf.vodsystem.entities.User;
 import com.ddf.vodsystem.exceptions.NotAuthenticated;
 import com.ddf.vodsystem.services.media.CompressionService;
@@ -32,12 +33,13 @@ public class MediaService {
     private static final int HLS_SEGMENT_LENGTH = 3;
     private final StreamActionsService streamActionsService;
     private final VodService vodService;
+    private final MarkerService markerService;
 
     public MediaService(JobRegistryService jobRegistryService,
                         DirectoryService directoryService,
                         CompressionService compressionService,
                         UserService userService,
-                        ClipService clipService, StreamActionsService streamActionsService, VodService vodService) {
+                        ClipService clipService, StreamActionsService streamActionsService, VodService vodService, MarkerService markerService) {
         this.jobRegistryService = jobRegistryService;
         this.directoryService = directoryService;
         this.compressionService = compressionService;
@@ -45,6 +47,7 @@ public class MediaService {
         this.clipService = clipService;
         this.streamActionsService = streamActionsService;
         this.vodService = vodService;
+        this.markerService = markerService;
     }
 
     /**
@@ -147,6 +150,18 @@ public class MediaService {
                 outputFile.getFileName().toString()
             )
         );
+    }
+
+    public Job saveSection(
+            Long startMarkerId,
+            Long endMarkerId,
+            String title,
+            String description
+    ) throws IOException {
+        Marker start = markerService.getMarkerById(startMarkerId);
+        Marker end = markerService.getMarkerById(endMarkerId);
+
+        return saveSection(start.getTimestamp(), end.getTimestamp(), title, description);
     }
 
     /**
