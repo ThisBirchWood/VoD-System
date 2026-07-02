@@ -108,4 +108,11 @@ public class GlobalExceptionHandler {
         APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+
+    @ExceptionHandler(NotStreaming.class)
+    public ResponseEntity<APIResponse<Void>> handleNotStreaming(NotStreaming ex) {
+        logger.error("NotStreaming: {}", ex.getMessage());
+        APIResponse<Void> response = new APIResponse<>(ERROR, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 }

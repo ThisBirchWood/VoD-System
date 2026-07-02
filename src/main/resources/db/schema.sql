@@ -55,3 +55,14 @@ CREATE TABLE IF NOT EXISTS vods (
     thumbnail_path VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS markers (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    stream_id BIGINT NOT NULL,
+    message VARCHAR(255),
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (stream_id) REFERENCES streams(id) ON DELETE CASCADE
+);
