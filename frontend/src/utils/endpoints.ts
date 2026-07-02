@@ -1,4 +1,4 @@
-import type { VideoMetadata, APIResponse, User, Clip, Vod, JobResponse } from "./types.ts";
+import type { VideoMetadata, APIResponse, User, Clip, Vod, JobResponse, StreamStatus, StreamHistoryItem, Marker } from "./types.ts";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -219,6 +219,92 @@ const isThumbnailAvailable = async (thumbnailUrl: string): Promise<boolean> => {
     return response.ok;
 };
 
+const getCurrentStream = async (): Promise<StreamStatus> => {
+    const response = await fetch(API_URL + '/api/v1/stream/current', { credentials: 'include' });
+    if (!response.ok) throw new Error(`Failed to fetch stream status: ${response.status}`);
+
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') throw new Error(`Failed to fetch stream status: ${result.message}`);
+
+    return result.data;
+};
+
+const getStreamHistory = async (userId: number): Promise<StreamHistoryItem[]> => {
+    const response = await fetch(API_URL + `/api/v1/stream/history/${userId}`, { credentials: 'include' });
+    if (!response.ok) throw new Error(`Failed to fetch stream history: ${response.status}`);
+
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') throw new Error(`Failed to fetch stream history: ${result.message}`);
+
+    return result.data;
+};
+
+const getMarkers = async (): Promise<Marker[]> => {
+    const response = await fetch(API_URL + '/api/v1/markers', { credentials: 'include' });
+    if (!response.ok) throw new Error(`Failed to fetch markers: ${response.status}`);
+
+    const result: APIResponse = await response.json();
+    if (result.status === 'error') throw new Error(`Failed to fetch markers: ${result.message}`);
+
+    return result.data;
+};
+
+const createMarker = async (message: string): Promise<Marker> => {
+    const response = await fetch(API_URL + '/api/v1/markers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ message }),
+    });
+
+    const result: APIResponse = await response.json();
+    if (!response.ok || result.status === 'error') throw new Error(`Failed to add marker: ${result.message}`);
+
+    return result.data;
+};
+
+const saveSection = async (startTime: string, endTime: string, title?: string, description?: string): Promise<string> => {
+    const response = await fetch(API_URL + '/api/v1/media/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ startTime, endTime, title, description }),
+    });
+
+    const result: APIResponse = await response.json();
+    if (!response.ok || result.status === 'error') throw new Error(`Failed to save section: ${result.message}`);
+
+    return result.data.uuid;
+};
+
+const saveSectionByMarkers = async (startMarkerId: number, endMarkerId: number, title?: string, description?: string): Promise<string> => {
+    const response = await fetch(API_URL + '/api/v1/media/save/markers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ startMarkerId, endMarkerId, title, description }),
+    });
+
+    const result: APIResponse = await response.json();
+    if (!response.ok || result.status === 'error') throw new Error(`Failed to save section: ${result.message}`);
+
+    return result.data.uuid;
+};
+
+const clipSection = async (duration: number, title?: string, description?: string): Promise<string> => {
+    const response = await fetch(API_URL + '/api/v1/media/clip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ duration, title, description }),
+    });
+
+    const result: APIResponse = await response.json();
+    if (!response.ok || result.status === 'error') throw new Error(`Failed to clip section: ${result.message}`);
+
+    return result.data.uuid;
+};
+
 export {
     login,
     logout,
@@ -237,4 +323,11 @@ export {
     deleteVod,
     getStreamStatus,
     isThumbnailAvailable,
+    getCurrentStream,
+    getStreamHistory,
+    getMarkers,
+    createMarker,
+    saveSection,
+    saveSectionByMarkers,
+    clipSection,
 };

@@ -16,6 +16,7 @@ type APIResponse = {
 }
 
 type User = {
+    id: number,
     name: string,
     username: string,
     email: string,
@@ -51,11 +52,34 @@ type JobResponse = {
     createdAt: string,
 };
 
+type StreamStatus = {
+    isStreaming: boolean,
+    id: number | null,
+}
+
+type StreamHistoryItem = {
+    id: number,
+    startDate: string | null,
+    endDate: string | null,
+    lastSeen: string | null,
+}
+
+type Marker = {
+    id: number,
+    userId: number,
+    streamId: number,
+    message: string,
+    timestamp: string,
+}
+
 export type {
     APIResponse,
     VideoMetadata,
     User,
     Clip,
     Vod,
-    JobResponse
+    JobResponse,
+    StreamStatus,
+    StreamHistoryItem,
+    Marker
 }
