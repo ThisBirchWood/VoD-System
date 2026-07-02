@@ -106,7 +106,7 @@ public class CompressionService {
         return command;
     }
 
-    private List<String> buildCommand(Path inputFile, Path outputFile, ClipOptions clipOptions) {
+    protected List<String> buildCommand(Path inputFile, Path outputFile, ClipOptions clipOptions) {
         List<String> command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");
