@@ -44,7 +44,7 @@ class CompressionServiceTest {
     }
 
     @Test
-    void buildCommand_hasFileSize_hasBitrateOptions() {
+    void buildCommand_hasFileSize_hasCorrectBitrate() {
         Path input = Path.of("/tmp/input.mp4");
         Path output = Path.of("/tmp/output.mp4");
         ClipOptions options = new ClipOptions();
@@ -54,14 +54,28 @@ class CompressionServiceTest {
         options.setDuration(30.0f);
         options.setFileSize(10.0f);
 
+        float maximumBitrateKbps = (options.getFileSize() * 8 * 1000) / options.getDuration();
+
         List<String> command = compressionService.buildCommand(input, output, options);
 
         assertThat(command).contains("-b:v", "-b:a");
+
         int bvIndex = command.indexOf("-b:v");
         int baIndex = command.indexOf("-b:a");
 
-        assertThat(command.get(bvIndex + 1)).isNotBlank().endsWith("k");
-        assertThat(command.get(baIndex + 1)).isNotBlank().endsWith("k");
+        String videoBitrateStr = command.get(bvIndex + 1);
+        String audioBitrateStr = command.get(baIndex + 1);
+
+        assertThat(videoBitrateStr).isNotBlank().endsWith("k");
+        assertThat(audioBitrateStr).isNotBlank().endsWith("k");
+
+        // Strip the trailing "k" so we can compare the numbers, not the strings
+        float videoBitrateKbps = Float.parseFloat(videoBitrateStr.replace("k", ""));
+        float audioBitrateKbps = Float.parseFloat(audioBitrateStr.replace("k", ""));
+
+        float totalBitrateKbps = videoBitrateKbps + audioBitrateKbps;
+
+        assertThat(totalBitrateKbps).isLessThanOrEqualTo(maximumBitrateKbps);
     }
 
     @Test
