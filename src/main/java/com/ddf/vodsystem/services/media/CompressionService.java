@@ -69,7 +69,7 @@ public class CompressionService {
         return command;
     }
 
-    private List<String> buildBitrate(Float length, Float fileSize) {
+    private List<String> buildBitrate(Float length, Long fileSize) {
         List<String> command = new ArrayList<>();
 
         float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;

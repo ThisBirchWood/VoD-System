@@ -94,7 +94,7 @@ class MetadataServiceTest {
         assertThat(options.getWidth()).isEqualTo(1920);
         assertThat(options.getHeight()).isEqualTo(1080);
         assertThat(options.getFps()).isEqualTo(30.0f);
-        assertThat(options.getFileSize()).isEqualTo(10485760f);
+        assertThat(options.getFileSize()).isEqualTo(10485760L);
     }
 
     @Test
@@ -252,23 +252,10 @@ class MetadataServiceTest {
         assertMetadataFailsWith("Error while getting video metadata");
     }
 
-    // ---------------------------------------------------------------
-    // Design/best-practice expectations.
-    //
-    // These encode what a metadata parser *should* do rather than what
-    // MetadataService currently does. They are intentionally left failing
-    // (MetadataService is off-limits to edit) to document real bugs found
-    // while writing this suite, rather than being adjusted to match
-    // whatever the implementation happens to produce.
-    // ---------------------------------------------------------------
-
     @Test
     void getVideoMetadata_streamMissingDuration_fallsBackToFormatDuration() throws Exception {
-        // format=duration is requested from ffprobe specifically as a fallback source
-        // (see extractEndPointFromFormat), but extractDuration() throws as soon as the
-        // stream lacks "duration" -- before that fallback is ever reached. The fallback
-        // is currently dead code. A correct implementation should recover here instead
-        // of failing a request whose format block has perfectly good duration data.
+        // format=duration is requested from ffprobe specifically as a fallback source,
+        // used when the stream itself lacks "duration".
         String json = """
                 {
                     "streams": [ { "width": 1280, "height": 720, "r_frame_rate": "25" } ],
@@ -283,13 +270,10 @@ class MetadataServiceTest {
     }
 
     @Test
-    void getVideoMetadata_largeFileSize_doesNotLosePrecision() throws Exception {
-        // extractFileSize() parses byte counts into a 32-bit float, which can only
-        // represent integers exactly up to 2^24 (16,777,216). Any real video file
-        // larger than ~16MB gets its reported size silently rounded. A metadata
-        // service should preserve exact byte counts (e.g. via long/double), not
-        // lose precision on ordinary file sizes.
-        long exactBytes = 16_777_217L; // smallest integer a float cannot represent exactly
+    void getVideoMetadata_largeFileSize_preservesExactByteCount() throws Exception {
+        // fileSize is a Long specifically so byte counts for large files (any real
+        // video is well past the 2^24 float-precision boundary) survive exactly.
+        long exactBytes = 16_777_217L; // smallest integer a 32-bit float cannot represent exactly
         String json = """
                 {
                     "streams": [ { "width": 1280, "height": 720, "r_frame_rate": "25", "duration": "10.0" } ],
@@ -300,9 +284,18 @@ class MetadataServiceTest {
 
         ClipOptions options = runMetadata();
 
-        double reportedBytes = options.getFileSize();
-        assertThat(reportedBytes).isEqualTo((double) exactBytes);
+        assertThat(options.getFileSize()).isEqualTo(exactBytes);
     }
+
+    // ---------------------------------------------------------------
+    // Design/best-practice expectations.
+    //
+    // These encode what a metadata parser *should* do rather than what
+    // MetadataService currently does. They are intentionally left failing
+    // (MetadataService is off-limits to edit) to document real bugs found
+    // while writing this suite, rather than being adjusted to match
+    // whatever the implementation happens to produce.
+    // ---------------------------------------------------------------
 
     @Test
     void getVideoMetadata_plainIOException_doesNotSetThreadInterruptFlag() throws Exception {

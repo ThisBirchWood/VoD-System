@@ -52,7 +52,7 @@ class CompressionServiceTest {
         options.setTitle("hello");
         options.setStartPoint(10.0f);
         options.setDuration(30.0f);
-        options.setFileSize(10.0f);
+        options.setFileSize(10L);
 
         float maximumBitrateKbps = (options.getFileSize() * 8 * 1000) / options.getDuration();
 

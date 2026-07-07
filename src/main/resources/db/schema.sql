@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS clips (
     height INTEGER NOT NULL,
     fps FLOAT NOT NULL,
     duration FLOAT NOT NULL,
-    file_size FLOAT NOT NULL,
+    file_size BIGINT NOT NULL,
     video_path VARCHAR(255) NOT NULL,
     thumbnail_path VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS vods (
     height INTEGER NOT NULL,
     fps FLOAT NOT NULL,
     duration FLOAT NOT NULL,
-    file_size FLOAT NOT NULL,
+    file_size BIGINT NOT NULL,
     video_path VARCHAR(255) NOT NULL,
     thumbnail_path VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

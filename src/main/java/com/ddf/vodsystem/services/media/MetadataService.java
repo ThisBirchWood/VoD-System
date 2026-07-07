@@ -5,6 +5,7 @@ import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -63,13 +64,12 @@ public class MetadataService {
         metadata.setStartPoint(0f);
 
         JsonNode streamNode = extractStreamNode(node);
+        JsonNode formatNode = extractFormatNode(node);
 
-        metadata.setDuration(extractDuration(streamNode));
+        metadata.setDuration(extractDuration(streamNode, formatNode));
         metadata.setWidth(getWidth(streamNode));
         metadata.setHeight(getHeight(streamNode));
         metadata.setFps(extractFps(streamNode));
-
-        JsonNode formatNode = extractFormatNode(node);
         metadata.setFileSize(extractFileSize(formatNode));
         extractEndPointFromFormat(metadata, formatNode);
 
@@ -84,9 +84,13 @@ public class MetadataService {
         return streamNode;
     }
 
-    private Float extractDuration(JsonNode streamNode) {
+    private Float extractDuration(JsonNode streamNode, JsonNode formatNode) {
         if (streamNode.has(DURATION)) {
             return Float.valueOf(streamNode.get(DURATION).asText());
+        }
+
+        if (formatNode.has(DURATION)) {
+            return Float.valueOf(formatNode.get(DURATION).asText());
         }
 
         throw new FFMPEGException("ffprobe duration missing");
@@ -113,9 +117,9 @@ public class MetadataService {
         return (formatNode != null && !formatNode.isMissingNode()) ? formatNode : null;
     }
 
-    private Float extractFileSize(JsonNode formatNode) {
+    private Long extractFileSize(JsonNode formatNode) {
         if (formatNode != null && formatNode.has("size")) {
-            return Float.parseFloat(formatNode.get("size").asText());
+            return Long.parseLong(formatNode.get("size").asText());
         }
 
         throw new FFMPEGException("ffprobe file size missing");
