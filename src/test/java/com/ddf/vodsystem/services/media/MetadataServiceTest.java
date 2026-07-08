@@ -287,24 +287,8 @@ class MetadataServiceTest {
         assertThat(options.getFileSize()).isEqualTo(exactBytes);
     }
 
-    // ---------------------------------------------------------------
-    // Design/best-practice expectations.
-    //
-    // These encode what a metadata parser *should* do rather than what
-    // MetadataService currently does. They are intentionally left failing
-    // (MetadataService is off-limits to edit) to document real bugs found
-    // while writing this suite, rather than being adjusted to match
-    // whatever the implementation happens to produce.
-    // ---------------------------------------------------------------
-
     @Test
     void getVideoMetadata_plainIOException_doesNotSetThreadInterruptFlag() throws Exception {
-        // The catch block treats IOException and InterruptedException identically and
-        // calls Thread.currentThread().interrupt() for both. That's correct for an
-        // actual InterruptedException (see the companion test below) but wrong for a
-        // plain IOException -- e.g. ffprobe exiting non-zero -- which has nothing to do
-        // with thread interruption. Spuriously setting the flag can cause unrelated
-        // interruption checks elsewhere (in the same worker thread/pool) to misfire.
         when(commandRunner.run(anyList())).thenThrow(new IOException("ffprobe boom"));
 
         assertMetadataFailsWith("Error while getting video metadata");
@@ -316,8 +300,6 @@ class MetadataServiceTest {
 
     @Test
     void getVideoMetadata_interruptedException_setsThreadInterruptFlag() throws Exception {
-        // Contrast case: a real InterruptedException should restore the interrupt flag,
-        // per standard Java concurrency practice. This one is expected to pass.
         when(commandRunner.run(anyList())).thenThrow(new InterruptedException("interrupted"));
 
         assertMetadataFailsWith("Error while getting video metadata");

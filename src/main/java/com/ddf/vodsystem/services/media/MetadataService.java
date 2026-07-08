@@ -5,7 +5,6 @@ import com.ddf.vodsystem.dto.ClipOptions;
 import com.ddf.vodsystem.exceptions.FFMPEGException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -53,7 +52,9 @@ public class MetadataService {
 
             JsonNode node = mapper.readTree(outputBuilder.toString());
             return CompletableFuture.completedFuture(parseVideoMetadata(node));
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+            throw new FFMPEGException("Error while getting video metadata: " + e);
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new FFMPEGException("Error while getting video metadata: " + e);
         }
