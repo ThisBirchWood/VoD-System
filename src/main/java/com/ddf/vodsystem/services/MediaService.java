@@ -13,13 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class MediaService {
@@ -31,7 +28,6 @@ public class MediaService {
     private final ClipService clipService;
 
     private static final float CLIP_MAX_LENGTH = 180;
-    private static final int HLS_SEGMENT_LENGTH = 3;
     private final StreamActionsService streamActionsService;
     private final VodService vodService;
     private final MarkerService markerService;
@@ -234,11 +230,11 @@ public class MediaService {
 
     private SegmentContext resolveSegments(User user, Instant startTime, Instant endTime) throws IOException {
         Path streamDir = directoryService.getStreamDir(user.getStreamKey());
-        List<Path> segments = getSegmentsInRange(streamDir, startTime, endTime);
+        List<Path> segments = streamActionsService.getSegmentsInRange(streamDir, startTime, endTime);
         if (segments.isEmpty()) {
             throw new IllegalArgumentException("No stream segments found in the given time range");
         }
-        long firstMs = parseTimestampMs(segments.getFirst());
+        long firstMs = streamActionsService.parseTimestampMs(segments.getFirst());
         float trimOffset = Math.max(0f, (startTime.toEpochMilli() - firstMs) / 1000f);
         return new SegmentContext(segments, trimOffset);
     }
@@ -260,26 +256,5 @@ public class MediaService {
         return job;
     }
 
-    private List<Path> getSegmentsInRange(Path streamDirectory, Instant startTime, Instant endTime) throws IOException {
-        long startMs = startTime.toEpochMilli();
-        long endMs = endTime.toEpochMilli();
 
-        try (Stream<Path> files = Files.list(streamDirectory)) {
-            return files
-                    .filter(p -> p.getFileName().toString().endsWith(".ts"))
-                    .filter(p -> {
-                        long segMs = parseTimestampMs(p);
-                        return segMs < endMs && (segMs + HLS_SEGMENT_LENGTH * 1000) > startMs;
-                    })
-                    .sorted(Comparator.comparingLong(this::parseTimestampMs))
-                    .collect(Collectors.toList());
-        }
-    }
-
-    private long parseTimestampMs(Path path) {
-        String name = path.getFileName().toString().replace(".ts", "");
-        long value = Long.parseLong(name);
-        // nginx hls_fragment_naming system uses seconds; convert to ms
-        return value < 1_000_000_000_000L ? value * 1000L : value;
-    }
 }
