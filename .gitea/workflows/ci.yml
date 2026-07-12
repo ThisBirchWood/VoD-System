@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+
+env:
+  REGISTRY: gitea.vodsystem.ddns.net
+  IMAGE_PREFIX: dylan/vod-system
+
+jobs:
+  unit-tests:
+    name: Maven unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: https://github.com/actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: https://github.com/actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run unit tests
+        run: ./mvnw --batch-mode --no-transfer-progress test
+
+  build-and-push:
+    name: Build and push images
+    needs: unit-tests
+    if: gitea.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: https://github.com/actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: https://github.com/docker/setup-buildx-action@v3
+
+      - name: Log in to Gitea container registry
+        uses: https://github.com/docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ gitea.actor }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Build and push backend image
+        uses: https://github.com/docker/build-push-action@v6
+        with:
+          context: .
+          file: src/main/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest
+
+      - name: Build and push frontend image
+        uses: https://github.com/docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: frontend/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
+
+      - name: Build and push rtmp image
+        uses: https://github.com/docker/build-push-action@v6
+        with:
+          context: ./nginx
+          file: nginx/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-rtmp:latest
+
+  deploy:
+    name: Deploy to server
+    needs: build-and-push
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: https://github.com/actions/checkout@v4
+
+      - name: Copy production compose file to server
+        uses: https://github.com/appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          username: ${{ vars.DEPLOY_USER }}
+          port: 22
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: docker-compose.prod.yml
+          target: ${{ vars.DEPLOY_PATH }}
+          strip_components: 0
+
+      - name: Pull latest images and restart containers
+        uses: https://github.com/appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          username: ${{ vars.DEPLOY_USER }}
+          port: 22
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: REGISTRY,REGISTRY_USER,REGISTRY_TOKEN,DEPLOY_PATH
+          script: |
+            set -e
+            echo "$REGISTRY_TOKEN" | docker login "$REGISTRY" -u "$REGISTRY_USER" --password-stdin
+            cd "$DEPLOY_PATH"
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+          REGISTRY_USER: ${{ gitea.actor }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}

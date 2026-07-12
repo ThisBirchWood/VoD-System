@@ -1,0 +1,57 @@
+# Production deploy: uses pre-built images from the Gitea container registry
+# instead of building locally. Populated by CI onto the server alongside .env.
+# Usage: docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: vod_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ${POSTGRES_DATA}:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    image: gitea.vodsystem.ddns.net/dylan/vod-system-backend:latest
+    container_name: vod_backend
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    volumes:
+      - ${MEDIA_DATA}:/app/media
+      - ${STREAM_DATA}:/app/stream
+    ports:
+      - "8089:8080"
+    restart: unless-stopped
+
+  frontend:
+    image: gitea.vodsystem.ddns.net/dylan/vod-system-frontend:latest
+    container_name: vod_frontend
+    environment:
+      VITE_API_URL: ${BACKEND_URL}
+      VITE_FRONTEND_URL: ${FRONTEND_URL}
+      VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+
+  rtmp:
+    image: gitea.vodsystem.ddns.net/dylan/vod-system-rtmp:latest
+    container_name: vod_rtmp
+    env_file:
+      - .env
+    environment:
+      - WEB_SERVER_URL=http://backend:8080
+    ports:
+      - "1935:1935"
+    volumes:
+      - ${STREAM_DATA}:/stream
+    restart: unless-stopped
+    depends_on:
+      - backend
