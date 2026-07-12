@@ -27,5 +27,5 @@ public class ClipOptions {
     private Integer height;
 
     @Positive
-    private Float fileSize;
+    private Long fileSize;
 }

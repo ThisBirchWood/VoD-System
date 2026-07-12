@@ -2,6 +2,7 @@ package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,10 +12,11 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
 public class CommandRunner {
     private static final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
 
-    public static CommandOutput run(List<String> command, Consumer<String> onOutput) throws IOException, InterruptedException {
+    public CommandOutput run(List<String> command, Consumer<String> onOutput) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.redirectErrorStream(true);
 
@@ -41,19 +43,15 @@ public class CommandRunner {
         return commandOutput;
     }
 
-    public static CommandOutput run(List<String> command) throws IOException, InterruptedException {
+    public CommandOutput run(List<String> command) throws IOException, InterruptedException {
         return run(command, null);
     }
 
-    public static void setProgress(String line, ProgressTracker progress, float length) {
+    public void setProgress(String line, ProgressTracker progress, float length) {
         Matcher matcher = timePattern.matcher(line);
         if (matcher.find()) {
             float timeInMs = Float.parseFloat(matcher.group(1)) / 1000000f;
             progress.setProgress(timeInMs / length);
         }
-    }
-
-    private CommandRunner() {
-        // Private constructor to prevent instantiation
     }
 }

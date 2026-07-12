@@ -14,16 +14,20 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 @Service
 public class MetadataService {
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
+    public final CommandRunner commandRunner;
 
     private static final String DURATION = "duration";
 
+    public MetadataService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
+
     @Async("ffmpegTaskExecutor")
-    public Future<ClipOptions> getVideoMetadata(Path file) {
+    public CompletableFuture<ClipOptions> getVideoMetadata(Path file) {
         logger.info("Getting metadata for file {}", file);
 
         List<String> command = List.of(
@@ -39,7 +43,7 @@ public class MetadataService {
         StringBuilder outputBuilder = new StringBuilder();
 
         try {
-            CommandOutput output = CommandRunner.run(command);
+            CommandOutput output = commandRunner.run(command);
 
             for (String line : output.getOutput()) {
                 outputBuilder.append(line);
@@ -47,9 +51,11 @@ public class MetadataService {
 
             JsonNode node = mapper.readTree(outputBuilder.toString());
             return CompletableFuture.completedFuture(parseVideoMetadata(node));
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new FFMPEGException("Error while getting video metadata: " + e);
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -58,13 +64,12 @@ public class MetadataService {
         metadata.setStartPoint(0f);
 
         JsonNode streamNode = extractStreamNode(node);
+        JsonNode formatNode = extractFormatNode(node);
 
-        metadata.setDuration(extractDuration(streamNode));
+        metadata.setDuration(extractDuration(streamNode, formatNode));
         metadata.setWidth(getWidth(streamNode));
         metadata.setHeight(getHeight(streamNode));
         metadata.setFps(extractFps(streamNode));
-
-        JsonNode formatNode = extractFormatNode(node);
         metadata.setFileSize(extractFileSize(formatNode));
         extractEndPointFromFormat(metadata, formatNode);
 
@@ -79,9 +84,13 @@ public class MetadataService {
         return streamNode;
     }
 
-    private Float extractDuration(JsonNode streamNode) {
+    private Float extractDuration(JsonNode streamNode, JsonNode formatNode) {
         if (streamNode.has(DURATION)) {
             return Float.valueOf(streamNode.get(DURATION).asText());
+        }
+
+        if (formatNode.has(DURATION)) {
+            return Float.valueOf(formatNode.get(DURATION).asText());
         }
 
         throw new FFMPEGException("ffprobe duration missing");
@@ -108,9 +117,9 @@ public class MetadataService {
         return (formatNode != null && !formatNode.isMissingNode()) ? formatNode : null;
     }
 
-    private Float extractFileSize(JsonNode formatNode) {
+    private Long extractFileSize(JsonNode formatNode) {
         if (formatNode != null && formatNode.has("size")) {
-            return Float.parseFloat(formatNode.get("size").asText());
+            return Long.parseLong(formatNode.get("size").asText());
         }
 
         throw new FFMPEGException("ffprobe file size missing");

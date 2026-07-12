@@ -2,6 +2,8 @@ package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -9,38 +11,43 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class RemuxService {
-    private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
+    private static final Logger logger = LoggerFactory.getLogger(RemuxService.class);
+    private final CommandRunner commandRunner;
+
+    public RemuxService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
 
     @Async("ffmpegTaskExecutor")
     public CompletableFuture<CommandOutput> remux(File inputFile,
                                                   File outputFile,
                                                   ProgressTracker remuxProgress,
                                                   float length
-    ) throws IOException, InterruptedException {
-        List<String> command = List.of(
-                "ffmpeg",
-                "-progress", "pipe:1",
-                "-y",
-                "-i", inputFile.getAbsolutePath(),
-                "-c:v", "h264",
-                "-c:a", "aac",
-                "-f", "mp4",
-                outputFile.getAbsolutePath()
-        );
+    ) {
+        try {
+            List<String> command = List.of(
+                    "ffmpeg",
+                    "-progress", "pipe:1",
+                    "-y",
+                    "-i", inputFile.getAbsolutePath(),
+                    "-c:v", "h264",
+                    "-c:a", "aac",
+                    "-f", "mp4",
+                    outputFile.getAbsolutePath()
+            );
 
-        return CompletableFuture.completedFuture(CommandRunner.run(command, line -> setProgress(line, remuxProgress, length)));
-    }
-
-    private void setProgress(String line, ProgressTracker progress, float length) {
-        Matcher matcher = timePattern.matcher(line);
-        if (matcher.find()) {
-            float timeInMs = Float.parseFloat(matcher.group(1)) / 1000000f;
-            progress.setProgress(timeInMs / length);
+            return CompletableFuture.completedFuture(commandRunner.run(command, line ->
+                    commandRunner.setProgress(line, remuxProgress, length)));
+        } catch (IOException e) {
+            logger.error("IO error on remux call: {}", e.toString());
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
+            logger.error("Thread error on remux call: {}", e.toString());
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(e);
         }
     }
 }

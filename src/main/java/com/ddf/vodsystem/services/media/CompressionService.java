@@ -13,42 +13,45 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class CompressionService {
     private static final Logger logger = LoggerFactory.getLogger(CompressionService.class);
+    private final CommandRunner commandRunner;
 
     private static final float AUDIO_RATIO = 0.15f;
     private static final float MAX_AUDIO_BITRATE = 128f;
     private static final float BITRATE_MULTIPLIER = 0.9f;
-    private final Pattern timePattern = Pattern.compile("out_time_ms=(\\d+)");
+
+    public CompressionService(CommandRunner commandRunner) {
+        this.commandRunner = commandRunner;
+    }
 
     @Async("ffmpegTaskExecutor")
     public CompletableFuture<CommandOutput> compress(Path inputFile,
                                                      Path outputFile,
                                                      ClipOptions clipOptions,
                                                      ProgressTracker progress
-    ) throws IOException, InterruptedException {
+    ) {
         logger.info("Compressing video from {} to {}", inputFile.toAbsolutePath(), outputFile.toAbsolutePath());
 
-        List<String> command = buildCommand(
-                inputFile,
-                outputFile,
-                clipOptions
-        );
-        CommandOutput result = CommandRunner.run(command, line -> CommandRunner.setProgress(line, progress, clipOptions.getDuration()));
-        progress.markComplete();
+        try {
+            List<String> command = buildCommand(
+                    inputFile,
+                    outputFile,
+                    clipOptions
+            );
+            CommandOutput result = commandRunner.run(command, line -> commandRunner.setProgress(line, progress, clipOptions.getDuration()));
+            progress.markComplete();
 
-        return CompletableFuture.completedFuture(result);
-    }
-
-    private void setProgress(String line, ProgressTracker progress, float length) {
-        Matcher matcher = timePattern.matcher(line);
-        if (matcher.find()) {
-            float timeInMs = Float.parseFloat(matcher.group(1)) / 1000000f;
-            progress.setProgress(timeInMs / length);
+            return CompletableFuture.completedFuture(result);
+        } catch (IOException e) {
+            logger.error("IO error on compress call: {}", e.toString());
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
+            logger.error("Thread error on compress call: {}", e.toString());
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -75,7 +78,7 @@ public class CompressionService {
         return command;
     }
 
-    private List<String> buildBitrate(Float length, Float fileSize) {
+    private List<String> buildBitrate(Float length, Long fileSize) {
         List<String> command = new ArrayList<>();
 
         float bitrate = ((fileSize * 8) / length) * BITRATE_MULTIPLIER;
@@ -112,7 +115,7 @@ public class CompressionService {
         return command;
     }
 
-    private List<String> buildCommand(Path inputFile, Path outputFile, ClipOptions clipOptions) {
+    protected List<String> buildCommand(Path inputFile, Path outputFile, ClipOptions clipOptions) {
         List<String> command = new ArrayList<>();
         command.add("ffmpeg");
         command.add("-progress");

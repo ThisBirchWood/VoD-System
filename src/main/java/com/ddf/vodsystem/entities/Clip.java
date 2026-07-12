@@ -43,7 +43,7 @@ public class Clip {
     private Float duration;
 
     @Column(name = "file_size", nullable = false)
-    private Float fileSize;
+    private Long fileSize;
 
     @Column(name = "video_path", nullable = false, length = 255)
     private String videoPath;

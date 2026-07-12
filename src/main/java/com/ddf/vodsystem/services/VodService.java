@@ -201,14 +201,11 @@ public class VodService {
             throw new FFMPEGException("Error retrieving video metadata for vod: " + e.getMessage());
         }
 
-        try {
-            thumbnailService.createThumbnail(newVodFile, thumbnailFile, 0.0f);
-        } catch (InterruptedException e) {
-            logger.error("Thumbnail generation interrupted for user: {}", user.getId(), e);
-            Thread.currentThread().interrupt();
-        } catch (IOException e) {
-            logger.error("Error generating thumbnail for user: {}", user.getId(), e);
-        }
+        thumbnailService.createThumbnail(newVodFile, thumbnailFile, 0.0f)
+                .exceptionally(ex -> {
+                    logger.error("Thumbnail job for user {} failed: {}", user.getId(), ex.toString());
+                    return null;
+                });
 
         vodMetadata.setTitle(title);
         vodMetadata.setDescription(description);
