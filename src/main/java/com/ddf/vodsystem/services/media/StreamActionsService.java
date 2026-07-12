@@ -71,6 +71,10 @@ public class StreamActionsService {
                     .map(p -> p.toAbsolutePath().toString())
                     .collect(Collectors.joining("|"));
 
+            if (concatInput.isEmpty()) {
+                throw new IllegalStateException("Must have at least one segment");
+            }
+
             List<String> command = List.of(
                     "ffmpeg",
                     "-y",
@@ -97,9 +101,14 @@ public class StreamActionsService {
         long startMs = startTime.toEpochMilli();
         long endMs = endTime.toEpochMilli();
 
+        if (endTime.toEpochMilli() <= startTime.toEpochMilli()) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+
         try (Stream<Path> files = Files.list(streamDirectory)) {
             return files
                     .filter(p -> p.getFileName().toString().endsWith(".ts"))
+                    .filter(Files::isRegularFile)
                     .filter(p -> {
                         long segMs = parseTimestampMs(p);
                         return segMs < endMs && (segMs + HLS_SEGMENT_LENGTH * 1000) > startMs;
@@ -110,7 +119,13 @@ public class StreamActionsService {
     }
 
     public long parseTimestampMs(Path path) {
-        String name = path.getFileName().toString().replace(".ts", "");
+        String fullName = path.getFileName().toString();
+
+        if (!fullName.endsWith(".ts")) {
+            throw new IllegalArgumentException("File must end in ts");
+        }
+
+        String name = fullName.substring(0, fullName.length() - 3);
         long value = Long.parseLong(name);
         // nginx hls_fragment_naming system uses seconds; convert to ms
         return value < 1_000_000_000_000L ? value * 1000L : value;
