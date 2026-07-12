@@ -1,15 +1,21 @@
 package com.ddf.vodsystem.services.media;
 
+import com.ddf.vodsystem.dto.CommandOutput;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ThumbnailServiceTest {
@@ -22,21 +28,55 @@ class ThumbnailServiceTest {
     @BeforeEach
     void setUp() {
         thumbnailService = new ThumbnailService(commandRunner);
+        Thread.interrupted();
+    }
+
+    @AfterEach
+    void clearInterruptFlag() {
+        Thread.interrupted();
     }
 
     @Test
-    void createThumbnail_buildsExpectedFfmpegCommand() throws Exception {
+    void createThumbnail_success_completesWithCommandOutput() throws Exception {
         Path input = Path.of("videos/input.mp4");
         Path output = Path.of("thumbnails/output.jpg");
+        CommandOutput commandOutput = new CommandOutput();
+        when(commandRunner.run(anyList())).thenReturn(commandOutput);
 
-        thumbnailService.createThumbnail(input, output, 12.5f);
+        var future = thumbnailService.createThumbnail(input, output, 12.5f);
 
-        verify(commandRunner).run(List.of(
-                "ffmpeg",
-                "-ss", "12.5",
-                "-i", input.toAbsolutePath().toString(),
-                "-frames:v", "1",
-                output.toAbsolutePath().toString()
-        ));
+        assertThat(future.get()).isSameAs(commandOutput);
+    }
+
+    @Test
+    void createThumbnail_ioFailure_completesExceptionally() throws Exception {
+        when(commandRunner.run(anyList())).thenThrow(new IOException("ffmpeg failed"));
+
+        var future = thumbnailService.createThumbnail(
+                Path.of("videos/input.mp4"),
+                Path.of("thumbnails/output.jpg"),
+                12.5f
+        );
+
+        assertThatThrownBy(future::get)
+                .isInstanceOf(ExecutionException.class)
+                .hasCauseInstanceOf(IOException.class);
+        assertThat(Thread.currentThread().isInterrupted()).isFalse();
+    }
+
+    @Test
+    void createThumbnail_interruption_completesExceptionallyAndRestoresInterruptFlag() throws Exception {
+        when(commandRunner.run(anyList())).thenThrow(new InterruptedException("interrupted"));
+
+        var future = thumbnailService.createThumbnail(
+                Path.of("videos/input.mp4"),
+                Path.of("thumbnails/output.jpg"),
+                12.5f
+        );
+
+        assertThatThrownBy(future::get)
+                .isInstanceOf(ExecutionException.class)
+                .hasCauseInstanceOf(InterruptedException.class);
+        assertThat(Thread.currentThread().isInterrupted()).isTrue();
     }
 }
