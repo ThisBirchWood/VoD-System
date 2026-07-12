@@ -59,9 +59,8 @@ public class MediaService {
      * @return the {@link Job} tracking the compression; state transitions to
      *         {@link JobState#SUCCEEDED} or {@link JobState#FAILED} asynchronously
      * @throws IOException          if saving the upload to the temporary directory fails
-     * @throws InterruptedException if the current thread is interrupted while setting up the job
      */
-    public Job compress(MultipartFile file, ClipOptions clipOptions) throws IOException, InterruptedException {
+    public Job compress(MultipartFile file, ClipOptions clipOptions) throws IOException {
         Job job = jobRegistryService.generateJob();
 
         Optional<User> user = userService.getLoggedInUser();

@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 @Service
 public class MetadataService {
@@ -28,7 +27,7 @@ public class MetadataService {
     }
 
     @Async("ffmpegTaskExecutor")
-    public Future<ClipOptions> getVideoMetadata(Path file) {
+    public CompletableFuture<ClipOptions> getVideoMetadata(Path file) {
         logger.info("Getting metadata for file {}", file);
 
         List<String> command = List.of(
@@ -53,10 +52,10 @@ public class MetadataService {
             JsonNode node = mapper.readTree(outputBuilder.toString());
             return CompletableFuture.completedFuture(parseVideoMetadata(node));
         } catch (IOException e) {
-            throw new FFMPEGException("Error while getting video metadata: " + e);
+            return CompletableFuture.failedFuture(e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new FFMPEGException("Error while getting video metadata: " + e);
+            return CompletableFuture.failedFuture(e);
         }
     }
 

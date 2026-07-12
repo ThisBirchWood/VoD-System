@@ -268,17 +268,18 @@ class StreamActionsServiceTest {
     // ---------------------------------------------------------------
 
     @Test
-    void saveSection_success_buildsExpectedCommandAndCompletesWithOutputFile() throws Exception {
+    void saveSection_success_buildsExpectedCommandAndCompletesWithCommandOutput() throws Exception {
         Path segmentA = Path.of("/tmp/streams/a.ts");
         Path segmentB = Path.of("/tmp/streams/b.ts");
         Path output = Path.of("/tmp/out/clip.mp4");
         ProgressTracker progress = new ProgressTracker();
+        CommandOutput commandOutput = new CommandOutput();
 
-        when(commandRunner.run(anyList(), any())).thenReturn(new CommandOutput());
+        when(commandRunner.run(anyList(), any())).thenReturn(commandOutput);
 
         var future = service.saveSection(List.of(segmentA, segmentB), 5.0f, 12.0f, output, progress);
 
-        assertThat(future.get()).isEqualTo(output);
+        assertThat(future.get()).isSameAs(commandOutput);
         assertThat(progress.isComplete()).isTrue();
 
         @SuppressWarnings("unchecked")
@@ -310,14 +311,16 @@ class StreamActionsServiceTest {
     }
 
     @Test
-    void saveSection_emptySegmentList_throwsIllegalStateException() {
+    void saveSection_emptySegmentList_completesExceptionallyWithIllegalStateException() {
         Path output = Path.of("/tmp/out/clip.mp4");
         ProgressTracker progress = new ProgressTracker();
 
         var future = service.saveSection(List.of(), 0f, 10f, output, progress);
 
-        assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class);
-
+        assertThatThrownBy(future::get)
+                .isInstanceOf(ExecutionException.class)
+                .hasCauseInstanceOf(IllegalStateException.class);
+        assertThat(progress.isComplete()).isFalse();
     }
 
     @Test
@@ -326,6 +329,9 @@ class StreamActionsServiceTest {
 
         var future = service.saveSection(List.of(Path.of("/tmp/a.ts")), 0f, 10f, null, progress);
 
-        assertThatThrownBy(future::get).isInstanceOf(ExecutionException.class);
+        assertThatThrownBy(future::get)
+                .isInstanceOf(ExecutionException.class)
+                .hasCauseInstanceOf(NullPointerException.class);
+        assertThat(progress.isComplete()).isFalse();
     }
 }

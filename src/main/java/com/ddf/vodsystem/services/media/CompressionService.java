@@ -32,18 +32,27 @@ public class CompressionService {
                                                      Path outputFile,
                                                      ClipOptions clipOptions,
                                                      ProgressTracker progress
-    ) throws IOException, InterruptedException {
+    ) {
         logger.info("Compressing video from {} to {}", inputFile.toAbsolutePath(), outputFile.toAbsolutePath());
 
-        List<String> command = buildCommand(
-                inputFile,
-                outputFile,
-                clipOptions
-        );
-        CommandOutput result = commandRunner.run(command, line -> commandRunner.setProgress(line, progress, clipOptions.getDuration()));
-        progress.markComplete();
+        try {
+            List<String> command = buildCommand(
+                    inputFile,
+                    outputFile,
+                    clipOptions
+            );
+            CommandOutput result = commandRunner.run(command, line -> commandRunner.setProgress(line, progress, clipOptions.getDuration()));
+            progress.markComplete();
 
-        return CompletableFuture.completedFuture(result);
+            return CompletableFuture.completedFuture(result);
+        } catch (IOException e) {
+            logger.error("IO error on compress call: {}", e.toString());
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
+            logger.error("Thread error on compress call: {}", e.toString());
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     private List<String> buildFilters(Float fps, Integer width, Integer height) {

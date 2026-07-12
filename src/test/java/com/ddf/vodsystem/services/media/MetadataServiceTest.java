@@ -53,14 +53,17 @@ class MetadataServiceTest {
     private ClipOptions runMetadata() throws Exception {
         return metadataService.getVideoMetadata(INPUT).get();
     }
-
-    private void assertMetadataFailsWith(String messageFragment) {
+    private void assertMetadataFailsWith(Class<? extends Throwable> exceptionType, String messageFragment) {
         assertThatThrownBy(() -> metadataService.getVideoMetadata(INPUT).get())
                 .satisfies(thrown -> {
                     Throwable cause = thrown instanceof ExecutionException ? thrown.getCause() : thrown;
-                    assertThat(cause).isInstanceOf(FFMPEGException.class);
+                    assertThat(cause).isInstanceOf(exceptionType);
                     assertThat(cause.getMessage()).contains(messageFragment);
                 });
+    }
+
+    private void assertMetadataFailsWith(String messageFragment) {
+        assertMetadataFailsWith(FFMPEGException.class, messageFragment);
     }
 
     // ---------------------------------------------------------------
@@ -246,10 +249,10 @@ class MetadataServiceTest {
     }
 
     @Test
-    void getVideoMetadata_commandThrowsIOException_throwsFFMPEGException() throws Exception {
+    void getVideoMetadata_commandThrowsIOException_completesExceptionally() throws Exception {
         when(commandRunner.run(anyList())).thenThrow(new IOException("ffprobe boom"));
 
-        assertMetadataFailsWith("Error while getting video metadata");
+        assertMetadataFailsWith(IOException.class, "ffprobe boom");
     }
 
     @Test
@@ -291,7 +294,7 @@ class MetadataServiceTest {
     void getVideoMetadata_plainIOException_doesNotSetThreadInterruptFlag() throws Exception {
         when(commandRunner.run(anyList())).thenThrow(new IOException("ffprobe boom"));
 
-        assertMetadataFailsWith("Error while getting video metadata");
+        assertMetadataFailsWith(IOException.class, "ffprobe boom");
 
         assertThat(Thread.currentThread().isInterrupted())
                 .as("a plain IOException must not leave the calling thread's interrupt flag set")
@@ -302,7 +305,7 @@ class MetadataServiceTest {
     void getVideoMetadata_interruptedException_setsThreadInterruptFlag() throws Exception {
         when(commandRunner.run(anyList())).thenThrow(new InterruptedException("interrupted"));
 
-        assertMetadataFailsWith("Error while getting video metadata");
+        assertMetadataFailsWith(InterruptedException.class, "interrupted");
 
         assertThat(Thread.currentThread().isInterrupted()).isTrue();
     }

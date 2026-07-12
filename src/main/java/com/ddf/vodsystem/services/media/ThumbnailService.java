@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services.media;
 
+import com.ddf.vodsystem.dto.CommandOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ThumbnailService {
@@ -19,17 +21,25 @@ public class ThumbnailService {
     }
 
     @Async("ffmpegTaskExecutor")
-    public void createThumbnail(Path inputFile, Path outputFile, Float timeInVideo) throws IOException, InterruptedException {
+    public CompletableFuture<CommandOutput> createThumbnail(Path inputFile, Path outputFile, Float timeInVideo) {
         logger.info("Creating thumbnail at {} seconds", timeInVideo);
 
-        List<String> command = List.of(
-                "ffmpeg",
-                "-ss", timeInVideo.toString(),
-                "-i", inputFile.toAbsolutePath().toString(),
-                "-frames:v", "1",
-                outputFile.toAbsolutePath().toString()
-        );
+        try {
+            List<String> command = List.of(
+                    "ffmpeg",
+                    "-ss", timeInVideo.toString(),
+                    "-i", inputFile.toAbsolutePath().toString(),
+                    "-frames:v", "1",
+                    outputFile.toAbsolutePath().toString()
+            );
 
-        commandRunner.run(command);
+            CommandOutput output = commandRunner.run(command);
+            return CompletableFuture.completedFuture(output);
+        } catch (IOException e) {
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(e);
+        }
     }
 }

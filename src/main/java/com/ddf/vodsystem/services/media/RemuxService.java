@@ -2,6 +2,8 @@ package com.ddf.vodsystem.services.media;
 
 import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 public class RemuxService {
+    private static final Logger logger = LoggerFactory.getLogger(RemuxService.class);
     private final CommandRunner commandRunner;
 
     public RemuxService(CommandRunner commandRunner) {
@@ -23,19 +26,28 @@ public class RemuxService {
                                                   File outputFile,
                                                   ProgressTracker remuxProgress,
                                                   float length
-    ) throws IOException, InterruptedException {
-        List<String> command = List.of(
-                "ffmpeg",
-                "-progress", "pipe:1",
-                "-y",
-                "-i", inputFile.getAbsolutePath(),
-                "-c:v", "h264",
-                "-c:a", "aac",
-                "-f", "mp4",
-                outputFile.getAbsolutePath()
-        );
+    ) {
+        try {
+            List<String> command = List.of(
+                    "ffmpeg",
+                    "-progress", "pipe:1",
+                    "-y",
+                    "-i", inputFile.getAbsolutePath(),
+                    "-c:v", "h264",
+                    "-c:a", "aac",
+                    "-f", "mp4",
+                    outputFile.getAbsolutePath()
+            );
 
-        return CompletableFuture.completedFuture(commandRunner.run(command, line ->
-                commandRunner.setProgress(line, remuxProgress, length)));
+            return CompletableFuture.completedFuture(commandRunner.run(command, line ->
+                    commandRunner.setProgress(line, remuxProgress, length)));
+        } catch (IOException e) {
+            logger.error("IO error on remux call: {}", e.toString());
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
+            logger.error("Thread error on remux call: {}", e.toString());
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(e);
+        }
     }
 }

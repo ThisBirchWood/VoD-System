@@ -1,5 +1,6 @@
 package com.ddf.vodsystem.services.media;
 
+import com.ddf.vodsystem.dto.CommandOutput;
 import com.ddf.vodsystem.dto.ProgressTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,12 +55,11 @@ public class StreamActionsService {
      *                    to extract
      * @param outputFile  the destination file the trimmed section will be
      *                    written to; overwritten if it already exists
-     * @return a {@link CompletableFuture} that completes with
-     *         {@code outputFile} on success, or completes exceptionally on
-     *         failure
+     * @return a {@link CompletableFuture} that completes with the ffmpeg
+     *         command output on success, or completes exceptionally on failure
      */
     @Async("ffmpegTaskExecutor")
-    public CompletableFuture<Path> saveSection(
+    public CompletableFuture<CommandOutput> saveSection(
             List<Path> segments,
             float trimOffset,
             float duration,
@@ -87,12 +87,19 @@ public class StreamActionsService {
 
             logger.info("Saving section with ({} segments) to '{}'",
                     segments.size(), outputFile);
-            commandRunner.run(command, line -> commandRunner.setProgress(line, progressTracker, duration));
-            progressTracker.markComplete();
+            CommandOutput output = commandRunner.run(command, line -> commandRunner.setProgress(line, progressTracker, duration));
 
-            return CompletableFuture.completedFuture(outputFile);
-        } catch (Exception e) {
-            logger.error("Failed to save section to '{}'", outputFile, e);
+            progressTracker.markComplete();
+            return CompletableFuture.completedFuture(output);
+        } catch (IOException e) {
+            logger.error("IO error on saveSection call: {}", e.toString());
+            return CompletableFuture.failedFuture(e);
+        } catch (InterruptedException e) {
+            logger.error("Thread error on saveSection call: {}", e.toString());
+            Thread.currentThread().interrupt();
+            return CompletableFuture.failedFuture(e);
+        } catch (RuntimeException e) {
+            logger.error("Failed to save section to '{}': {}", outputFile, e.toString());
             return CompletableFuture.failedFuture(e);
         }
     }

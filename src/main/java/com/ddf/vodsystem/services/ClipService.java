@@ -222,14 +222,11 @@ public class ClipService {
         }
 
         // Thumbnail generation can fail with error propagation
-        try {
-            thumbnailService.createThumbnail(newClipFile, thumbnailFile, 0.0f);
-        } catch (InterruptedException e) {
-            logger.error("Thumbnail generation interrupted for user: {}", user.getId(), e);
-            Thread.currentThread().interrupt();
-        } catch (IOException e) {
-            logger.error("Error generating thumbnail for user: {}", user.getId(), e);
-        }
+        thumbnailService.createThumbnail(newClipFile, thumbnailFile, 0.0f)
+                .exceptionally(ex -> {
+                    logger.error("Thumbnail job for user {} failed: {}", user.getId(), ex.toString());
+                    return null;
+                });
 
         clipMetadata.setTitle(title);
         clipMetadata.setDescription(description);
