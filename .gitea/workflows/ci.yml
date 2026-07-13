@@ -53,6 +53,8 @@ jobs:
           file: src/main/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:buildcache,mode=max
 
       - name: Build and push frontend image
         uses: https://github.com/docker/build-push-action@v6
@@ -61,6 +63,8 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:buildcache,mode=max
 
       - name: Build and push rtmp image
         uses: https://github.com/docker/build-push-action@v6
@@ -69,11 +73,13 @@ jobs:
           file: nginx/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-rtmp:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-rtmp:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-rtmp:buildcache,mode=max
 
   deploy:
     name: Deploy to server
     needs: build-and-push
-    if: github.ref == 'refs/heads/master'
+    if: gitea.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
     steps:
