@@ -6,12 +6,16 @@ import com.ddf.vodsystem.dto.APIResponse;
 import com.ddf.vodsystem.entities.Vod;
 import com.ddf.vodsystem.services.VodService;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRange;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -55,17 +59,37 @@ public class VodController {
     }
 
     @GetMapping("/{id}/media")
-    public ResponseEntity<Resource> downloadVod(@PathVariable Long id) {
+    public ResponseEntity<?> downloadVod(@PathVariable Long id, @RequestHeader HttpHeaders headers) throws IOException {
         Resource resource = vodService.downloadVod(id);
 
         if (resource == null || !resource.exists()) {
             return ResponseEntity.notFound().build();
         }
 
+        List<HttpRange> ranges = headers.getRange();
+
+        if (!ranges.isEmpty()) {
+            ResourceRegion region = createResourceRegion(resource, ranges.getFirst());
+
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
+                    .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
+                    .body(region);
+        }
+
         return ResponseEntity.ok()
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                 .header(HttpHeaders.CONTENT_DISPOSITION, String.format(FILENAME_HEADER, resource.getFilename()))
                 .contentType(MediaTypeFactory.getMediaType(resource).orElse(MediaType.APPLICATION_OCTET_STREAM))
                 .body(resource);
+    }
+
+    private ResourceRegion createResourceRegion(Resource resource, HttpRange range) throws IOException {
+        long contentLength = resource.contentLength();
+        long start = range.getRangeStart(contentLength);
+        long end = range.getRangeEnd(contentLength);
+        return new ResourceRegion(resource, start, end - start + 1);
     }
 
     @GetMapping("/{id}/thumbnail")
