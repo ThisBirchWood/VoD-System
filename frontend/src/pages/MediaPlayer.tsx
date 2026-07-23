@@ -1,13 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Lock, Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
-import type { Vod } from "../utils/types";
 import { AuthError } from "../utils/api/client.ts";
-import { getVodById, getVodBlob } from "../utils/api/vods.ts";
 import Box from "../components/Box.tsx";
 import { dateToTimeAgo, formatTime, stringToDate } from "../utils/utils.ts";
 
-const VodPlayer = () => {
+// Both VoDs and clips share the same on-screen shape.
+type MediaItem = {
+    title: string,
+    createdAt: string,
+};
+
+type MediaPlayerProps = {
+    /** Human-readable name for the media, e.g. "VoD" or "clip". Used in messages. */
+    noun: string,
+    /** Fetches the raw video blob for the given id. */
+    fetchBlob: (id: string) => Promise<Blob>,
+    /** Fetches the media metadata for the given id. */
+    fetchDetails: (id: string) => Promise<MediaItem>,
+};
+
+const MediaPlayer = ({ noun, fetchBlob, fetchDetails }: MediaPlayerProps) => {
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -16,48 +29,54 @@ const VodPlayer = () => {
     const progressRef = useRef<HTMLDivElement>(null);
     const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // Data
     const [videoUrl, setVideoUrl] = useState<string | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
     const [notAuthenticated, setNotAuthenticated] = useState(false);
-    const [vod, setVod] = useState<Vod | null>(null);
+    const [item, setItem] = useState<MediaItem | null>(null);
     const [timeAgo, setTimeAgo] = useState("");
 
+    // Playback
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [bufferedPct, setBufferedPct] = useState(0);
     const [isWaiting, setIsWaiting] = useState(false);
 
+    // Volume
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
 
+    // UI
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [controlsVisible, setControlsVisible] = useState(true);
     const [isDragging, setIsDragging] = useState(false);
 
+    // ── Data loading ────────────────────────────────────────────────────────
     useEffect(() => {
-        if (!id) { setError("VoD ID is required."); return; }
+        if (!id) { setError(`${noun} ID is required.`); return; }
 
-        getVodBlob(id)
+        fetchBlob(id)
             .then((blob) => setVideoUrl(URL.createObjectURL(blob)))
             .catch((e) => { if (e instanceof AuthError) setNotAuthenticated(true); });
 
-        getVodById(id)
-            .then(setVod)
+        fetchDetails(id)
+            .then(setItem)
             .catch((e) => {
                 if (e instanceof AuthError) setNotAuthenticated(true);
-                else setError("Failed to load vod details.");
+                else setError(`Failed to load ${noun.toLowerCase()} details.`);
             });
-    }, [id]);
+    }, [id, noun, fetchBlob, fetchDetails]);
 
     useEffect(() => {
-        if (!vod?.createdAt) return;
-        const update = () => setTimeAgo(dateToTimeAgo(stringToDate(vod.createdAt)));
+        if (!item?.createdAt) return;
+        const update = () => setTimeAgo(dateToTimeAgo(stringToDate(item.createdAt)));
         update();
         const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
-    }, [vod]);
+    }, [item]);
 
+    // ── Controls visibility ─────────────────────────────────────────────────
     const scheduleHide = useCallback(() => {
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
         hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
@@ -68,6 +87,7 @@ const VodPlayer = () => {
         scheduleHide();
     }, [scheduleHide]);
 
+    // ── Fullscreen ──────────────────────────────────────────────────────────
     useEffect(() => {
         const onChange = () => setIsFullscreen(!!document.fullscreenElement);
         document.addEventListener('fullscreenchange', onChange);
@@ -81,6 +101,7 @@ const VodPlayer = () => {
             : containerRef.current.requestFullscreen();
     }, []);
 
+    // ── Keyboard shortcuts ──────────────────────────────────────────────────
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -116,6 +137,7 @@ const VodPlayer = () => {
         return () => document.removeEventListener('keydown', onKey);
     }, [showControls, toggleFullscreen]);
 
+    // ── Progress bar seeking ────────────────────────────────────────────────
     const seekTo = useCallback((clientX: number) => {
         const rect = progressRef.current?.getBoundingClientRect();
         const video = videoRef.current;
@@ -137,6 +159,7 @@ const VodPlayer = () => {
         };
     }, [isDragging, seekTo]);
 
+    // ── Video element event handlers ────────────────────────────────────────
     const handleTimeUpdate = () => {
         const video = videoRef.current;
         if (!video) return;
@@ -182,7 +205,7 @@ const VodPlayer = () => {
                 </div>
                 <div>
                     <p className="text-lg font-semibold text-gray-900">Not authenticated</p>
-                    <p className="text-sm text-gray-500 mt-1">You don't have access to this VoD.</p>
+                    <p className="text-sm text-gray-500 mt-1">You don't have access to this {noun.toLowerCase()}.</p>
                 </div>
                 <button
                     onClick={() => navigate(-1)}
@@ -205,6 +228,7 @@ const VodPlayer = () => {
                 Back
             </button>
 
+            {/* Player */}
             <div
                 ref={containerRef}
                 className="relative bg-black rounded-xl overflow-hidden flex-1 min-h-0 select-none"
@@ -230,19 +254,24 @@ const VodPlayer = () => {
                     onError={(e) => setError(e.currentTarget.error?.message || "An error occurred.")}
                 />
 
+                {/* Buffering spinner */}
                 {isWaiting && videoUrl && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="w-11 h-11 rounded-full border-[3px] border-white/20 border-t-white animate-spin" />
                     </div>
                 )}
 
+                {/* Controls overlay — pointer-events-none so video clicks pass through */}
                 <div className={`absolute inset-0 flex flex-col justify-end transition-opacity duration-300 pointer-events-none ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+                    {/* Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
+                    {/* Controls bar — pointer-events-auto only here */}
                     <div
                         className="relative px-4 pb-4 pt-10 pointer-events-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {/* Scrub bar */}
                         <div
                             ref={progressRef}
                             className="relative h-1 rounded-full bg-white/25 cursor-pointer mb-3 group/prog hover:h-1.5 transition-[height] duration-150"
@@ -256,6 +285,7 @@ const VodPlayer = () => {
                             />
                         </div>
 
+                        {/* Buttons row */}
                         <div className="flex items-center gap-3 text-white">
                             <button onClick={togglePlay} className="hover:text-white/70 transition-colors">
                                 {isPlaying
@@ -263,6 +293,7 @@ const VodPlayer = () => {
                                     : <Play size={20} fill="currentColor" />}
                             </button>
 
+                            {/* Volume — slider expands on hover */}
                             <div className="flex items-center gap-1.5 group/vol">
                                 <button onClick={toggleMute} className="hover:text-white/70 transition-colors">
                                     <VolumeIcon size={18} />
@@ -301,11 +332,11 @@ const VodPlayer = () => {
             )}
 
             <Box className="p-4 flex-shrink-0">
-                <p className="text-xl font-semibold text-gray-900">{vod?.title || "(No Title)"}</p>
+                <p className="text-xl font-semibold text-gray-900">{item?.title || "(No Title)"}</p>
                 <p className="text-sm text-gray-500 mt-1">{timeAgo}</p>
             </Box>
         </div>
     );
 };
 
-export default VodPlayer;
+export default MediaPlayer;
