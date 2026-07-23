@@ -17,7 +17,7 @@ type MediaPlayerProps = {
     /** Fetches the raw video blob for the given id. */
     fetchBlob: (id: string) => Promise<Blob>,
     /** Fetches the media metadata for the given id. */
-    fetchDetails: (id: string) => Promise<MediaItem>,
+    fetchDetails: (id: string) => Promise<MediaItem | null>,
 };
 
 const MediaPlayer = ({ noun, fetchBlob, fetchDetails }: MediaPlayerProps) => {
