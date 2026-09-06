@@ -60,46 +60,46 @@
 :root[data-theme="dark"] {
     color-scheme: dark;
 
-    /* ── Surfaces ── elevation inverts: the canvas is darkest, cards rise ─── */
-    --color-background: #1B1815;
-    --color-sidebar: #151210;
-    --color-card: #26211C;
-    --color-fields: #211D19;
-    --color-dropzone: #201C18;
+    /* ── Surfaces ── near-black canvas, neutral cards lifting off it ─────── */
+    --color-background: #0E0E10;
+    --color-sidebar: #09090B;
+    --color-card: #17171A;
+    --color-fields: #121215;
+    --color-dropzone: #141417;
 
-    --color-media-backdrop: #121010;
+    --color-media-backdrop: #000000;
 
-    /* ── Ink ── warm off-whites, mirroring the light ramp in reverse ──────── */
-    --color-text-primary: #F3EDE3;
-    --color-text-strong: #E6DFD3;
-    --color-text-body: #CFC6B8;
-    --color-text-secondary: #ABA192;
-    --color-muted: #948A7C;
-    --color-faint-mono: #8A8073;
+    /* ── Ink ─────────────────────────────────────────────────────────────── */
+    --color-text-primary: #F4F4F5;
+    --color-text-strong: #E3E3E7;
+    --color-text-body: #BFBFC6;
+    --color-text-secondary: #94949D;
+    --color-muted: #76767F;
+    --color-faint-mono: #6A6A73;
 
     /* ── Accents ── brightened to carry on a dark canvas, so hover now lifts
        rather than deepens ─────────────────────────────────────────────────── */
-    --color-terracotta: #D08055;
-    --color-terracotta-hover: #E09A6F;
-    --color-terracotta-light: #E3A87F;
-    --color-terracotta-disabled: #8A6A55;
-    --color-olive: #9DAC77;
+    --color-terracotta: #E07A4C;
+    --color-terracotta-hover: #F08F62;
+    --color-terracotta-light: #F0A177;
+    --color-terracotta-disabled: #5E463A;
+    --color-olive: #A3B678;
 
     /* ── Status ──────────────────────────────────────────────────────────── */
-    --color-live: #E0705A;
-    --color-error: #E0705A;
+    --color-live: #F2604A;
+    --color-error: #F2604A;
 
     /* ── Ink on accent surfaces ── the accents are light here, so the ink that
        sits on them flips dark ─────────────────────────────────────────────── */
-    --color-on-accent: #241B14;
+    --color-on-accent: #17100B;
 
     /* ── Lines, chips, placeholders ──────────────────────────────────────── */
-    --color-hairline: #2E2822;
-    --color-hover: #322B24;
-    --color-selected: #2E2119;
-    --color-ring: #3E362C;
-    --color-inactive: #3B342B;
-    --color-inactive-strong: #6B6153;
+    --color-hairline: #232327;
+    --color-hover: #26262B;
+    --color-selected: #2A1F18;
+    --color-ring: #33333A;
+    --color-inactive: #2C2C32;
+    --color-inactive-strong: #55555E;
 }
 
 :root {
