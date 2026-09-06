@@ -6,13 +6,10 @@ import ClipRangeSlider from "./../components/video/ClipRangeSlider";
 import ConfigBox from "../components/video/ConfigBox.tsx";
 import ExportWidget from "../components/video/ExportWidget.tsx";
 import { compress } from "../utils/api/media"
-import { getJob } from "../utils/api/jobs"
+import { getJob, downloadJob } from "../utils/api/jobs"
 import type { VideoMetadata } from "../utils/types.ts";
 import Box from "../components/Box.tsx";
 import MetadataBox from "../components/video/MetadataBox.tsx";
-import {config} from "../config.ts";
-
-const API_URL = config.apiUrl;
 
 const ClipEdit = () => {
     const location = useLocation();
@@ -111,14 +108,14 @@ const ClipEdit = () => {
     const handleDownload = async () => {
         if (!uploadedId) return;
 
-        const response = await fetch(API_URL + `/api/v1/jobs/${uploadedId}/download`, { credentials: 'include' });
-
-        if (!response.ok) {
-            console.error('Download failed');
+        let blob: Blob;
+        try {
+            blob = await downloadJob(uploadedId);
+        } catch (err) {
+            console.error('Download failed', err);
             return;
         }
 
-        const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
 

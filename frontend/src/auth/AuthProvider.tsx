@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { User } from "../utils/types.ts";
 import { login as apiLogin, logout as apiLogout, getUser } from "../utils/api/users.ts";
 import { AuthContext } from "./AuthContext.ts";
+import {registerUnauthorizedHandler} from "../utils/api/client.ts";
 
 /**
  * Owns the single source of truth for the authenticated user. Everything that
@@ -33,7 +34,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = useCallback(async () => {
         await apiLogout();
-        setUser(null);
+        await refresh();
+    }, [refresh]);
+
+    useEffect(() => {
+        registerUnauthorizedHandler(() => setUser(null));
     }, []);
 
     return (

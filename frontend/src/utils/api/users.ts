@@ -1,6 +1,9 @@
 import type { APIResponse, User } from "../types.ts";
-import { API_URL } from "./client.ts";
+import { API_URL, apiFetch } from "./client.ts";
 
+// login and getUser deliberately use fetch directly: they run when there may be
+// no session at all, and getUser is what the unauthorized handler calls to
+// refresh — routing them through apiFetch would loop on a 401.
 const login = async (googleToken: string): Promise<string> => {
     const response = await fetch(API_URL + '/api/v1/users/login', {
         method: 'POST',
@@ -18,15 +21,8 @@ const login = async (googleToken: string): Promise<string> => {
 };
 
 const logout = async (): Promise<void> => {
-    const response = await fetch(API_URL + '/api/v1/users/logout', {
-        method: 'POST',
-        credentials: 'include',
-    });
-
-    if (!response.ok) throw new Error(`Logout failed: ${response.status}`);
-
-    const result: APIResponse = await response.json();
-    if (result.status === 'error') throw new Error(`Logout failed: ${result.message}`);
+    const result = await apiFetch<APIResponse>(API_URL + '/api/v1/users/logout', { method: 'POST' });
+    if (result?.status === 'error') throw new Error(`Logout failed: ${result.message}`);
 };
 
 const getUser = async (): Promise<User | null> => {
